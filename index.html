@@ -2,206 +2,62 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Карта Эндора — интерактивный атлас</title>
+    <title>Тест клика по области</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/openseadragon/4.1.0/openseadragon.min.js"></script>
     <style>
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #1a2a1f; }
-        #seadragon-viewer { width: 100%; height: 100%; background-color: #2c3e2f; }
-        .toggle-panel {
-            position: fixed; bottom: 20px; left: 20px; z-index: 1000;
-            background: rgba(0,0,0,0.7); backdrop-filter: blur(8px);
-            padding: 10px 15px; border-radius: 40px; display: flex; gap: 12px;
-        }
-        button {
-            background: #2c3e2f; border: none; color: #f0e6a0; font-size: 16px;
-            font-weight: bold; padding: 8px 20px; border-radius: 30px; cursor: pointer;
-            border: 1px solid #c9a87b;
-        }
-        button.active { background: #b8860b; color: white; border-color: #ffd700; }
-        .info {
-            position: fixed; bottom: 20px; right: 20px;
-            background: rgba(0,0,0,0.5); color: #ddd; padding: 5px 12px;
-            border-radius: 20px; font-size: 12px; z-index: 1000; pointer-events: none;
-        }
+        body, html { margin: 0; width: 100%; height: 100%; background: black; }
+        #viewer { width: 100%; height: 100%; }
     </style>
 </head>
 <body>
-    <div id="seadragon-viewer"></div>
-    <div class="toggle-panel">
-        <button id="btnRelief" class="active">🏔️ Рельеф</button>
-        <button id="btnCountries">⚜️ Страны</button>
-        <button id="btnFactions">⚔️ Фракции</button>
-    </div>
-    <div class="info">
-        🗺️ Нажмите на иконку города — откроется страница с подробностями
-    </div>
-
+    <div id="viewer"></div>
     <script>
-        // ========== НАСТРОЙКИ ==========
-        const RELIEF_URL = 'Karta_relief.png';
-        const COUNTRIES_URL = 'Karta_countries.png';
-        const FACTIONS_URL = 'Karta_factions.png';
-        
-        const MAP_WIDTH = 3999;
-        const MAP_HEIGHT = 2588;
-        const DEFAULT_ICON_SIZE = 32;
-        const CLICK_RADIUS = 0.02; // радиус клика 2% от карты (легко попасть)
-        
-        // ========== ГОРОДА ==========
-        const cities = [
-            {
-                name: "Столица Эльфов",
-                px: 1030, py: 465,
-                icon: "armoria.png",
-                link: "city_elf.html"
-            },
-            // Добавляйте остальные города по образцу
-        ];
-        
-        let viewer = null;
-        let currentOverlays = [];
-        let currentIsFaction = false;
-        let citiesNorm = []; // нормализованные координаты + ссылки
-        
-        // Очистка оверлеев
-        function clearOverlays() {
-            currentOverlays.forEach(overlay => { try { viewer.removeOverlay(overlay); } catch(e) {} });
-            currentOverlays = [];
-        }
-        
-        // Добавление иконки (только визуально, без обработчика)
-        function addIconForCity(city, normX, normY) {
-            const container = document.createElement('div');
-            container.style.position = 'absolute';
-            container.style.cursor = 'pointer';
-            container.style.pointerEvents = 'none'; // клик идёт сквозь на карту
-            
-            const img = document.createElement('img');
-            img.src = city.icon;
-            const size = city.iconSize || DEFAULT_ICON_SIZE;
-            img.style.width = size + 'px';
-            img.style.height = size + 'px';
-            img.style.display = 'block';
-            container.appendChild(img);
-            
-            // Подсказка при наведении (простая)
-            const tooltip = document.createElement('div');
-            tooltip.textContent = city.name;
-            tooltip.style.position = 'absolute';
-            tooltip.style.backgroundColor = 'rgba(0,0,0,0.75)';
-            tooltip.style.color = '#ffd966';
-            tooltip.style.padding = '5px 12px';
-            tooltip.style.borderRadius = '20px';
-            tooltip.style.fontSize = '14px';
-            tooltip.style.fontWeight = 'bold';
-            tooltip.style.whiteSpace = 'nowrap';
-            tooltip.style.pointerEvents = 'none';
-            tooltip.style.border = '1px solid #c9a87b';
-            tooltip.style.display = 'none';
-            tooltip.style.bottom = '100%';
-            tooltip.style.left = '50%';
-            tooltip.style.transform = 'translateX(-50%)';
-            tooltip.style.marginBottom = '8px';
-            container.appendChild(tooltip);
-            
-            container.addEventListener('mouseenter', () => { tooltip.style.display = 'block'; });
-            container.addEventListener('mouseleave', () => { tooltip.style.display = 'none'; });
-            
-            const overlay = viewer.addOverlay({
-                element: container,
-                location: new OpenSeadragon.Point(normX, normY),
-                placement: OpenSeadragon.Placement.CENTER
-            });
-            return overlay;
-        }
-        
-        // Добавляем все иконки и заполняем массив citiesNorm
-        function addAllIcons() {
-            const newOverlays = [];
-            const item = viewer.world.getItemAt(0);
-            if (!item) return;
-            const contentSize = item.getContentSize();
-            citiesNorm = [];
-            for (const city of cities) {
-                const normX = city.px / contentSize.x;
-                const normY = city.py / contentSize.y;
-                citiesNorm.push({
-                    name: city.name,
-                    normX: normX,
-                    normY: normY,
-                    link: city.link
-                });
-                const overlay = addIconForCity(city, normX, normY);
-                newOverlays.push(overlay);
-            }
-            currentOverlays = newOverlays;
-        }
-        
-        // Обработчик клика по карте
-        function onCanvasClick(event) {
-            if (!currentIsFaction) return;
-            for (let city of citiesNorm) {
-                const dx = event.position.x - city.normX;
-                const dy = event.position.y - city.normY;
-                const dist = Math.sqrt(dx*dx + dy*dy);
-                if (dist < CLICK_RADIUS) {
-                    window.location.href = city.link; // переход в той же вкладке
-                    break;
-                }
-            }
-        }
-        
-        function scheduleAddIcons() {
-            clearOverlays();
-            if (!currentIsFaction) return;
-            setTimeout(() => {
-                if (currentIsFaction && viewer.world.getItemCount() > 0) addAllIcons();
-            }, 200);
-            viewer.addOnceHandler('resize', () => {
-                if (currentIsFaction && viewer.world.getItemCount() > 0) {
-                    clearOverlays();
-                    addAllIcons();
-                }
-            });
-        }
-        
-        // ========== СОЗДАНИЕ ПРОСМОТРЩИКА ==========
-        viewer = OpenSeadragon({
-            id: "seadragon-viewer",
-            prefixUrl: "https://cdnjs.cloudflare.com/ajax/libs/openseadragon/4.1.0/images/",
-            tileSources: { type: 'image', url: RELIEF_URL },
-            showNavigationControl: true,
-            showZoomControl: true,
-            gestureSettingsMouse: { clickToZoom: false, scrollToZoom: true },
-            minZoomLevel: 0.5,
-            maxZoomLevel: 10,
-            defaultZoomLevel: 1,
+        const viewer = OpenSeadragon({
+            id: "viewer",
+            tileSources: { type: 'image', url: 'Karta_factions.png' },
+            showNavigationControl: false,
+            showZoomControl: false,
+            gestureSettingsMouse: { clickToZoom: false, scrollToZoom: true }
         });
-        
-        viewer.addHandler('canvas-click', onCanvasClick);
-        
-        function switchMap(url, activeButtonId, isFactionMap) {
-            const center = viewer.viewport.getCenter();
-            const zoom = viewer.viewport.getZoom();
-            clearOverlays();
-            currentIsFaction = isFactionMap;
-            viewer.close();
-            viewer.open({ type: 'image', url: url });
-            viewer.addOnceHandler('open', () => {
-                viewer.viewport.zoomTo(zoom);
-                viewer.viewport.panTo(center);
-                scheduleAddIcons();
+
+        // Координаты центра города (в пикселях)
+        const cityX = 1030;
+        const cityY = 465;
+        const sizePx = 40; // сторона квадрата 40x40 пикселей
+
+        let cityRect = null; // нормализованный прямоугольник
+
+        viewer.addOnceHandler('open', () => {
+            const item = viewer.world.getItemAt(0);
+            const sz = item.getContentSize();
+            const normX = cityX / sz.x;
+            const normY = cityY / sz.y;
+            const normW = sizePx / sz.x;
+            const normH = sizePx / sz.y;
+            cityRect = { x: normX - normW/2, y: normY - normH/2, w: normW, h: normH };
+
+            // Красный квадрат для визуального ориентира
+            const div = document.createElement('div');
+            div.style.cssText = `width: ${sizePx}px; height: ${sizePx}px; background: rgba(255,0,0,0.5); border: 2px solid red; box-sizing: border-box; cursor: pointer;`;
+            div.title = "Кликни сюда";
+            viewer.addOverlay({
+                element: div,
+                location: new OpenSeadragon.Rect(cityRect.x, cityRect.y, cityRect.w, cityRect.h),
+                placement: OpenSeadragon.Placement.ABSOLUTE
             });
-            document.querySelectorAll('button').forEach(btn => btn.classList.remove('active'));
-            document.getElementById(activeButtonId).classList.add('active');
-        }
-        
-        document.getElementById('btnRelief').addEventListener('click', () => switchMap(RELIEF_URL, 'btnRelief', false));
-        document.getElementById('btnCountries').addEventListener('click', () => switchMap(COUNTRIES_URL, 'btnCountries', false));
-        document.getElementById('btnFactions').addEventListener('click', () => switchMap(FACTIONS_URL, 'btnFactions', true));
-        
-        viewer.addOnceHandler('open', () => { currentIsFaction = false; });
+        });
+
+        viewer.addHandler('canvas-click', (event) => {
+            if (!cityRect) return;
+            const imgPt = viewer.viewport.viewportToImageCoordinates(event.position);
+            const x = imgPt.x;
+            const y = imgPt.y;
+            const x0 = cityX - sizePx/2;
+            const y0 = cityY - sizePx/2;
+            if (x >= x0 && x <= x0 + sizePx && y >= y0 && y <= y0 + sizePx) {
+                window.location.href = 'armoria.png'; // или 'city_elf.html'
+            }
+        });
     </script>
 </body>
 </html>
