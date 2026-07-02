@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Карта – Самый дивный мир</title>
+
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* ===== ВСЕ СТИЛИ (копия из старого проекта) ===== */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: #0a0c08; font-family: 'Cinzel', 'Georgia', serif; color: #e6ddb3; padding: 0; margin: 0; height: 100vh; overflow: hidden; }
+        .map-container { position: relative; width: 100%; height: 100vh; }
+        #map { width: 100%; height: 100%; background: #2c3e2f; }
+
+        .map-panel { position: absolute; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(8px); border: 1px solid #c9a87b; border-radius: 12px; color: #f0e6d0; font-size: 13px; z-index: 1000; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); }
+        .map-panel-left { left: 15px; top: 15px; width: 260px; }
+        .map-panel-cities { right: 15px; top: 15px; width: 220px; }
+        .map-panel-routes { right: 15px; bottom: 15px; width: 340px; max-height: 65vh; }
+        .map-panel-markers { display: none; right: 15px; top: 15px; width: 400px; max-height: 50vh; }
+        .map-panel-content { padding: 10px; display: flex; flex-direction: column; gap: 8px; max-height: 70vh; overflow-y: auto; }
+        .map-panel-header { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: rgba(0, 0, 0, 0.6); border-bottom: 1px solid #c9a87b; cursor: pointer; font-weight: bold; }
+
+        .route-item { background: #2a2418; border-radius: 10px; padding: 6px; margin-bottom: 6px; border-left: 3px solid; cursor: pointer; }
+        .route-item.active-route { background: #3a3a28; border-left-width: 5px; }
+
+        button { background: #5e3a22; border: 1px solid #cfaa7a; padding: 6px 14px; border-radius: 40px; font-family: 'Cinzel', serif; cursor: pointer; color: #faf0d7; transition: 0.2s; font-size: 0.8rem; }
+        button:hover { background: #7e5638; }
+        .danger-btn { background: #7a2a2a; }
+        .danger-btn:hover { background: #9a3a3a; }
+        .mode-btn.active { background: #b8860b; box-shadow: 0 0 8px #ffd966; border-color: #ffd700; }
+        .route-preset.active { background: #ffd966 !important; color: #1f1c14; box-shadow: 0 0 8px #ffaa33; border-color: #ffd700; }
+
+        .checkbox-item { display: flex; align-items: center; gap: 8px; margin: 5px 0; }
+
+        .city-tooltip { background: rgba(0, 0, 0, 0.85) !important; border: 1px solid #c9a87b !important; border-radius: 8px !important; padding: 4px 10px !important; font-size: 12px !important; font-family: 'Cinzel','Georgia',serif !important; color: #ffd966 !important; font-weight: bold !important; box-shadow: 0 2px 8px rgba(0,0,0,0.3) !important; }
+
+        .custom-marker { background: none; border: none; filter: drop-shadow(0 0 4px rgba(0,0,0,0.5)); }
+        .marker-drop { width: 32px; height: 32px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); display: flex; align-items: center; justify-content: center; color: white; font-size: 16px; line-height: 1; text-shadow: 0 0 2px black; box-shadow: 0 2px 4px rgba(0,0,0,0.3); }
+        .marker-drop img { width: 20px; height: 20px; transform: rotate(45deg); border-radius: 2px; }
+        .marker-drop span { transform: rotate(45deg); }
+
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(5px); justify-content: center; align-items: center; z-index: 10000; }
+        .modal-content { background: #1f1c14; border: 2px solid #b87c4f; border-radius: 32px; max-width: 900px; width: 90%; max-height: 85vh; overflow-y: auto; padding: 20px; position: relative; }
+        .close-modal { position: absolute; top: 15px; right: 20px; font-size: 28px; cursor: pointer; color: #cfc294; }
+
+        .map-container:fullscreen { width: 100%; height: 100%; background: #0a0c08; padding: 0; margin: 0; }
+        .map-container:fullscreen #map { height: 100%; min-height: 100vh; border-radius: 0; border: none; }
+
+        @media (max-width: 1000px) {
+            .map-panel-left { width: 200px; }
+            .map-panel-cities { width: 180px; }
+            .map-panel-routes { width: 280px; }
+        }
+        @media (max-width: 700px) {
+            .map-panel-left { display: none; }
+            .map-panel-cities { display: none; }
+            .map-panel-routes { width: calc(100% - 30px); bottom: 10px; left: 15px; right: 15px; max-height: 40vh; }
+        }
+    </style>
+</head>
+<body>
+    <div class="map-container" id="mapContainer">
+        <div id="map"></div>
+
+        <!-- Панель навигации (слева) -->
+        <div class="map-panel map-panel-left">
+            <div class="map-panel-header" id="leftHeader">
+                <span>🗺️ Навигация</span><span>▼</span>
+            </div>
+            <div class="map-panel-content" id="leftContent">
+                <div style="display: flex; gap: 6px; margin-bottom: 8px; flex-wrap: wrap;">
+                    <button id="routeModeBtn" class="mode-btn">✏️ Маршрут</button>
+                    <button id="rulerModeBtn" class="mode-btn">📏 Линейка</button>
+                    <button id="undoPointBtn">↩️ Отменить</button>
+                    <button id="clearRouteBtn">🗑️ Очистить</button>
+                    <button id="saveRouteBtn">💾 Сохранить</button>
+                    <button id="fullscreenMapBtn" style="background:#3a5a2a;">⛶ Во весь экран</button>
+                    <button id="markerModeBtn" class="mode-btn" style="background:#5e3a22;">📍 Маркеры</button>
+                </div>
+
+                <div style="display: flex; gap: 6px; margin-bottom: 8px; flex-wrap: wrap;">
+                    <button id="modeRhetoricBtn" class="mode-btn" style="background:#5e3a22;">🎭 Риторика</button>
+                    <button id="modeHoldingsBtn" class="mode-btn" style="background:#5e3a22;">🏰 Владения</button>
+                    <button id="modeVassalsBtn" class="mode-btn" style="background:#5e3a22;">⚔️ Вассалы</button>
+                    <button id="modeRoutesBtn" class="mode-btn active" style="background:#5e3a22;">🗺️ Маршруты</button>
+                </div>
+
+                <select id="routeTypeSelect" style="width:100%;">
+                    <option value="land">🚶 Сухопутный (210 км/ход)</option>
+                    <option value="dirt">🟫 Грунтовая (140 км/ход)</option>
+                    <option value="offroad">🌾 Бездорожье (105 км/ход)</option>
+                    <option value="forest">🌲 Лес (70 км/ход)</option>
+                    <option value="mountain">⛰️ Горы (42 км/ход)</option>
+                    <option value="swamp">🪵 Болото (35 км/ход)</option>
+                    <option value="horse">🐎 Лошади (315 км/ход)</option>
+                    <option value="bison">🦬 Бизоны (245 км/ход)</option>
+                    <option value="naval">⛵ Морской (400 км/ход)</option>
+                    <option value="wyvern">🐉 Виверны (700 км/ход)</option>
+                    <option value="orlan">🦅 Орланы (800 км/ход)</option>
+                </select>
+
+                <div style="margin-top: 10px;">
+                    <label style="font-size: 0.8rem;">🎯 Тип дороги по умолчанию:</label>
+                    <div style="display: flex; gap: 5px; flex-wrap: wrap; margin-top: 5px;">
+                        <button class="route-preset" data-type="land" style="background:#cc6633; padding: 6px 12px;">🚶</button>
+                        <button class="route-preset" data-type="dirt" style="background:#aa5522; padding: 6px 12px;">🟫</button>
+                        <button class="route-preset" data-type="offroad" style="background:#8b7355; padding: 6px 12px;">🌾</button>
+                        <button class="route-preset" data-type="forest" style="background:#228b22; padding: 6px 12px;">🌲</button>
+                        <button class="route-preset" data-type="mountain" style="background:#708090; padding: 6px 12px;">⛰️</button>
+                        <button class="route-preset" data-type="swamp" style="background:#556b2f; padding: 6px 12px;">🪵</button>
+                        <button class="route-preset" data-type="horse" style="background:#cd853f; padding: 6px 12px;">🐎</button>
+                        <button class="route-preset" data-type="bison" style="background:#8b4513; padding: 6px 12px;">🦬</button>
+                        <button class="route-preset" data-type="naval" style="background:#3388aa; padding: 6px 12px;">⛵</button>
+                        <button class="route-preset" data-type="wyvern" style="background:#aa66cc; padding: 6px 12px;">🐉</button>
+                        <button class="route-preset" data-type="orlan" style="background:#cc4444; padding: 6px 12px;">🦅</button>
+                    </div>
+                </div>
+
+                <div id="routeInfo" class="route-info" style="display:none; text-align:center; margin-top:5px;"></div>
+            </div>
+        </div>
+
+        <!-- Панель городов -->
+        <div class="map-panel map-panel-cities">
+            <div class="map-panel-header" id="citiesHeader">
+                <span>🏙️ Города</span><span>▼</span>
+            </div>
+            <div class="map-panel-content" id="citiesContent">
+                <label><input type="checkbox" id="showCities" checked> Показать города</label>
+                <select id="factionFilter">
+                    <option value="all">Все фракции</option>
+                    <option value="clan_daketa">Клан Дакэта</option>
+                    <option value="county_markarn">Графство Маркарн</option>
+                    <option value="county_vogelmark">Графство Фогельмарк</option>
+                    <option value="principality_gorski">Горское княжество</option>
+                    <option value="regency_council">Совет регентов</option>
+                    <option value="lepus_union">Союз Лепус</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Панель маркеров -->
+        <div class="map-panel map-panel-markers" id="markersPanel">
+            <div class="map-panel-header" id="markersPanelHeader">
+                <span>📍 Маркеры</span><span>▼</span>
+            </div>
+            <div class="map-panel-content" id="markersPanelContent" style="padding: 6px 8px;">
+                <div style="display: flex; gap: 4px; margin-bottom: 6px; flex-wrap: wrap;">
+                    <button id="addMarkerBtn" style="background:#3a6b3a; padding:4px 10px; font-size:0.7rem;">➕ Добавить</button>
+                    <button id="exportMarkersBtn" style="padding:4px 10px; font-size:0.7rem;">💾 Экспорт</button>
+                    <button id="importMarkersBtn" style="padding:4px 10px; font-size:0.7rem;">📂 Импорт</button>
+                    <input type="file" id="markersImportFile" accept=".json" style="display:none">
+                    <button id="clearMarkersBtn" class="danger-btn" style="padding:4px 10px; font-size:0.7rem;">🗑️</button>
+                </div>
+                <div id="markersList" style="max-height: 35vh; overflow-y: auto; overflow-x: hidden;"></div>
+            </div>
+        </div>
+
+        <!-- Панель маршрутов -->
+        <div class="map-panel map-panel-routes">
+            <div class="map-panel-header" id="routesHeader">
+                <span>📌 Сохранённые маршруты</span><span>▼</span>
+            </div>
+            <div class="map-panel-content" id="routesContent">
+                <div id="routesList" class="routes-list" style="max-height:40vh; overflow-y:auto;"></div>
+                <div class="batch-buttons" style="display:flex; gap:6px; justify-content:center; margin-top:8px; flex-wrap:wrap;">
+                    <button id="selectAllBtn">✅ Выбрать все</button>
+                    <button id="deselectAllBtn">❌ Снять все</button>
+                    <button id="exportAllBtn">📤 Экспорт всех</button>
+                    <button id="exportSelectedBtn">📤 Экспорт выбранных</button>
+                    <label style="background:#5e3a22; padding:6px 14px; border-radius:40px; cursor:pointer;">📥 Импорт <input type="file" id="importFile" accept=".json" style="display:none;"></label>
+                </div>
+
+                <div id="rhetoricPanel" style="display: none; margin-top: 10px;">
+                    <div style="margin-bottom: 8px;">
+                        <label><input type="checkbox" id="rhetoricShowAll" checked> Показать все маски</label>
+                    </div>
+                    <div id="rhetoricChecklist" style="display: flex; flex-wrap: wrap; gap: 6px;"></div>
+                    <div id="rhetoricInfo" style="font-size: 0.7rem; color: #8a7a5a; margin-top: 8px; text-align: center;"></div>
+                </div>
+
+                <div id="holdingsPanel" style="display: none; margin-top: 10px;">
+                    <div id="holdingsChecklist"></div>
+                </div>
+
+                <div id="vassalsPanel" style="display: none; margin-top: 10px;">
+                    <div id="vassalsChecklist"></div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Кнопка возврата в меню -->
+        <a href="index.html" style="position: absolute; top: 20px; right: 20px; z-index: 1001; background: #5e3a22; padding: 8px 16px; border-radius: 40px; border: 1px solid #cfaa7a; color: #faf0d7; text-decoration: none; font-family: 'Cinzel', serif; font-size: 0.9rem;">🏠 Меню</a>
+    </div>
+
+    <!-- ==================== ПОДКЛЮЧЕНИЕ СКРИПТОВ ==================== -->
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <!-- 1. Константы и хелперы -->
+    <script src="js/constants.js?v=2.1"></script>
+    <script src="js/helpers.js"></script>
+
+    <!-- 2. Маршруты (исправленная версия 5.0) -->
+    <script src="js/map_routes.js?v=5.2"></script>
+
+    <!-- 3. Маски (данные) -->
+    <script src="js/masks_config.js"></script>
+
+    <!-- 4. Основная логика карты -->
+    <script src="js/map_core.js"></script>
+
+    <!-- 5. Пользовательские маркеры -->
+    <script src="js/markers.js"></script>
+
+    <!-- 6. UI карты -->
+    <script src="js/ui_map.js"></script>
+
+    <!-- Инициализация -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof initMap === 'function') {
+                initMap();
+                if (typeof addCityMarkers === 'function') addCityMarkers();
+                if (typeof loadRoutes === 'function') loadRoutes();
+                if (typeof loadMarkers === 'function') loadMarkers();
+                if (typeof setupMapUI === 'function') setupMapUI();
+                console.log("✅ Карта полностью загружена");
+            } else {
+                console.error("❌ initMap не определена. Проверьте подключение js/map_core.js");
+            }
+        });
+    </script>
+</body>
+</html>
