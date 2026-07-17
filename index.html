@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Самый дивный мир – на модерации</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Noto+Serif+JP:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: #1a1410;
+            background-image:
+                radial-gradient(ellipse at 30% 40%, #2a1e18 0%, #0f0b08 90%),
+                repeating-linear-gradient(45deg, rgba(60, 40, 30, 0.1) 0px, rgba(60, 40, 30, 0.1) 2px, transparent 2px, transparent 6px);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Noto Serif JP', 'Cinzel', 'Georgia', serif;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Шумовая текстура */
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><filter id="noise"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="4" stitchTiles="stitch"/><feColorMatrix type="matrix" values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 0.08 0"/></filter><rect width="200" height="200" filter="url(%23noise)" opacity="0.5"/></svg>');
+            opacity: 0.3;
+            mix-blend-mode: multiply;
+            z-index: 0;
+        }
+
+        .moderation-container {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 35px;
+            background: rgba(18, 14, 12, 0.92);
+            backdrop-filter: blur(4px);
+            border: 3px double rgba(160, 120, 80, 0.4);
+            border-radius: 12px 12px 4px 4px;
+            padding: 40px 50px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.9), inset 0 0 80px rgba(60, 40, 30, 0.3);
+            background-image:
+                radial-gradient(circle at 20% 30%, rgba(180, 150, 100, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(120, 80, 50, 0.08) 0%, transparent 40%),
+                repeating-linear-gradient(45deg, rgba(40, 30, 20, 0.03) 0px, rgba(40, 30, 20, 0.03) 1px, transparent 1px, transparent 8px);
+        }
+
+        .image-frame {
+            position: relative;
+            width: 547px;
+            height: 821px;
+            border: 2px solid rgba(180, 140, 80, 0.5);
+            border-radius: 4px;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #0a080e;
+            box-shadow: 0 0 30px rgba(180, 140, 80, 0.15), 0 8px 30px rgba(0, 0, 0, 0.7);
+        }
+
+        .image-frame img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            position: relative;
+            z-index: 1;
+        }
+
+		.image-frame .overlay-text {
+			position: absolute;
+			z-index: 2;
+			font-family: 'Cinzel', 'Noto Serif JP', serif;
+			font-size: 2rem;
+			color: #f0e3c8;
+			text-align: center;
+			letter-spacing: 0.15em;
+			font-weight: 700;
+			text-shadow:
+				0 0 15px #000,
+				0 0 15px #000,
+				0 0 15px #000,
+				0 0 25px #000,
+				0 0 35px rgba(0,0,0,0.8),
+				0 0 40px rgba(0,0,0,0.6);
+			pointer-events: none;
+			padding: 10px;
+			max-width: 100%;
+			word-wrap: break-word;
+		}
+
+        @media (max-width: 650px) {
+            .moderation-container {
+                padding: 25px 20px;
+            }
+            .image-frame {
+                width: 90vw;
+                height: auto;
+                aspect-ratio: 547 / 821;
+            }
+            .image-frame .overlay-text {
+                font-size: 1.4rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="moderation-container">
+        <div class="image-frame">
+            <img src="gopa.JPG">
+            <div class="overlay-text">Самый дивный мир пока не доступен</div>
+        </div>
+    </div>
+</body>
+</html>
