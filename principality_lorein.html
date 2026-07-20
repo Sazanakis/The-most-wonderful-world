@@ -1,0 +1,1190 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Княжество Лорейн – Самый дивный мир</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* ===== ОБЩИЕ СТИЛИ ===== */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background: #1a1410;
+            background-image:
+                radial-gradient(ellipse at 30% 40%, #2a1e18 0%, #0f0b08 90%),
+                repeating-linear-gradient(45deg, rgba(60, 40, 30, 0.1) 0px, rgba(60, 40, 30, 0.1) 2px, transparent 2px, transparent 6px);
+            font-family: 'Cinzel', 'Georgia', serif;
+            color: #d4c9b8;
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+            overflow-y: auto;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><filter id="noise"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="4" stitchTiles="stitch"/><feColorMatrix type="matrix" values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 0.08 0"/></filter><rect width="200" height="200" filter="url(%23noise)" opacity="0.5"/></svg>');
+            opacity: 0.3;
+            mix-blend-mode: multiply;
+            z-index: 0;
+        }
+
+        .main-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* ===== ГЛОБАЛЬНЫЙ ЗАГОЛОВОК ===== */
+        .global-header {
+            background: rgba(18, 14, 12, 0.92);
+            backdrop-filter: blur(4px);
+            border: 2px solid rgba(160, 120, 80, 0.4);
+            border-radius: 4px;
+            padding: 12px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 25px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.9), inset 0 0 80px rgba(60, 40, 30, 0.3);
+            background-image:
+                radial-gradient(circle at 20% 30%, rgba(180, 150, 100, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(120, 80, 50, 0.08) 0%, transparent 40%),
+                repeating-linear-gradient(45deg, rgba(40, 30, 20, 0.03) 0px, rgba(40, 30, 20, 0.03) 1px, transparent 1px, transparent 8px);
+        }
+
+        .faction-badge, .date-badge {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 0;
+            padding: 6px 18px;
+            font-weight: bold;
+            border: 1px solid rgba(180, 140, 80, 0.3);
+        }
+
+        /* ===== КНОПКИ ===== */
+        button,
+        .turn-btn,
+        .reset-btn,
+        .map-link-btn {
+            background: rgba(18, 14, 12, 0.8);
+            border: 2px solid rgba(160, 120, 80, 0.4);
+            color: #d4c9b8;
+            padding: 6px 14px;
+            font-family: 'Cinzel', serif;
+            font-weight: 700;
+            font-size: 0.8rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+            text-shadow: 0 1px 2px rgba(0,0,0,0.6);
+            border-radius: 0;
+            position: relative;
+        }
+
+        button::before,
+        .turn-btn::before,
+        .reset-btn::before,
+        .map-link-btn::before {
+            content: '';
+            position: absolute;
+            top: -2px; left: -2px; right: -2px; bottom: -2px;
+            border: 1px solid rgba(180, 140, 80, 0.1);
+            pointer-events: none;
+        }
+
+        button:hover,
+        .turn-btn:hover,
+        .reset-btn:hover,
+        .map-link-btn:hover {
+            background: rgba(160, 120, 80, 0.15);
+            border-color: #d4af37;
+            color: #f0e3c8;
+            box-shadow: 0 0 25px rgba(180, 140, 80, 0.2);
+            transform: scale(1.02);
+        }
+
+        .danger-btn {
+            background: #7a2a2a;
+        }
+        .danger-btn:hover {
+            background: #9a3a3a;
+        }
+
+        /* ===== ВКЛАДКИ ===== */
+        .tabs-container {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #b8943a;
+            padding-bottom: 8px;
+            flex-wrap: wrap;
+        }
+
+        .tab-button {
+            background: rgba(18, 14, 12, 0.6);
+            border: 2px solid rgba(160, 120, 80, 0.4);
+            border-bottom: none;
+            padding: 10px 28px;
+            font-family: 'Cinzel', serif;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            color: #cfc294;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            border-radius: 0;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+        }
+
+        .tab-button.active {
+            background: rgba(160, 120, 80, 0.15);
+            color: #f0e3c8;
+            border-bottom: 2px solid #b8943a;
+            margin-bottom: -2px;
+            box-shadow: 0 0 15px rgba(180, 140, 80, 0.3);
+        }
+
+        /* Вкладки скрыты по умолчанию, активная показывается (управляется скриптом) */
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+
+        /* ===== КАРТОЧКИ (stat-card) ===== */
+        .stat-card {
+            background: rgba(18, 14, 12, 0.85);
+            border: 2px solid rgba(160, 120, 80, 0.2);
+            border-radius: 4px;
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: inset 0 0 80px rgba(30, 20, 15, 0.6), 0 8px 30px rgba(0, 0, 0, 0.8);
+            background-image:
+                radial-gradient(circle at 20% 30%, rgba(180, 150, 100, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(120, 80, 50, 0.08) 0%, transparent 40%),
+                repeating-linear-gradient(45deg, rgba(40, 30, 20, 0.03) 0px, rgba(40, 30, 20, 0.03) 1px, transparent 1px, transparent 8px);
+            position: relative;
+        }
+
+        /* ===== ТАБЛИЦЫ ===== */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: rgba(0, 0, 0, 0.3);
+            margin: 10px 0;
+        }
+
+        th {
+            background: rgba(0, 0, 0, 0.5);
+            color: #f0e3c8;
+            padding: 8px;
+            text-align: left;
+            border-bottom: 2px solid #b8943a;
+        }
+
+        td {
+            padding: 8px;
+            border-bottom: 1px solid rgba(160, 120, 80, 0.2);
+        }
+
+        /* ===== ПОЛЯ ВВОДА И СЕЛЕКТЫ ===== */
+        input[type="number"],
+        input[type="text"],
+        input[type="date"],
+        select {
+            background: #2a2418;
+            border: 1px solid #b8943a;
+            color: #f0e6d0;
+            padding: 4px 8px;
+            font-family: 'Cinzel', serif;
+            border-radius: 0;
+            accent-color: #b8943a;
+        }
+
+        /* ===== ЛОГ-ПАНЕЛИ ===== */
+        .log-panel {
+            max-height: 250px;
+            overflow-y: auto;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid #b8943a;
+            border-radius: 4px;
+            padding: 10px;
+            font-family: monospace;
+            font-size: 12px;
+            margin-top: 20px;
+        }
+
+        .log-entry {
+            border-bottom: 1px solid rgba(160, 120, 80, 0.2);
+            padding: 4px;
+        }
+
+        /* ===== ЗАГРУЗОЧНЫЙ ЭКРАН ===== */
+        .loading-screen {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: #1a1410;
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 3px solid #7a5f3a;
+            border-top-color: #ffd966;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ===== ПОСЕЛЕНИЯ И ЗДАНИЯ ===== */
+        .settlement-card {
+            border: 1px solid rgba(160, 120, 80, 0.3) !important;
+            background: rgba(18, 14, 12, 0.8) !important;
+            border-radius: 4px !important;
+        }
+
+        .settlement-card.captured {
+            border: 2px solid #ff4444 !important;
+            opacity: 0.8;
+        }
+
+        .building-item {
+            border-bottom: 1px solid rgba(160, 120, 80, 0.1);
+            padding: 6px 0;
+        }
+
+        /* ===== ПРОГРЕСС-БАРЫ ===== */
+        .building-progress {
+            background: #4a3a2a;
+            border-radius: 0;
+            height: 8px;
+            margin: 4px 0;
+        }
+
+        .building-progress-fill {
+            background: #ffd966;
+            height: 100%;
+            border-radius: 0;
+        }
+
+        /* ===== СКРОЛЛБАРЫ ===== */
+        ::-webkit-scrollbar {
+            width: 8px;
+            background: #1a1410;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #7a5f3a;
+            border-radius: 0;
+            border: 1px solid #b8943a;
+        }
+
+        /* ===== МОДАЛЬНЫЕ ОКНА ===== */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(10, 8, 14, 0.9);
+            backdrop-filter: blur(6px);
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+        }
+
+        .modal-content {
+            background: rgba(18, 14, 12, 0.95);
+            border: 2px solid #b8943a;
+            border-radius: 4px;
+            max-width: 900px;
+            width: 90%;
+            max-height: 85vh;
+            overflow-y: auto;
+            padding: 25px;
+            position: relative;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.9), inset 0 0 80px rgba(60, 40, 30, 0.3);
+        }
+
+        /* ===== ВСПОМОГАТЕЛЬНЫЕ КЛАССЫ ===== */
+        .flex-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+        }
+
+        /* ===== АДАПТИВНОСТЬ ===== */
+        @media (max-width: 1000px) {
+            .tab-button {
+                padding: 6px 12px;
+                font-size: 0.8rem;
+            }
+        }
+
+        @media (max-width: 700px) {
+            body { padding: 10px; }
+        }
+		/* Компактные кнопки в карточках юнитов */
+		.unit-card button {
+			font-size: 0.6rem !important;   /* уменьшаем шрифт */
+			padding: 2px 5px !important;    /* уменьшаем отступы */
+			width: auto !important;
+			max-width: 90%;
+			white-space: nowrap;
+		}
+		a[href="index.html"] {
+			background: rgba(18, 14, 12, 0.8) !important;
+			border: 2px solid rgba(160, 120, 80, 0.4) !important;
+			color: #d4c9b8 !important;
+			padding: 6px 14px !important;
+			font-family: 'Cinzel', serif !important;
+			font-weight: 700 !important;
+			font-size: 0.8rem !important;
+			letter-spacing: 0.1em !important;
+			text-transform: uppercase !important;
+			text-decoration: none !important;
+			display: inline-block !important;
+			transition: all 0.25s ease !important;
+			box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6) !important;
+			text-shadow: 0 1px 2px rgba(0,0,0,0.6) !important;
+			border-radius: 0 !important;
+		}
+
+		a[href="index.html"]:hover {
+			background: rgba(160, 120, 80, 0.15) !important;
+			border-color: #d4af37 !important;
+			color: #f0e3c8 !important;
+			box-shadow: 0 0 25px rgba(180, 140, 80, 0.2) !important;
+		}
+		.army-container button {
+			font-size: 0.65rem;
+			min-width: 24px;
+			min-height: 24px;
+			padding: 2px 6px;
+		}
+    </style>
+</head>
+<body>
+
+<!-- ===== ЗАГЛУШКИ ДЛЯ ОТСУТСТВУЮЩИХ МОДУЛЕЙ ===== -->
+<script>
+    window.armies = [];
+    window.calculateTotalUpkeep = function() { return 0; };
+    window.processRecruitment = function() {};
+    window.payArmyUpkeep = function() { return true; };
+    window.saveArmyData = function() {};
+    window.loadArmyData = function() {};
+    window.applyBattleCasualties = function() {};
+    window.recoverWoundedUnits = function() {};
+    window.canProceedTurn = function() { return true; };
+    window.showDemographyRequiredModal = function() {};
+
+    window.globalTradeAgreements = [];
+    window.processTradeAgreements = function() {};
+
+    window.savedRoutes = [];
+
+    window.updateVassalsLoyalty = function() {};
+	window.factionCouncils = {};
+
+    window.FACTION_TO_PROVINCE = {
+        clan_daketa: 'orochima',
+		clan_date: 'mutsura',
+        county_markarn: 'kaya',
+        county_vogelmark: 'vogel',
+        principality_gorski: 'neolania',
+        regency_council: 'metropolitan_area',
+        lepus_union: 'leporis',
+		county_meyan: 'meyan',
+		county_dionia: 'dionia',
+		order_varsiltaers: 'nightsten',
+		principality_lorein: 'lorein'
+    };
+    window.FACTION_TO_RHETORIC = {
+        clan_daketa: 'dayo',
+		clan_date: 'dayo',
+        county_markarn: 'loyal',
+        county_vogelmark: 'loyal',
+		county_meyan: 'loyal',
+        principality_gorski: 'proyurgan',
+        regency_council: 'neutral',
+        lepus_union: 'lepus',
+		county_dionia: 'loyal',
+		order_varsiltaers: 'loyal',
+		principality_lorein: 'neutral'
+    };
+
+    // ===== ИНДИВИДУАЛЬНЫЕ НАСТРОЙКИ КНЯЖЕСТВА ЛОРЕЙН =====
+    window.currentFaction = 'principality_lorein';
+    window.currentProvince = 'lorein';
+    window.currentCouncilFaction = 'principality_lorein';
+    window.storageKey = 'unified_province_manager_lorein';
+    window.provincesData = window.provincesData || {};
+    window.peopleState = {
+		settings: { taxRate: 1, conscriptPercent: 25, womenInArmy: false, poorPercent: 10 },
+		demography: { birthRate: 2, deathRate: 1 },
+		mobilization: { bonusPercent: 0, used10: 0, used25: 0, used40: 0 },
+		turnsSinceDemography: 0,
+		eventLog: [],
+		activeConstructionCount: 0,
+		maxConstructionSlots: 2,
+		corruption: { currentPercent: 1, turnsSinceLastGrowth: 0, agent: null }
+	};
+
+    window.factionTreasury = 0;
+</script>
+
+<!-- ===== ЗАГРУЗОЧНЫЙ ЭКРАН ===== -->
+<div id="loadingScreen" class="loading-screen">
+    <div class="loading-spinner"></div>
+    <div style="margin-top:20px; color:#ffd966;">ЗАГРУЗКА ФРАКЦИИ</div>
+</div>
+
+<!-- ===== ОСНОВНОЙ КОНТЕЙНЕР ===== -->
+<div class="main-container" id="mainContent" style="display:none;">
+	<div class="global-header">
+		<div class="faction-badge" style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+			<span>🏛️ Фракция: Княжество Лорейн</span>
+			<span>👑 Лидер: <span id="leaderName">Ноэми Ванденхейде</span></span>
+			<button id="leaderLinkBtn" style="background:#3a5a2a; padding: 4px 12px; font-size:0.8rem;">🔗 Ссылка</button>
+		</div>
+		<div class="date-badge">📅 <span id="globalDateDisplay">1 неделя мая, 1598 год</span></div>
+		<div style="display:flex; gap:10px; align-items:center;">
+			<a href="map.html" class="map-link-btn">🗺️ КАРТА</a>
+			<button id="treasuryDetailsBtn" style="background:#3a6b3a; padding:4px 12px; font-size:0.8rem;">💰 Детали казны</button>
+			<button class="turn-btn" id="globalTurnBtn">⏩ ПРИМЕНИТЬ ХОД</button>
+			<button class="reset-btn" id="resetFactionDataBtn">🔄 Сбросить данные</button>
+			<button id="globalSaveBtn" style="background:#3a6b3a;">💾 Сохранить игру</button>
+			<button id="globalLoadBtn" style="background:#b8860b;">📂 Загрузить игру</button>
+			<input type="file" id="globalLoadFile" accept=".json" style="display:none">
+			<a href="index.html" style="background:#5e3a22; padding:6px 14px; border-radius:40px; color:#faf0d7; text-decoration:none;">🏠 Меню</a>
+		</div>
+	</div>
+
+    <!-- Вкладки -->
+    <div class="tabs-container">
+        <button class="tab-button" data-tab="council">🏛️ СОВЕТ</button>
+        <button class="tab-button" data-tab="army">⚔️ АРМИЯ</button>
+        <button class="tab-button active" data-tab="province">🏘️ ПРОВИНЦИИ</button>
+		<button class="tab-button" data-tab="corruption">🕸️ КОРРУПЦИЯ</button>
+		<button class="tab-button" data-tab="trade">💰 ТОРГОВЛЯ</button>
+        <button class="tab-button" data-tab="captured">🪖 ОККУПИРОВАННЫЕ ЗЕМЛИ</button>
+		<button class="tab-button" data-tab="tech">🔬 ТЕХНОЛОГИИ</button>
+    </div>
+
+    <!-- Совет (рабочая вкладка) -->
+    <div id="tab-council" class="tab-content">
+        <div id="housesContainer"></div>
+        <div style="margin-top: 20px;">
+            <button id="resetCouncilBtn" class="danger-btn">🔄 Сбросить Совет</button>
+        </div>
+    </div>
+
+    <!-- Армия (рабочая вкладка) -->
+    <div id="tab-army" class="tab-content">
+        <div class="stat-card">
+            <div class="flex-row" style="justify-content:space-between;">
+                <span>💰 Казна: <strong id="armyTreasury">0</strong> эрсов</span>
+                <span>⚔️ Содержание: <strong id="globalUpkeep">0</strong> эрсов/ход</span>
+            </div>
+        </div>
+        <div id="currentRhetoricInfo" style="margin-bottom:10px; text-align:center;"></div>
+        <div id="raceLimitsDisplay" style="background:#1f1c14; border-radius:20px; padding:12px; margin-bottom:20px;"></div>
+        <div class="flex-row" style="justify-content:space-between; margin-bottom:20px;">
+            <div class="flex-row">
+                <button id="newArmyBtn">➕ Новая армия</button>
+                <button id="clearAllArmiesBtn" class="danger-btn">🔥 Расформировать всё</button>
+            </div>
+        </div>
+        <div id="armiesContainer"></div>
+        <div class="stat-card" style="margin-top:20px;">
+            <h3>📜 Доступные юниты</h3>
+            <div class="flex-row" style="margin-bottom:15px;">
+                <select id="filterType">
+                    <option value="all">Все типы</option>
+                    <option value="Пехота">Пехота</option>
+                    <option value="Элитная пехота">Элитная пехота</option>
+                    <option value="Лёгкая пехота">Лёгкая пехота</option>
+                    <option value="Тяжёлая пехота">Тяжёлая пехота</option>
+                    <option value="Кавалерия">Кавалерия</option>
+                    <option value="Лучники">Лучники</option>
+                    <option value="Ополчение">Ополчение</option>
+                </select>
+                <select id="filterRace">
+                    <option value="all">Все расы</option>
+                    <option value="Оку">Оку</option>
+                    <option value="Люди">Люди</option>
+                    <option value="Гоблины">Гоблины</option>
+                    <option value="Дварфы">Дварфы</option>
+                </select>
+                <label><input type="checkbox" id="filterSpecial"> Только особые</label>
+                <button id="resetFiltersBtn">Сбросить</button>
+            </div>
+            <div id="unitsGrid" style="display:flex; flex-wrap:wrap; gap:16px; max-height:500px; overflow-y:auto; justify-content:flex-start;"></div>
+        </div>
+        <div class="log-panel" id="armyLogPanel"></div>
+        <div class="flex-row" style="justify-content:center; margin-top:20px; gap:15px;">
+            <button id="exportArmiesBtn">💾 Экспорт армий</button>
+            <button id="importArmiesBtn">📂 Импорт армий</button>
+            <input type="file" id="armyImportFile" accept=".json" style="display:none">
+            <button id="importBattleResultBtn" style="background:#b8860b;">⚔️ Импорт итогов битвы</button>
+            <input type="file" id="battleResultFileInput" accept=".json" style="display:none">
+            <button id="resetArmyBtn" class="danger-btn">🔄 Сбросить армию</button>
+            <button id="loadExampleBtn">📖 Пример армии</button>
+        </div>
+    </div>
+
+    <!-- Провинции (рабочая вкладка) -->
+    <div id="tab-province" class="tab-content active">
+        <div id="provinceDashboard" style="margin-bottom:20px;">Загрузка...</div>
+        <div id="provinceCellsContainer"></div>
+
+        <div class="stat-card">
+            <div class="flex-row" style="justify-content:space-between;">
+                <h2>👥 НАСЕЛЕНИЕ И РЕСУРСЫ</h2>
+                <select id="currentProvinceSelect" style="max-width:250px;"></select>
+                <button id="exportProvinceBtn" style="background:#3a5a2a;">📤 Экспорт</button>
+                <button id="importProvinceBtn" style="background:#3a5a2a;">📥 Импорт</button>
+                <input type="file" id="importProvinceFile" accept=".json" style="display:none;">
+            </div>
+            <div class="flex-row" style="justify-content:space-around; margin-top:15px;">
+                <div>👥 <span id="totalPopulation">0</span></div>
+                <div>⚔️ Призыв: <span id="totalConscript">0</span></div>
+                <div>💰 Налоги: <span id="weeklyIncome">0</span> эрсов/ход</div>
+                <div>🏦 Казна: <span id="totalTreasury">0</span> эрсов</div>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <h3>🧬 Расы и резерв</h3>
+            <div class="flex-row" style="justify-content:space-between;">
+                <button id="addRaceBtn">➕ Добавить расу</button>
+                <div>
+                    <label>Налог: <input type="number" id="taxRate" value="1" step="0.1" min="0" style="width:70px;"> эрс/чел</label>
+                    <label style="margin-left:10px;">Призыв: <input type="number" id="conscriptPercent" value="25" step="1" min="0" max="100" style="width:60px;">%</label>
+                    <label style="margin-left:10px;"><input type="checkbox" id="womenInArmyCheckbox"> Женщины в армии</label>
+                </div>
+            </div>
+            <div id="raceLimitsDisplay" style="margin:10px 0;"></div>
+            <table style="width:100%; border-collapse:collapse;">
+                <thead><tr style="background:#2a2418;"><th>Название</th><th>👥 Всего</th><th>Призыв</th><th>Действия</th></tr></thead>
+                <tbody id="raceTableBody"></tbody>
+            </table>
+            <div id="raceWarning" style="color:#ff6b6b; margin-top:5px;"></div>
+        </div>
+
+        <div class="stat-card">
+            <h3>🏘️ Поселения</h3>
+            <div id="settlementsList"></div>
+            <div class="flex-row" style="margin-top:10px;">
+                <button id="addSettlementBtn">➕ Добавить деревню</button>
+                <button id="removeSettlementBtn">🗑️ Удалить последнюю</button>
+                <button id="resetProvinceBtn">🔄 Сбросить ресурсы</button>
+            </div>
+        </div>
+
+        <div id="buildingsCatalogSection" class="stat-card" style="cursor:pointer;">
+            <div class="flex-row" style="justify-content:space-between;" onclick="toggleCatalog()">
+                <h3>📚 Каталог построек</h3>
+                <span id="catalogToggleIcon">▶</span>
+            </div>
+            <div id="buildingsCatalogContent" style="display:none;">
+                <div id="buildingsCatalog"></div>
+            </div>
+        </div>
+
+        <div class="log-panel" id="buildingsLogPanel"></div>
+    </div>
+	<div id="tab-corruption" class="tab-content">
+		<div id="corruptionContainer"></div>
+	</div>
+    <!-- Оккупированные земли -->
+    <div id="tab-captured" class="tab-content">
+        <div class="stat-card">
+            <div class="flex-row" style="justify-content:space-between;">
+                <h2>🏴 ОККУПИРОВАННЫЕ ТЕРРИТОРИИ</h2>
+                <button id="importCapturedFileBtn">📥 Импортировать файл</button>
+                <input type="file" id="capturedFileInput" accept=".json" style="display:none;">
+            </div>
+            <div id="capturedSettlementsList" style="margin-top:15px;">Загрузка...</div>
+        </div>
+    </div>
+	
+	<!-- Торговля -->
+    <div id="tab-trade" class="tab-content">
+        <!-- ПАНЕЛЬ РЕСУРСОВ -->
+        <div class="stat-card">
+            <h3>📦 Доступные ресурсы</h3>
+            <div id="tradeableResources" style="display:flex; flex-wrap:wrap; gap:10px; margin:10px 0;"></div>
+            <div id="selectedResourceDisplay" style="margin:8px 0; font-size:0.85rem; color:#ffd966;"></div>
+			<button id="smeltSwordIronBtn" style="background:#b8860b; padding:6px 14px;">🔥 Переплавить Железо меча</button>
+            <button id="exchangeGoldBtn" style="background:#b8860b; padding:6px 14px;">🪙 Обменять золото на эрсы</button>
+        </div>
+
+        <!-- ФОРМА НОВОГО ДОГОВОРА -->
+        <div class="stat-card" style="margin-top:20px;">
+            <h3>📜 Новый торговый договор</h3>
+            <div style="display:flex; flex-wrap:wrap; gap:15px; align-items:flex-end;">
+                <div>
+                    <label>🤝 Партнёр:
+                        <select id="newAgreementPartner" style="width:180px;"></select>
+                    </label>
+                </div>
+                <div>
+                    <label>📦 Ресурс:
+                        <input type="hidden" id="newAgreementResource">
+                        <span id="selectedResourceName" style="font-weight:bold;">не выбран</span>
+                    </label>
+                </div>
+                <div>
+                    <label>🔽 Направление:
+                        <label style="margin-left:10px;"><input type="radio" name="tradeDirection" value="export" checked> 📤 Экспорт</label>
+                        <label style="margin-left:10px;"><input type="radio" name="tradeDirection" value="import"> 📥 Импорт</label>
+                    </label>
+                </div>
+                <div>
+                    <label>💲 Цена за ед.:
+                        <input type="number" id="newAgreementPrice" value="10" min="1" style="width:80px;">
+                    </label>
+                </div>
+                <div>
+                    <label>📊 Кол-во в ход:
+                        <input type="number" id="newAgreementAmount" value="10" min="1" style="width:80px;">
+                    </label>
+                </div>
+                <div>
+                    <label>⏳ Длит. (ходов):
+                        <input type="number" id="newAgreementDuration" value="0" min="0" style="width:80px;" title="0 = бессрочно">
+                    </label>
+                </div>
+                <button id="addAgreementBtn" style="background:#3a6b3a; padding:8px 18px;">✅ Заключить</button>
+            </div>
+        </div>
+
+        <!-- АКТИВНЫЕ ДОГОВОРЫ -->
+		<div class="stat-card" style="margin-top:20px;">
+			<h3>📋 Активные договоры</h3>
+			<div id="agreementsList"></div>
+		</div>
+
+		<!-- СВОДКА ТОРГОВЛИ (НОВЫЙ БЛОК) -->
+		<div id="tradeSummary"></div>
+    </div>
+	<!-- Технологии -->
+	<div id="tab-tech" class="tab-content">
+		<div class="stat-card">
+			<div style="display:flex; gap:10px; justify-content:flex-end; margin-bottom:10px;">
+				<button id="importTechBtn" style="background:#b8860b; padding:4px 12px; font-size:0.7rem;">📥 Импорт технологии</button>
+				<input type="file" id="importTechFile" accept=".json" style="display:none">
+			</div>		
+			<h3>🔬 Исследователи</h3>
+			<div style="display:flex; gap:15px; flex-wrap:wrap;">
+				<div style="flex:1; min-width:200px; background:#2a2418; border-radius:16px; padding:12px;" id="militarySlot">
+					<h4 style="color:#ff6b6b;">⚔️ Военный</h4>
+					<div id="militaryResearcher"></div>
+				</div>
+				<div style="flex:1; min-width:200px; background:#2a2418; border-radius:16px; padding:12px;" id="civilSlot">
+					<h4 style="color:#8bc34a;">🏘️ Гражданский</h4>
+					<div id="civilResearcher"></div>
+				</div>
+				<div style="flex:1; min-width:200px; background:#2a2418; border-radius:16px; padding:12px;" id="uniqueSlot">
+					<h4 style="color:#ffd966;">✨ Уникальный</h4>
+					<div id="uniqueResearcher"></div>
+				</div>
+			</div>
+		</div>
+		<div class="stat-card" style="margin-top:20px;">
+			<div class="flex-row" style="justify-content:space-between; cursor:pointer;" onclick="toggleAvailableTechs()">
+				<h3>📚 Доступные технологии</h3>
+				<span id="availableTechsToggleIcon">▶</span>
+			</div>
+			<div id="availableTechsContent" style="display:none;">
+				<div style="display:flex; gap:15px; flex-wrap:wrap;">
+					<div style="flex:1; min-width:200px;" id="militaryTechsColumn">
+						<h4 style="color:#ff6b6b;">⚔️ Военные</h4>
+						<div id="militaryTechs"></div>
+					</div>
+					<div style="flex:1; min-width:200px;" id="civilTechsColumn">
+						<h4 style="color:#8bc34a;">🏘️ Гражданские</h4>
+						<div id="civilTechs"></div>
+					</div>
+					<div style="flex:1; min-width:200px;" id="uniqueTechsColumn">
+						<h4 style="color:#ffd966;">✨ Уникальные</h4>
+						<div id="uniqueTechs"></div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="stat-card" style="margin-top:20px;">
+			<h3>⏳ Текущие исследования</h3>
+			<div id="activeResearch"></div>
+		</div>
+		<div class="stat-card" style="margin-top:20px;">
+			<h3>✅ Завершённые технологии</h3>
+			<div id="completedTechs"></div>
+			<div id="techBonuses" style="margin-top:10px;"></div>
+		</div>
+		<div class="stat-card" style="margin-top:20px;">
+			<h3>⚙️ Работа эффектов</h3>
+			<div id="techEffectsWork"></div>
+		</div>
+	</div>
+	
+</div>
+
+<!-- ===== СКРИПТЫ ===== -->
+<script src="js/constants.js"></script>
+<script src="js/helpers.js"></script>
+<script src="js/factions_constants.js"></script>
+<script src="js/databases.js"></script>
+<script src="js/buildings.js"></script>
+<script src="js/population.js"></script>
+<script src="js/turn.js"></script>
+<script src="js/classes.js"></script>
+<script src="js/council.js"></script>
+<script src="js/factions_units.js"></script>
+<script src="js/army_core.js"></script>
+<script src="js/army_ui.js"></script>
+<script src="js/trade.js"></script>
+<script src="js/technologies.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/corruption.js"></script>
+<script src="js/dlc_content.js"></script>
+
+<!-- ===== ИНИЦИАЛИЗАЦИЯ И ОБРАБОТЧИКИ ===== -->
+<script>
+    function toggleCatalog() {
+        const content = document.getElementById('buildingsCatalogContent');
+        const icon = document.getElementById('catalogToggleIcon');
+        if (content.style.display === 'none') {
+            content.style.display = 'block';
+            icon.textContent = '▼';
+        } else {
+            content.style.display = 'none';
+            icon.textContent = '▶';
+        }
+    }
+
+    function resetFactionData() {
+        if (confirm('Полностью сбросить все данные этой фракции? Будут удалены все постройки, захваченные земли и изменения населения.')) {
+            localStorage.removeItem(window.storageKey || 'unified_province_manager_lorein');
+            location.reload();
+        }
+    }
+
+function fullInit() {
+    console.log("🚀 Запуск инициализации провинции Лорейн...");
+
+    // ГАРАНТИРУЕМ, ЧТО provincesData СУЩЕСТВУЕТ
+    if (typeof window.provincesData === 'undefined') {
+        window.provincesData = {};
+    }
+
+    const saved = localStorage.getItem(window.storageKey || 'unified_province_manager_lorein');
+    if (saved) {
+        try {
+            const data = JSON.parse(saved);
+            if (data.provincesData) window.provincesData = data.provincesData;
+			// ДОБАВЛЯЕМ vassalHouse ИЗ SETTLEMENTS_DB, ЕСЛИ ОН ОТСУТСТВУЕТ В СОХРАНЕНИИ
+			for (let pid in window.provincesData) {
+				const prov = window.provincesData[pid];
+				if (!prov || !prov.settlements) continue;
+				for (let settlement of prov.settlements) {
+					if (settlement.vassalHouse === undefined) {
+						// Берём исходное значение из SETTLEMENTS_DB
+						const db = SETTLEMENTS_DB[settlement.id];
+						if (db && db.vassalHouse !== undefined) {
+							settlement.vassalHouse = db.vassalHouse;
+						}
+					}
+					// Если vassalHouse уже равен null (отнято), оставляем null
+				}
+			}
+            if (data.currentProvince) window.currentProvince = data.currentProvince;
+            if (data.peopleState) window.peopleState = data.peopleState;
+            if (data.globalTradeAgreements) window.globalTradeAgreements = data.globalTradeAgreements;
+            if (data.factionTreasury !== undefined) window.factionTreasury = data.factionTreasury;
+
+            // Восстанавливаем настройки (женщины в армии и т.д.)
+            if (data.peopleState) {
+                window.peopleState = data.peopleState;
+                if (!window.peopleState.settings) window.peopleState.settings = {};
+                if (window.peopleState.settings.womenInArmy === undefined) {
+                    window.peopleState.settings.womenInArmy = false;
+                }
+				// ДОБАВЛЯЕМ КОРРУПЦИЮ, ЕСЛИ ЕЁ НЕТ В СОХРАНЕНИИ
+				if (!window.peopleState.corruption) {
+					window.peopleState.corruption = {
+						currentPercent: 1,
+						turnsSinceLastGrowth: 0,
+						agent: null
+					};
+				}
+            }
+
+            // Восстанавливаем классы совета
+            if (data.factionCouncils) {
+                for (let key in data.factionCouncils) {
+                    const councilData = data.factionCouncils[key];
+                    if (!(councilData instanceof FactionCouncil)) {
+                        const restored = new FactionCouncil(councilData.factionId, councilData.rulerName);
+                        Object.assign(restored, councilData);
+                        restored.houses = councilData.houses.map(hData => {
+                            const house = new InfluentialHouse(hData.id, hData.name, hData.vassalType, hData.politicalFaction, hData.leaderName, hData.loyaltyToRuler);
+                            Object.assign(house, hData);
+                            return house;
+                        });
+                        data.factionCouncils[key] = restored;
+                    }
+                }
+                window.factionCouncils = data.factionCouncils;
+            }
+
+            // Восстанавливаем армии
+            if (data.armies) {
+                window.armies = data.armies;
+                for (let a of window.armies) {
+                    if (!a.recruitmentQueue) a.recruitmentQueue = [];
+                    if (!a.units) a.units = [];
+                    if (!a.garrison) a.garrison = null;
+                }
+            }
+			
+			// Восстанавливаем данные исследований
+			if (data.researchData) {
+				window.researchData = data.researchData;
+				// Проверяем структуру на случай старых сохранений
+				if (!window.researchData.researchers) {
+					window.researchData.researchers = { military: null, civil: null, unique: null };
+				}
+				if (!window.researchData.techQueue) window.researchData.techQueue = [];
+				if (!window.researchData.completedTechs) window.researchData.completedTechs = [];
+			}
+			
+        } catch(e) { console.error("Ошибка загрузки:", e); }
+    }
+
+    // Инициализация времени, если поля отсутствуют
+    if (typeof peopleState !== 'undefined') {
+        if (!peopleState.currentWeek) peopleState.currentWeek = 1;
+        if (!peopleState.currentMonth) peopleState.currentMonth = 5;
+        if (!peopleState.currentYear) peopleState.currentYear = 1598;
+    }
+    if (typeof updateGlobalDateDisplay === 'function') updateGlobalDateDisplay();
+
+    // Принудительно ставим чекбокс "Женщины в армии" в правильное положение
+    const womenCheckbox = document.getElementById('womenInArmyCheckbox');
+    if (womenCheckbox && typeof peopleState !== 'undefined' && peopleState.settings) {
+        womenCheckbox.checked = peopleState.settings.womenInArmy || false;
+    }
+
+    // Провинция Лорейн
+    if (!window.provincesData['lorein']) {
+        window.provincesData['lorein'] = { settlements: [], resources: { wood: 800, stone: 500, iron: 300, gold: 40, ers: 20000, sword_iron: 0, bison: 100, elven_tobacco: 0 }, races: [], army: [] };
+    }
+    const province = window.provincesData['lorein'];
+    if (!province.settlements || province.settlements.length === 0) {
+        const settlementsFromDB = (typeof SETTLEMENTS_DB !== 'undefined')
+            ? Object.values(SETTLEMENTS_DB).filter(s => s.province === 'lorein').map(s => ({
+                id: s.id, name: s.name, type: s.type, buildings: [], captured: false, capturedByFaction: null, capturedData: null
+            })) : [];
+        province.settlements = settlementsFromDB;
+    }
+    if (!province.resources) province.resources = {
+		wood: 800, stone: 500, iron: 300, gold: 40, ers: 20000,
+		sword_iron: 0, bison: 100, elven_tobacco: 0
+	};
+	if (!province.races || province.races.length === 0) {
+		province.races = [
+			{ name: "Люди", adultMale: 32100, adultFemale: 32100, children: 12000, elders: 4000, birthRate: 2.0, deathRate: 1.0 },
+			{ name: "Дварфы", adultMale: 5760, adultFemale: 5760, children: 2160, elders: 720, birthRate: 1.8, deathRate: 0.8, economyBonus: { stone: 0.1, iron: 0.1, buildSpeed: 0.05 } },
+			{ name: "Лепусиды (высшие)", adultMale: 7400, adultFemale: 7400, children: 3400, elders: 1800, birthRate: 3.5, deathRate: 1.5 },
+			{ name: "Лепусиды (карликовые)", adultMale: 2000, adultFemale: 2000, children: 750, elders: 250, birthRate: 3.5, deathRate: 1.8 },
+			{ name: "Вульфины", adultMale: 1440, adultFemale: 1440, children: 540, elders: 180, birthRate: 1.5, deathRate: 1.5 },
+			{ name: "Оку", adultMale: 1480, adultFemale: 1480, children: 1180, elders: 260, birthRate: 3.0, deathRate: 1.2, goblinChance: 0.05 },
+			{ name: "Высшие эльфы", adultMale: 960, adultFemale: 960, children: 360, elders: 120, birthRate: 0.5, deathRate: 0 },
+			{ name: "Гоблины", adultMale: 960, adultFemale: 960, children: 360, elders: 120, birthRate: 4.0, deathRate: 2.5 }
+		];
+	}
+    if (!province.capturedSettlements) province.capturedSettlements = [];
+    province.isCapital = true;
+
+    if (typeof migrateProvinceResources === 'function') {
+        for (let pid in window.provincesData) migrateProvinceResources(pid);
+    }
+
+    // Казна
+    let totalErs = 0;
+    for (let pid in window.provincesData) totalErs += window.provincesData[pid].resources?.ers || 0;
+    window.factionTreasury = totalErs;
+
+    if (typeof recalcMaxConstructionSlots === 'function') recalcMaxConstructionSlots();
+
+	if (typeof initCorruption === 'function') initCorruption();
+	if (typeof renderCorruptionUI === 'function') renderCorruptionUI();
+
+    if (typeof refreshPeopleUI === 'function') refreshPeopleUI();
+    if (typeof refreshBuildingsUI === 'function') refreshBuildingsUI();
+    if (typeof renderProvinceDashboard === 'function') renderProvinceDashboard();
+    if (typeof renderCapturedSettlements === 'function') renderCapturedSettlements();
+
+    // Инициализация Армии
+    if (typeof loadArmyData === 'function') loadArmyData();
+    if (typeof renderArmy === 'function') renderArmy();
+    if (typeof renderAvailableUnits === 'function') renderAvailableUnits();
+
+    // Инициализация Совета
+    if (typeof initFactionCouncil === 'function') {
+        initFactionCouncil(window.currentFaction, 'Ноэми Ванденхейде');
+    }
+
+    // Обновляем имя лидера в шапке
+    const leaderSpan = document.getElementById('leaderName');
+    if (leaderSpan && window.FACTION_RULERS) {
+        leaderSpan.textContent = window.FACTION_RULERS[window.currentFaction] || 'Неизвестный';
+    }
+
+    document.getElementById('loadingScreen').style.display = 'none';
+    document.getElementById('mainContent').style.display = 'block';
+    console.log("✅ Инициализация Княжества Лорейн завершена");
+}
+
+function bindBasicEvents() {
+    document.querySelectorAll('.tab-button').forEach(tab => {
+        tab.addEventListener('click', function() {
+            const tabId = this.getAttribute('data-tab');
+            document.querySelectorAll('.tab-button').forEach(t => t.classList.remove('active'));
+            this.classList.add('active');
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            const target = document.getElementById(`tab-${tabId}`);
+            if (target) target.classList.add('active');
+
+            if (tabId === 'province') {
+                if (typeof refreshPeopleUI === 'function') refreshPeopleUI();
+                if (typeof refreshBuildingsUI === 'function') refreshBuildingsUI();
+                if (typeof renderProvinceDashboard === 'function') renderProvinceDashboard();
+            }
+            if (tabId === 'captured') {
+                if (typeof renderCapturedSettlements === 'function') renderCapturedSettlements();
+            }
+            if (tabId === 'council') {
+                if (typeof renderCouncil === 'function') renderCouncil();
+            }
+            if (tabId === 'army') {
+                if (typeof renderArmy === 'function') renderArmy();
+                if (typeof renderAvailableUnits === 'function') renderAvailableUnits();
+            }
+            if (tabId === 'trade') {
+                if (typeof initTradeData === 'function') initTradeData();
+            }
+            if (tabId === 'tech') {
+                if (typeof initTechData === 'function') initTechData();
+            }
+            if (tabId === 'corruption') {
+                if (typeof renderCorruptionUI === 'function') renderCorruptionUI();
+            }
+        });
+    });
+
+    document.getElementById('treasuryDetailsBtn')?.addEventListener('click', () => {
+        if (typeof showTreasuryBreakdown === 'function') showTreasuryBreakdown();
+    });
+    document.getElementById('globalTurnBtn')?.addEventListener('click', () => {
+        if (typeof applyGlobalTurn === 'function') applyGlobalTurn();
+    });
+    document.getElementById('resetFactionDataBtn')?.addEventListener('click', resetFactionData);
+    document.getElementById('resetCouncilBtn')?.addEventListener('click', () => {
+        if (typeof resetCouncil === 'function') resetCouncil();
+    });
+
+    document.getElementById('addRaceBtn')?.addEventListener('click', () => { if (typeof addRace === 'function') addRace(); });
+    document.getElementById('taxRate')?.addEventListener('input', function() {
+        window.peopleState.settings.taxRate = parseFloat(this.value) || 0;
+        if (typeof refreshPeopleUI === 'function') refreshPeopleUI();
+    });
+    document.getElementById('conscriptPercent')?.addEventListener('input', function() {
+        window.peopleState.settings.conscriptPercent = parseFloat(this.value) || 0;
+        if (typeof refreshPeopleUI === 'function') refreshPeopleUI();
+    });
+
+    // Сохранение игры
+    document.getElementById('globalSaveBtn')?.addEventListener('click', () => {
+        if (typeof exportAllData === 'function') {
+            exportAllData();
+        } else {
+            const allData = {};
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                allData[key] = JSON.parse(localStorage.getItem(key));
+            }
+            const blob = new Blob([JSON.stringify(allData, null, 2)], { type: 'application/json' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `full_save_${new Date().toISOString().slice(0,19)}.json`;
+            a.click();
+            URL.revokeObjectURL(a.href);
+        }
+    });
+
+    // Загрузка игры
+    document.getElementById('globalLoadBtn')?.addEventListener('click', () => {
+        document.getElementById('globalLoadFile').click();
+    });
+    document.getElementById('globalLoadFile')?.addEventListener('change', function(e) {
+        if (e.target.files.length && typeof importAllData === 'function') {
+            importAllData(e.target.files[0]);
+        }
+        e.target.value = '';
+    });
+
+    // Единый обработчик "Женщины в армии" с блокировкой
+    document.getElementById('womenInArmyCheckbox')?.addEventListener('change', function(e) {
+        if (!this.checked) {
+            const armies = window.armies || [];
+            let hasFemaleUnits = false;
+
+            for (let army of armies) {
+                if (army.factionId !== window.currentFaction) continue;
+                for (let unit of army.units) {
+                    if (unit.gender === 'female') { hasFemaleUnits = true; break; }
+                }
+                if (hasFemaleUnits) break;
+                if (army.recruitmentQueue) {
+                    for (let q of army.recruitmentQueue) {
+                        if (q.unitTemplate && q.unitTemplate.gender === 'female') {
+                            hasFemaleUnits = true;
+                            break;
+                        }
+                    }
+                    if (hasFemaleUnits) break;
+                }
+            }
+
+            if (hasFemaleUnits) {
+                alert('Невозможно отключить «Женщины в армии»: в армии есть женские отряды. Сначала расформируйте их.');
+                this.checked = true;
+                return;
+            }
+        }
+
+        window.peopleState.settings.womenInArmy = this.checked;
+        if (typeof saveAllData === 'function') saveAllData();
+        if (typeof refreshPeopleUI === 'function') refreshPeopleUI();
+        if (typeof refreshRecruitmentLimits === 'function') refreshRecruitmentLimits();
+    });
+
+    document.getElementById('addSettlementBtn')?.addEventListener('click', () => { if (typeof addSettlement === 'function') addSettlement(); });
+    document.getElementById('removeSettlementBtn')?.addEventListener('click', () => { if (typeof removeLastSettlement === 'function') removeLastSettlement(); });
+    document.getElementById('resetProvinceBtn')?.addEventListener('click', () => { if (typeof resetProvinceResources === 'function') resetProvinceResources(); });
+    document.getElementById('importCapturedFileBtn')?.addEventListener('click', () => { document.getElementById('capturedFileInput').click(); });
+    document.getElementById('capturedFileInput')?.addEventListener('change', function(e) {
+        if (e.target.files.length && typeof importCapturedSettlementFromFile === 'function') {
+            importCapturedSettlementFromFile(e.target.files[0]);
+        }
+        e.target.value = '';
+    });
+    document.getElementById('exportProvinceBtn')?.addEventListener('click', () => { if (typeof exportProvince === 'function') exportProvince(); });
+    document.getElementById('importProvinceBtn')?.addEventListener('click', () => { document.getElementById('importProvinceFile').click(); });
+    document.getElementById('importProvinceFile')?.addEventListener('change', function(e) {
+        if (e.target.files.length && typeof importProvinceFromFile === 'function') {
+            importProvinceFromFile(e.target.files[0]);
+        }
+        e.target.value = '';
+    });
+
+    // Обработчики торговли
+    document.getElementById('exchangeGoldBtn')?.addEventListener('click', () => {
+        if (typeof exchangeGold === 'function') exchangeGold();
+    });
+    document.getElementById('addAgreementBtn')?.addEventListener('click', () => {
+        if (typeof addTradeAgreement === 'function') addTradeAgreement();
+    });
+    document.getElementById('smeltSwordIronBtn')?.addEventListener('click', () => {
+        if (typeof smeltSwordIron === 'function') smeltSwordIron();
+    });
+    // Кнопка ссылки лидера
+    document.getElementById('leaderLinkBtn')?.addEventListener('click', () => {
+        const leaderLinks = window.FACTION_LEADER_LINKS || {};
+        const currentFaction = window.currentFaction;
+        let link = leaderLinks[currentFaction] || '';
+
+        if (link) {
+            window.open(link, '_blank');
+        } else {
+            const newLink = prompt('Введите ссылку на страницу лидера:', 'https://vk.com/...');
+            if (newLink) {
+                leaderLinks[currentFaction] = newLink;
+                window.FACTION_LEADER_LINKS = leaderLinks;
+                saveAllData();
+                alert('Ссылка сохранена!');
+            }
+        }
+    });
+
+    // Армейские кнопки
+    document.getElementById('exportArmiesBtn')?.addEventListener('click', () => {
+        if (typeof exportAllArmies === 'function') exportAllArmies();
+    });
+
+    document.getElementById('importArmiesBtn')?.addEventListener('click', () => {
+        document.getElementById('armyImportFile').click();
+    });
+    document.getElementById('armyImportFile')?.addEventListener('change', function(e) {
+        if (e.target.files.length && typeof importArmyData === 'function') {
+            importArmyData(e.target.files[0]);
+            if (typeof renderArmy === 'function') renderArmy();
+            if (typeof renderAvailableUnits === 'function') renderAvailableUnits();
+        }
+        e.target.value = '';
+    });
+
+    document.getElementById('importBattleResultBtn')?.addEventListener('click', () => {
+        document.getElementById('battleResultFileInput').click();
+    });
+    document.getElementById('battleResultFileInput')?.addEventListener('change', function(e) {
+        if (e.target.files.length && typeof importBattleResult === 'function') {
+            importBattleResult(e.target.files[0]);
+        }
+        e.target.value = '';
+    });
+
+    document.getElementById('resetArmyBtn')?.addEventListener('click', () => {
+        if (confirm('Сбросить все армии? Данные будут удалены.')) {
+            window.armies = window.armies.filter(a => a.factionId !== window.currentFaction);
+            if (typeof saveArmyData === 'function') saveArmyData();
+            if (typeof renderArmy === 'function') renderArmy();
+            if (typeof renderAvailableUnits === 'function') renderAvailableUnits();
+        }
+    });
+
+    document.getElementById('loadExampleBtn')?.addEventListener('click', () => {
+        if (typeof loadExampleArmy === 'function') loadExampleArmy();
+    });
+}
+
+    document.addEventListener('DOMContentLoaded', function() {
+        if (typeof fullInit === 'function') fullInit();
+        if (typeof bindBasicEvents === 'function') bindBasicEvents();
+    });
+</script>
+</body>
+</html>
