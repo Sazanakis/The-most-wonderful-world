@@ -1,7 +1,7 @@
 // ============================================================================
 // МОДУЛЬ 11: map_routes.js (версия 5.2 – финальное исправление цветов)
 // ============================================================================
-// Загружено на гитхаб 18.07.2026
+// Загружено на гитхаб 01.08.2026
 // Гарантированно получаем глобальные функции форматирования
 const fmtDistFn = (typeof fmtDistance === 'function') ? fmtDistance : function(km) { return Math.floor(km).toLocaleString('ru-RU') + ' км'; };
 const fmtTurnsFn = (typeof fmtTurns === 'function') ? fmtTurns : function(turns) { return turns.toFixed(1) + ' ходов'; };
