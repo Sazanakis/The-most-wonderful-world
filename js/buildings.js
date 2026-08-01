@@ -2,7 +2,7 @@
 // МОДУЛЬ 09: buildings.js (версия 6.0 – финальная)
 // Полный перезаписанный файл с учётом всех правок.
 // ============================================================================
-// Загружено на гитхаб 18.07.2026
+// Загружено на гитхаб 01.08.2026
 // ========== 1. ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ДЛЯ ВАССАЛОВ ==========
 
 const VASSAL_NAMES = {
@@ -53,7 +53,12 @@ const VASSAL_NAMES = {
 	"house_vervut": "Род Вервут",
 	"house_violette": "Род Виолетт",
 	"house_iriswain": "Род Ирисвейн",
-	"house_De_Rosa": "Род Де Розе"
+	"house_De_Rosa": "Род Де Розе",
+	"house_sakada": "Род Сакада",
+	"house_gimadzu": "Род Гимадзу",
+	"house_fraum": "Род Фраум",
+	"house_ion": "Род Йон",
+	"house_mensen_merchant_guild": "Купеческая гильдия Менсена"
 };
 
 function getVassalForSettlement(settlementId) {
@@ -381,25 +386,41 @@ function renderSettlementCard(settlement, container) {
         const isActive = !isCaptured && building.completed;
 
         if (isActive) {
-            const upgradeAvailable = (building.level === 1 && (typeof buildingsCatalog !== 'undefined') && buildingsCatalog[building.baseName] && buildingsCatalog[building.baseName].upgrade);
-            const upgradeBtn = upgradeAvailable && !isCaptured ? `<button class="upgrade-btn" data-settlement="${settlement.id}" data-building-id="${building.id}" style="font-size:0.7rem; padding:2px 6px;">🔧 Улучшить</button>` : '';
-
-            if (building.isDummy) {
-                buildingDiv.innerHTML = `<span class="building-name" style="opacity:0.5; text-decoration: line-through;">🚫 ${escapeHtml(building.name)} (неактивна)</span>
-                    <button class="detail-building-btn" data-building-id="${building.id}" data-settlement-id="${settlement.id}" style="font-size:0.7rem; padding:2px 6px;">🔍 Подробнее</button>`;
-            } else {
-                buildingDiv.innerHTML = `<span class="building-name">✅ ${escapeHtml(building.name)} (ур.${building.level})</span>
-                    <button class="detail-building-btn" data-building-id="${building.id}" data-settlement-id="${settlement.id}" style="font-size:0.7rem; padding:2px 6px;">🔍 Подробнее</button>
-                    ${upgradeBtn}`;
-            }
-        } else if (!building.completed) {
-            const totalTime = (typeof buildingsCatalog !== 'undefined' && buildingsCatalog[building.baseName]) ? buildingsCatalog[building.baseName].buildTime : 3;
-            const remaining = building.remainingTurns;
-            const percent = ((totalTime - remaining) / totalTime) * 100;
-            buildingDiv.innerHTML = `<span class="building-name">🔨 ${escapeHtml(building.name)}</span>
-                <button class="detail-building-btn" data-building-id="${building.id}" data-settlement-id="${settlement.id}" style="font-size:0.7rem; padding:2px 6px;">🔍 Подробнее</button>
-                <div style="display:flex; align-items:center; gap:8px;"><div class="building-progress"><div class="building-progress-fill" style="width: ${percent}%;"></div></div><span>${remaining} ход(ов)</span></div>`;
-        } else {
+			const upgradeAvailable = (building.level === 1 && (typeof buildingsCatalog !== 'undefined') && buildingsCatalog[building.baseName] && buildingsCatalog[building.baseName].upgrade);
+			const upgradeBtn = upgradeAvailable && !isCaptured ? `<button class="upgrade-btn" data-settlement="${settlement.id}" data-building-id="${building.id}" style="font-size:0.7rem; padding:2px 6px;">🔧 Улучшить</button>` : '';
+			const demolishBtn = `<button class="demolish-btn" data-settlement-id="${settlement.id}" data-building-id="${building.id}" style="background:#7a2a2a; padding:2px 6px; font-size:0.6rem; margin-left:4px;" title="Снести (1 ход)">🏚️ Снести</button>`;
+			
+			if (building.isDummy) {
+				buildingDiv.innerHTML = `<span class="building-name" style="opacity:0.5; text-decoration: line-through;">🚫 ${escapeHtml(building.name)} (неактивна)</span>
+					<button class="detail-building-btn" data-building-id="${building.id}" data-settlement-id="${settlement.id}" style="font-size:0.7rem; padding:2px 6px;">🔍 Подробнее</button>`;
+			} else {
+				buildingDiv.innerHTML = `<span class="building-name">✅ ${escapeHtml(building.name)} (ур.${building.level})</span>
+					<button class="detail-building-btn" data-building-id="${building.id}" data-settlement-id="${settlement.id}" style="font-size:0.7rem; padding:2px 6px;">🔍 Подробнее</button>
+					${upgradeBtn}
+					${demolishBtn}`;
+			}
+		} else if (!building.completed) {
+			const totalTime = (typeof buildingsCatalog !== 'undefined' && buildingsCatalog[building.baseName]) ? buildingsCatalog[building.baseName].buildTime : 3;
+			const remaining = building.remainingTurns;
+			const percent = ((totalTime - remaining) / totalTime) * 100;
+			const isFrozen = building.frozen === true;
+			const statusText = isFrozen ? '❄️ Заморожено' : `🔨 ${remaining} ход(ов)`;
+			const progressColor = isFrozen ? '#88aaff' : '#ffd966';
+			
+			buildingDiv.innerHTML = `<span class="building-name">🔨 ${escapeHtml(building.name)}</span>
+				<button class="detail-building-btn" data-building-id="${building.id}" data-settlement-id="${settlement.id}" style="font-size:0.7rem; padding:2px 6px;">🔍 Подробнее</button>
+				<div style="display:flex; align-items:center; gap:8px;">
+					<div class="building-progress"><div class="building-progress-fill" style="width: ${percent}%; background: ${progressColor};"></div></div>
+					<span>${statusText}</span>
+				</div>
+				<div style="display:flex; gap:4px; margin-top:4px;">
+					<button class="cancel-build-btn" data-settlement-id="${settlement.id}" data-building-id="${building.id}" style="background:#7a2a2a; padding:2px 6px; font-size:0.6rem;" title="Отменить (возврат 50%)">✖ Отменить</button>
+					${isFrozen 
+						? `<button class="unfreeze-build-btn" data-settlement-id="${settlement.id}" data-building-id="${building.id}" style="background:#3a6b3a; padding:2px 6px; font-size:0.6rem;" title="Разморозить">▶ Разморозить</button>`
+						: `<button class="freeze-build-btn" data-settlement-id="${settlement.id}" data-building-id="${building.id}" style="background:#b8860b; padding:2px 6px; font-size:0.6rem;" title="Заморозить">⏸ Заморозить</button>`
+					}
+				</div>`;
+		} else {
             buildingDiv.innerHTML = `<span class="building-name" style="opacity:0.5;">🚫 ${escapeHtml(building.name)} (захвачено)</span>
                 <button class="detail-building-btn" data-building-id="${building.id}" data-settlement-id="${settlement.id}" style="font-size:0.7rem; padding:2px 6px;">🔍 Подробнее</button>`;
         }
@@ -543,7 +564,8 @@ function openPopulationBlockModal(settlement) {
             }
         }
         settlement.captured = true;
-        settlement.capturedByFaction = 'enemy';
+        settlement.capturedByFaction = window.currentFaction;
+		saveAllData();
         settlement.capturedData = {
             blockedPopulation: { ...blockedPopulation },
             originalBlockedPopulation: { ...blockedPopulation },
@@ -595,6 +617,13 @@ function showExportWindow(settlement) {
     document.getElementById('closeExportBtn').addEventListener('click', () => modal.remove());
 }
 
+/**
+ * Импортирует оккупированное поселение из файла (экспортированного после захвата).
+ * Добавляет поселение в список оккупированных земель текущей фракции (capturedSettlements)
+ * и снимает флаг оккупации с исходного поселения у его первоначального владельца.
+ * После успешного импорта принудительно обновляет карту.
+ * @param {File} file - JSON-файл с данными захваченного поселения
+ */
 function importCapturedSettlementFromFile(file) {
     const reader = new FileReader();
     reader.onload = function(e) {
@@ -604,14 +633,55 @@ function importCapturedSettlementFromFile(file) {
                 alert('Неверный формат файла');
                 return;
             }
+
+            const settlementId = data.settlementId;
+
+            // 1. Добавляем поселение в оккупированные земли текущей фракции
             if (typeof addCapturedSettlement === 'function') {
-                addCapturedSettlement(data.settlementData, data.originalProvinceId, data.settlementId);
+                addCapturedSettlement(data.settlementData, data.originalProvinceId, settlementId);
             }
-            addBuildingsLog(`📥 Поселение "${data.settlementData.name}" добавлено в оккупированные земли.`);
-            saveAllData();
-            if (typeof refreshPeopleUI === 'function') refreshPeopleUI();
+
+            // 2. Снимаем флаг захвата с исходного поселения у его владельца
+            let found = false;
+            for (let pid in provincesData) {
+                const prov = provincesData[pid];
+                if (!prov || !prov.settlements) continue;
+                const s = prov.settlements.find(s => s.id === settlementId);
+                if (s && s.captured) {
+                    s.captured = false;
+                    s.capturedByFaction = null;
+                    s.capturedData = null;
+                    // Удаляем из capturedSettlements у владельца, если есть
+                    if (prov.capturedSettlements) {
+                        prov.capturedSettlements = prov.capturedSettlements.filter(cs => cs.settlementId !== settlementId);
+                    }
+                    found = true;
+                    break;
+                }
+            }
+
+            // 3. Сохраняем все данные (синхронно, чтобы гарантировать запись)
+            if (typeof saveAllData === 'function') {
+                saveAllData();
+            }
+
+            // 4. Принудительно обновляем карту, если она открыта
+            if (typeof refreshSettlementData === 'function') {
+                refreshSettlementData();
+            }
+            if (typeof addCityMarkers === 'function') {
+                addCityMarkers();
+            }
+
+            // 5. Логируем результат
+            addBuildingsLog(`📥 Поселение "${data.settlementData.name}" добавлено в оккупированные земли, флаг захвата снят с исходного владельца.`);
+
+            // 6. Уведомляем пользователя
+            alert(`✅ Поселение "${data.settlementData.name}" успешно импортировано! Карта обновлена.`);
+
         } catch(err) {
-            alert('Ошибка чтения файла: ' + err.message);
+            alert('❌ Ошибка чтения файла: ' + err.message);
+            console.error('Ошибка импорта:', err);
         }
     };
     reader.readAsText(file);
@@ -850,6 +920,9 @@ function processConstruction() {
 
             for (let building of settlement.buildings) {
                 if (!building.completed && building.remainingTurns > 0) {
+                    // Пропускаем замороженные постройки
+                    if (building.frozen) continue;
+                    
                     building.remainingTurns--;
                     if (building.remainingTurns === 0) {
                         building.completed = true;
@@ -859,6 +932,27 @@ function processConstruction() {
                         peopleState.activeConstructionCount = Math.max(0, (peopleState.activeConstructionCount || 0) - 1);
                         completedList.push({
                             buildingName: building.name,
+                            settlementName: settlement.name,
+                            provinceName: provinceName
+                        });
+                    }
+                }
+            }
+        }
+
+        // --- 3. Обработка сносимых зданий (внутри цикла по провинциям) ---
+        for (let settlement of prov.settlements) {
+            if (settlement.captured) continue;
+            for (let i = settlement.buildings.length - 1; i >= 0; i--) {
+                const building = settlement.buildings[i];
+                if (building.demolishing && building.demolishTurns > 0) {
+                    building.demolishTurns--;
+                    if (building.demolishTurns === 0) {
+                        // Удаляем здание
+                        settlement.buildings.splice(i, 1);
+                        completedCount++;
+                        completedList.push({
+                            buildingName: building.name + ' (снесено)',
                             settlementName: settlement.name,
                             provinceName: provinceName
                         });
@@ -1230,7 +1324,31 @@ function startBuilding(settlementId, buildingName, isUpgrade = false, baseBuildi
         addBuildingsLog(`❌ Постройка "${buildingDef.name}" не может быть построена в ${typeMap[settlement.type] || settlement.type}.`);
         return;
     }
+	// Религиозные ограничения: Алтарь Варсиса и Святилище Тэямы не могут быть в одной провинции
+	if ((buildingName === 'Алтарь Варсиса' || buildingName === 'Святилище Тэямы') && !isUpgrade) {
+		const oppositeSpecial = (buildingName === 'Алтарь Варсиса') ? 'sanctuaryTeama' : 'altarVarsis';
+		let hasOpposite = false;
+		let hasTempleOrPantheon = false;
 
+		for (let s of data.settlements) {
+			for (let b of s.buildings) {
+				// Противоположную постройку ищем даже если она ещё строится
+				if (b.special === oppositeSpecial) {
+					hasOpposite = true;
+				}
+				// Храм/Пантеон должны быть завершены, чтобы снять ограничение
+				if (b.completed && (b.special === 'templeVarsiteya' || b.special === 'pantheon')) {
+					hasTempleOrPantheon = true;
+				}
+			}
+		}
+
+		if (hasOpposite && !hasTempleOrPantheon) {
+			const oppositeName = (buildingName === 'Алтарь Варсиса') ? 'Святилище Тэямы' : 'Алтарь Варсиса';
+			addBuildingsLog(`❌ Нельзя построить "${buildingDef.name}" – в провинции уже есть "${oppositeName}". Постройте Храм Варситэи или Пантеон.`);
+			return;
+		}
+	}
     if (!checkBuildingLimit(buildingName, settlementId, isUpgrade, baseBuilding)) {
         return;
     }
@@ -1954,32 +2072,82 @@ function setCapital(provinceId) {
 
 function deleteProvince(provinceId) {
     const allIds = Object.keys(provincesData);
-    if (allIds.length <= 1) {
-        alert('Нельзя удалить последнюю провинцию!');
-        return false;
-    }
+    const isLastProvince = (allIds.length <= 1);
     const name = (PROVINCE_NAMES[provinceId] || provinceId);
-    if (!confirm(`Удалить провинцию "${name}" безвозвратно?`)) return false;
-    const wasCapital = provincesData[provinceId].isCapital;
-    delete provincesData[provinceId];
-    if (currentProvince === provinceId) {
-        currentProvince = Object.keys(provincesData)[0];
-    }
-    if (wasCapital) {
-        const firstId = Object.keys(provincesData)[0];
-        if (firstId) {
-            provincesData[firstId].isCapital = true;
-            addBuildingsLog(`⭐ Новая столица: "${PROVINCE_NAMES[firstId] || firstId}".`);
+    const factionName = (typeof FACTION_NAMES !== 'undefined' && FACTION_NAMES[window.currentFaction]) 
+        ? FACTION_NAMES[window.currentFaction] 
+        : 'Ваша фракция';
+
+    // Если это не последняя провинция – удаляем без вопросов
+    if (!isLastProvince) {
+        if (!confirm(`Удалить провинцию "${name}" безвозвратно?`)) return false;
+        const wasCapital = provincesData[provinceId].isCapital;
+        delete provincesData[provinceId];
+        if (currentProvince === provinceId) {
+            currentProvince = Object.keys(provincesData)[0];
         }
+        if (wasCapital) {
+            const firstId = Object.keys(provincesData)[0];
+            if (firstId) {
+                provincesData[firstId].isCapital = true;
+                addBuildingsLog(`⭐ Новая столица: "${PROVINCE_NAMES[firstId] || firstId}".`);
+            }
+        }
+        recalcTotalTreasury();
+        addBuildingsLog(`🗑️ Провинция "${name}" удалена.`);
+        saveAllData();
+        if (typeof recalcMaxConstructionSlots === 'function') {
+            recalcMaxConstructionSlots();
+        }
+        refreshBuildingsUI();
+        return true;
     }
-    recalcTotalTreasury();
-    addBuildingsLog(`🗑️ Провинция "${name}" удалена.`);
-    saveAllData();
-	if (typeof recalcMaxConstructionSlots === 'function') {
-		recalcMaxConstructionSlots();
-	}
-    refreshBuildingsUI();
-    return true;
+
+    // Это последняя провинция – показываем окно поражения
+    const modal = document.createElement('div');
+    modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(10,8,14,0.9);backdrop-filter:blur(6px);z-index:2000;display:flex;justify-content:center;align-items:center';
+    modal.innerHTML = `
+        <div style="background:rgba(18,14,12,0.95);border:2px solid #b8943a;border-radius:4px;padding:30px;max-width:500px;width:90%;color:#d4c9b8;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.9);">
+            <h2 style="color:#ff4444;margin-top:0;">⚔️ Поражение фракции</h2>
+            <p style="font-size:1.2rem;margin:20px 0;">Фракция <strong style="color:#ffd966;">${escapeHtml(factionName)}</strong> потерпела поражение.</p>
+            <p>Она потеряла все свои провинции, армии и влияние.</p>
+            <p style="margin-top:20px;font-size:0.9rem;color:#8a7a5a;">Нажмите «Сбросить данные», чтобы начать заново.</p>
+            <div style="display:flex;gap:10px;justify-content:center;margin-top:25px;">
+                <button id="confirmDefeatBtn" style="background:#7a2a2a;padding:10px 30px;font-size:1rem;">Подтвердить поражение</button>
+                <button id="cancelDefeatBtn" style="background:#5e3a22;padding:10px 30px;font-size:1rem;">Отмена</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+
+    document.getElementById('cancelDefeatBtn').onclick = () => modal.remove();
+
+    document.getElementById('confirmDefeatBtn').onclick = () => {
+        modal.remove();
+
+        // ---------- НОВОЕ: помечаем все поселения как нейтральные в общей карте ----------
+        for (let pid in provincesData) {
+            const prov = provincesData[pid];
+            if (prov && prov.settlements) {
+                for (let s of prov.settlements) {
+                    if (typeof updateSharedMapData === 'function') {
+                        updateSharedMapData(s.id, null);  // null = поселение больше никому не принадлежит
+                    }
+                }
+            }
+        }
+        // --------------------------------------------------------------------------------
+
+        // Сохраняем флаг поражения в отдельный ключ, чтобы показать сообщение при следующем входе
+        const defeatKey = 'defeated_' + (window.storageKey || 'unified_province_manager');
+        localStorage.setItem(defeatKey, 'true');
+        // Удаляем основные данные фракции
+        localStorage.removeItem(window.storageKey || 'unified_province_manager');
+        // Перезагружаем страницу
+        location.reload();
+    };
+
+    return false;
 }
 
 // ========== 14. ЭКСПОРТ/ИМПОРТ ПРОВИНЦИЙ ==========
@@ -2036,7 +2204,18 @@ function importProvinceFromFile(file) {
             const targetProvinceId = data.provinceId;
             const importedProvince = data.data;
             const originalFaction = data.originalFaction || 'unknown';
+            
+            // Очищаем всех вассалов у импортируемой провинции – теперь всё под прямым управлением
+            if (importedProvince.settlements) {
+                for (let settlement of importedProvince.settlements) {
+                    settlement.vassalHouse = null;
+                    settlement.captured = false;
+                    settlement.capturedByFaction = null;
+                    settlement.capturedData = null;
+                }
+            }
             importedProvince.isCapital = false;
+
             if (window.provincesData[targetProvinceId]) {
                 const existingName = PROVINCE_NAMES[targetProvinceId] || targetProvinceId;
                 const modal = document.createElement('div');
@@ -2134,17 +2313,28 @@ function mergeProvince(targetProvinceId, importedProvince) {
 
 function finishProvinceImport(targetProvinceId, originalFaction) {
     addBuildingsLog(`📥 Провинция "${PROVINCE_NAMES[targetProvinceId] || targetProvinceId}" импортирована из фракции "${originalFaction}".`);
+
+    // ---------- НОВОЕ: обновляем общую карту – все поселения теперь принадлежат текущей фракции ----------
+    if (window.provincesData[targetProvinceId] && window.provincesData[targetProvinceId].settlements) {
+        for (let s of window.provincesData[targetProvinceId].settlements) {
+            if (typeof updateSharedMapData === 'function') {
+                updateSharedMapData(s.id, window.currentFaction);
+            }
+        }
+    }
+    // --------------------------------------------------------------------------------------------------------
+
     if (provincesData[targetProvinceId] && provincesData[targetProvinceId].capturedSettlements) {
         provincesData[targetProvinceId].capturedSettlements = [];
     }
     if (!currentProvince || !provincesData[currentProvince]) {
         currentProvince = targetProvinceId;
     }
-	if (typeof recalcMaxConstructionSlots === 'function') {
-		recalcMaxConstructionSlots();
-	}
+    if (typeof recalcMaxConstructionSlots === 'function') {
+        recalcMaxConstructionSlots();
+    }
     recalcTotalTreasury();
-	enforceBuildingLimits();
+    enforceBuildingLimits();
     saveAllData();
     refreshBuildingsUI();
     if (typeof refreshPeopleUI === 'function') refreshPeopleUI();
@@ -2345,7 +2535,152 @@ function getEngineerBuildBonus(settlementId) {
     }
     return 0;
 }
+// ========== УПРАВЛЕНИЕ СТРОЙКОЙ ==========
+
+function cancelBuilding(settlementId, buildingId) {
+    const data = provincesData[currentProvince];
+    if (!data) return;
+    const settlement = data.settlements.find(s => s.id === settlementId);
+    if (!settlement) return;
+    const buildingIndex = settlement.buildings.findIndex(b => b.id === buildingId);
+    if (buildingIndex === -1) return;
+    
+    const building = settlement.buildings[buildingIndex];
+    if (building.completed) {
+        addBuildingsLog('❌ Нельзя отменить завершённое строительство.');
+        return;
+    }
+    
+    if (!confirm(`Отменить строительство "${building.name}"? Вернётся 50% ресурсов.`)) return;
+    
+    // Определяем стоимость из каталога
+    const catalogDef = buildingsCatalog[building.baseName];
+    if (catalogDef && catalogDef.cost) {
+        const cost = catalogDef.cost;
+        // Возвращаем 50% ресурсов в провинцию
+        data.resources.wood += Math.floor(cost.wood * 0.5);
+        data.resources.stone += Math.floor(cost.stone * 0.5);
+        data.resources.iron += Math.floor(cost.iron * 0.5);
+        data.resources.gold += Math.floor(cost.gold * 0.5);
+        data.resources.ers += Math.floor(cost.ers * 0.5);
+        recalcTotalTreasury();
+    }
+    
+    // Удаляем постройку
+    settlement.buildings.splice(buildingIndex, 1);
+    peopleState.activeConstructionCount = Math.max(0, (peopleState.activeConstructionCount || 0) - 1);
+    // Обновление интерфейса в реальном времени
+	if (typeof updateGlobalResourcesDisplay === 'function') updateGlobalResourcesDisplay();
+	if (typeof updateTreasuryDisplay === 'function') updateTreasuryDisplay();
+    addBuildingsLog(`🏚️ Строительство "${building.name}" отменено. Возвращено 50% ресурсов.`);
+    saveAllData();
+    refreshBuildingsUI();
+    if (typeof refreshPeopleUI === 'function') refreshPeopleUI();
+}
+
+function freezeBuilding(settlementId, buildingId) {
+    const data = provincesData[currentProvince];
+    if (!data) return;
+    const settlement = data.settlements.find(s => s.id === settlementId);
+    if (!settlement) return;
+    const building = settlement.buildings.find(b => b.id === buildingId);
+    if (!building) return;
+    if (building.completed) {
+        addBuildingsLog('❌ Нельзя заморозить завершённую постройку.');
+        return;
+    }
+    if (building.frozen) {
+        addBuildingsLog('❌ Постройка уже заморожена.');
+        return;
+    }
+    
+    building.frozen = true;
+    addBuildingsLog(`❄️ Строительство "${building.name}" заморожено.`);
+    saveAllData();
+    refreshBuildingsUI();
+}
+
+function unfreezeBuilding(settlementId, buildingId) {
+    const data = provincesData[currentProvince];
+    if (!data) return;
+    const settlement = data.settlements.find(s => s.id === settlementId);
+    if (!settlement) return;
+    const building = settlement.buildings.find(b => b.id === buildingId);
+    if (!building) return;
+    if (!building.frozen) {
+        addBuildingsLog('❌ Постройка не заморожена.');
+        return;
+    }
+    
+    building.frozen = false;
+    addBuildingsLog(`▶️ Строительство "${building.name}" разморожено.`);
+    saveAllData();
+    refreshBuildingsUI();
+}
+
+// Привязка обработчиков (добавить в конец refreshBuildingsUI или в отдельную функцию)
+document.addEventListener('click', function(e) {
+    if (e.target.classList.contains('cancel-build-btn')) {
+        const settlementId = e.target.dataset.settlementId;
+        const buildingId = e.target.dataset.buildingId;
+        cancelBuilding(settlementId, buildingId);
+    }
+    if (e.target.classList.contains('freeze-build-btn')) {
+        const settlementId = e.target.dataset.settlementId;
+        const buildingId = e.target.dataset.buildingId;
+        freezeBuilding(settlementId, buildingId);
+    }
+    if (e.target.classList.contains('unfreeze-build-btn')) {
+        const settlementId = e.target.dataset.settlementId;
+        const buildingId = e.target.dataset.buildingId;
+        unfreezeBuilding(settlementId, buildingId);
+    }
+});
+function demolishBuilding(settlementId, buildingId) {
+    const data = provincesData[currentProvince];
+    if (!data) return;
+    const settlement = data.settlements.find(s => s.id === settlementId);
+    if (!settlement) return;
+    const buildingIndex = settlement.buildings.findIndex(b => b.id === buildingId);
+    if (buildingIndex === -1) return;
+    
+    const building = settlement.buildings[buildingIndex];
+    if (!building.completed) {
+        addBuildingsLog('❌ Нельзя снести строящееся здание. Используйте "Отменить".');
+        return;
+    }
+    
+    if (!confirm(`Снести "${building.name}"? Процесс займёт 1 ход. Золото вернётся на 30%.`)) return;
+    
+    // Возвращаем 30% золота, если оно было в стоимости
+    const catalogDef = buildingsCatalog[building.baseName];
+    if (catalogDef && catalogDef.cost && catalogDef.cost.gold > 0) {
+        const goldRefund = Math.floor(catalogDef.cost.gold * 0.3);
+        data.resources.gold += goldRefund;
+        addBuildingsLog(`💰 Возвращено ${goldRefund} золота (30% от стоимости).`);
+    }
+    
+    // Помечаем здание как сносимое (займёт 1 ход)
+    building.demolishing = true;
+    building.demolishTurns = 1;
+    building.completed = false; // чтобы не давало эффект во время сноса
+    
+    addBuildingsLog(`🏚️ Начат снос "${building.name}". Здание будет удалено через 1 ход.`);
+    saveAllData();
+    refreshBuildingsUI();
+}
+document.addEventListener('click', function(e) {
+    if (e.target.classList.contains('demolish-btn')) {
+        const settlementId = e.target.dataset.settlementId;
+        const buildingId = e.target.dataset.buildingId;
+        demolishBuilding(settlementId, buildingId);
+    }
+});
 // Экспорт
+window.demolishBuilding = demolishBuilding;
+window.cancelBuilding = cancelBuilding;
+window.freezeBuilding = freezeBuilding;
+window.unfreezeBuilding = unfreezeBuilding;
 window.getEngineerBuildBonus = getEngineerBuildBonus;
 window.getEngineerBuildBonus = getEngineerBuildBonus;
 window.hasActiveBuilding = hasActiveBuilding;

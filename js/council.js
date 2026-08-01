@@ -1,7 +1,7 @@
 // ============================================================================
 // МОДУЛЬ 06: council.js (версия 4.2 – удаление вассалов, партии, отнятие любых поселений)
 // ============================================================================
-// Загружено на гитхаб 18.07.2026
+// Загружено на гитхаб 01.08.2026
 // ========== 1. ИНИЦИАЛИЗАЦИЯ СОВЕТОВ ==========
 
 function initFactionCouncil(factionId, rulerName) {
@@ -17,27 +17,34 @@ function initFactionCouncil(factionId, rulerName) {
             ? INITIAL_VASSALS[factionId] 
             : [];
 
-        for (let h of startHouses) {
-            const house = new InfluentialHouse(
-                h.id || (typeof generateId === 'function' ? generateId() : Date.now() + '-' + Math.random()),
-                h.name,
-                h.vassalType,
-                h.politicalFaction,   // теперь это ключ партии
-                h.leader,
-                h.baseLoyalty
-            );
+		for (let h of startHouses) {
+			const house = new InfluentialHouse(
+				h.id || (typeof generateId === 'function' ? generateId() : Date.now() + '-' + Math.random()),
+				h.name,
+				h.vassalType,
+				h.politicalFaction,
+				h.leader,
+				h.baseLoyalty
+			);
 
-            if (typeof VASSAL_ICONS !== 'undefined' && VASSAL_ICONS[h.id]) {
-                house.coatOfArms = VASSAL_ICONS[h.id].coat;
-                house.leaderPortrait = VASSAL_ICONS[h.id].portrait;
-            }
+			if (typeof VASSAL_ICONS !== 'undefined' && VASSAL_ICONS[h.id]) {
+				house.coatOfArms = VASSAL_ICONS[h.id].coat;
+				house.leaderPortrait = VASSAL_ICONS[h.id].portrait;
+			}
 
-            if (h.externalLink) {
-                house.externalLink = h.externalLink;
-            }
+			if (h.externalLink) {
+				house.externalLink = h.externalLink;
+			}
 
-            factionCouncils[factionId].houses.push(house);
-        }
+			// ===== КОПИРУЕМ ДОПОЛНИТЕЛЬНЫЕ ПОЛЯ =====
+			if (h.isMerchantGuild !== undefined) {
+				house.isMerchantGuild = h.isMerchantGuild;
+			}
+			// Если в будущем появятся другие кастомные поля – добавляйте их здесь
+			// Например: if (h.someFlag) house.someFlag = h.someFlag;
+
+			factionCouncils[factionId].houses.push(house);
+		}
 
         const factionName = (typeof FACTION_NAMES !== 'undefined' && FACTION_NAMES[factionId]) 
             ? FACTION_NAMES[factionId] 
@@ -82,13 +89,72 @@ function addNewVassal(factionId, name, vassalType, politicalFaction, leaderName,
 }
 
 function removeVassal(houseId) {
-    if (confirm("Удалить этого вассала? Это действие необратимо.")) {
-        if (typeof factionCouncils === 'undefined') return false;
+    const house = findHouseById(houseId);
+    if (!house) {
+        alert('Вассал не найден');
+        return false;
+    }
+
+    // --- СПЕЦИАЛЬНАЯ ОБРАБОТКА КУПЕЧЕСКОЙ ГИЛЬДИИ ---
+    if (house.isMerchantGuild) {
+        const treasury = (typeof getCurrentTreasury === 'function') ? getCurrentTreasury() : window.factionTreasury || 0;
+        const cost = 100000;
+        if (treasury < cost) {
+            alert(`❌ Недостаточно средств для упразднения гильдии. Требуется ${cost.toLocaleString()} эрсов, в казне ${treasury.toLocaleString()}.`);
+            return false;
+        }
+
+        // Модальное окно подтверждения
+        const modal = document.createElement('div');
+        modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);z-index:2000;display:flex;justify-content:center;align-items:center';
+        modal.innerHTML = `
+            <div style="background:#1f1c14;border:2px solid #b87c4f;border-radius:24px;padding:25px;max-width:450px;width:90%;color:#e6ddb3;text-align:center;">
+                <h3 style="color:#ffd966;">⚠️ Упразднение Купеческой гильдии</h3>
+                <p>Вы собираетесь упразднить Купеческую гильдию. Это обойдётся в <strong style="color:#ff6b6b;">${cost.toLocaleString()} эрсов</strong>.</p>
+                <p style="font-size:0.9rem;color:#8a7a5a;">После упразднения гильдия перестанет приносить доход. Вы уверены?</p>
+                <div style="display:flex;gap:10px;justify-content:center;margin-top:20px;">
+                    <button id="confirmRemoveGuildBtn" style="background:#3a6b3a;">✅ Упразднить</button>
+                    <button id="cancelRemoveGuildBtn" style="background:#7a2a2a;">❌ Отмена</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+
+        document.getElementById('cancelRemoveGuildBtn').onclick = () => modal.remove();
+
+        document.getElementById('confirmRemoveGuildBtn').onclick = () => {
+            // Списываем средства
+            if (typeof setFactionTreasury === 'function') {
+                setFactionTreasury(treasury - cost);
+            } else {
+                window.factionTreasury -= cost;
+            }
+            // Удаляем вассала
+            for (let council of Object.values(factionCouncils)) {
+                if (council.removeHouse(houseId)) {
+                    if (typeof renderCouncil === 'function') renderCouncil();
+                    if (typeof addGlobalLog === 'function') {
+                        addGlobalLog(`🏛️ Купеческая гильдия упразднена за ${cost.toLocaleString()} эрсов.`, 'council');
+                    }
+                    if (typeof updateTreasuryDisplay === 'function') updateTreasuryDisplay();
+                    modal.remove();
+                    saveAllData();
+                    return true;
+                }
+            }
+            modal.remove();
+            return false;
+        };
+        return false; // удаление будет выполнено асинхронно
+    }
+
+    // --- ОБЫЧНОЕ УДАЛЕНИЕ (для всех остальных вассалов) ---
+    if (confirm(`Удалить вассала "${house.name}"? Это действие необратимо.`)) {
         for (let council of Object.values(factionCouncils)) {
             if (council.removeHouse(houseId)) {
                 if (typeof renderCouncil === 'function') renderCouncil();
                 if (typeof addGlobalLog === 'function') {
-                    addGlobalLog(`🗑️ Удалён вассал из совета`, 'council');
+                    addGlobalLog(`🗑️ Удалён вассал "${house.name}" из совета`, 'council');
                 }
                 saveAllData();
                 return true;
@@ -149,11 +215,13 @@ function manualModifyLoyalty(houseId, delta, reason) {
     const house = findHouseById(houseId);
     if (house) {
         house.modifyLoyalty(delta, `Ручное изменение: ${reason}`);
+        // Если это гильдия, обновляем доход в казне (не обязательно, т.к. доход применяется только при ходе)
+        // Но для наглядности перерисовываем совет
+        if (typeof renderCouncil === 'function') renderCouncil();
         if (typeof addGlobalLog === 'function') {
             addGlobalLog(`❤️ Дому "${house.name}" изменена лояльность на ${delta} (${reason})`, 'council');
         }
         saveAllData();
-        if (typeof renderCouncil === 'function') renderCouncil();
         return true;
     }
     return false;
@@ -409,23 +477,21 @@ function renderCouncil() {
     const treasurySpan = document.getElementById('councilTreasury');
     if (treasurySpan) treasurySpan.innerText = Math.floor(currentTreasury);
 
-    // Шкала влияния
     const rulerVotes = council.getRulerVotes();
     const totalSeats = (typeof TOTAL_COUNCIL_SEATS !== 'undefined') ? TOTAL_COUNCIL_SEATS : 300;
     const controlPercent = (rulerVotes / totalSeats * 100).toFixed(1);
 
     let html = '';
-	html += `<div class="stat-card" style="margin-bottom: 15px;">
-		<div style="display: flex; justify-content: space-between; align-items: center;">
-			<span>👑 Контроль правителя:</span>
-			<span><strong>${rulerVotes}</strong> / ${totalSeats} (${controlPercent}%)</span>
-		</div>
-		<div style="background: #4a3a2a; border-radius: 20px; height: 10px; margin-top: 8px;">
-			<div style="width: ${Math.min(controlPercent, 100)}%; height: 100%; background: #ffd966; border-radius: 20px;"></div>
-		</div>
-	</div>`;
+    html += `<div class="stat-card" style="margin-bottom: 15px;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span>👑 Контроль правителя:</span>
+            <span><strong>${rulerVotes}</strong> / ${totalSeats} (${controlPercent}%)</span>
+        </div>
+        <div style="background: #4a3a2a; border-radius: 20px; height: 10px; margin-top: 8px;">
+            <div style="width: ${Math.min(controlPercent, 100)}%; height: 100%; background: #ffd966; border-radius: 20px;"></div>
+        </div>
+    </div>`;
 
-    // Кнопка добавления
     html += `<button id="addVassalBtn" style="margin-bottom: 15px;">➕ Добавить вассала</button>`;
 
     if (council.houses.length === 0) {
@@ -433,12 +499,34 @@ function renderCouncil() {
     } else {
         for (let house of council.houses) {
             const loyaltyColor = house.loyaltyToRuler > 70 ? '#8bc34a' : (house.loyaltyToRuler > 40 ? '#ffd966' : '#ff6b6b');
+
+            // ---- РАСЧЁТ ДОХОДА ОТ КУПЕЧЕСКОЙ ГИЛЬДИИ (исправленная формула) ----
+            let incomeHtml = '';
+            if (house.isMerchantGuild) {
+                const loyalty = (house.loyaltyToRuler !== undefined && house.loyaltyToRuler !== null) ? house.loyaltyToRuler : 50;
+                let income = 0;
+                if (loyalty >= 50) {
+                    income = 5000 + (loyalty - 50) * 1000;
+                } else {
+                    income = (loyalty - 50) * 1000;  // теперь при 45 даёт -5000, при 0 -50000
+                }
+                const sign = income >= 0 ? '+' : '';
+                incomeHtml = `<div style="font-size:0.8rem; color:#ffd966;">💰 Доход: ${sign}${income.toLocaleString()} эрсов/ход</div>`;
+            }
+            // -------------------------------------------------
+
+            const politicalParty = (typeof POLITICAL_PARTIES !== 'undefined' && POLITICAL_PARTIES[house.politicalFaction]) 
+                ? POLITICAL_PARTIES[house.politicalFaction] 
+                : { name: 'Независимые', color: '#cfc294' };
+
             html += `
                 <div class="house-card" style="display: flex; align-items: center; gap: 15px; background: #2c281c; border: 1px solid #b87c4f; border-radius: 16px; padding: 12px; margin-bottom: 8px;">
                     <img src="${house.coatOfArms || (typeof getIconPath === 'function' ? getIconPath('default_coat', '🛡️') : '🛡️')}" style="width: 48px; height: 48px; object-fit: contain; border-radius: 8px;">
                     <div style="flex: 1;">
                         <div style="font-weight: bold; font-size: 1.1rem;">${escapeHtml(house.name)}</div>
                         <div style="font-size: 0.8rem; color: ${loyaltyColor};">❤️ Лояльность: ${house.loyaltyToRuler}%</div>
+                        ${incomeHtml}
+                        <div style="font-size: 0.7rem; color: ${politicalParty.color};">🏛️ ${politicalParty.name}</div>
                     </div>
                     <button style="background: #3a5a2a; padding: 6px 16px;" onclick="openVassalModal('${house.id}')">Подробнее</button>
                     <button style="background: #7a2a2a; padding: 6px 12px;" onclick="removeVassal('${house.id}')">🗑️</button>

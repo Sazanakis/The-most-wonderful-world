@@ -1,7 +1,7 @@
 // ============================================================================
 // МОДУЛЬ 12: turn.js (версия 4.1 – исправлен учёт торговли в казне)
 // ============================================================================
-// Загружено на гитхаб 18.07.2026
+// Загружено на гитхаб 01.08.2026
 // ========== 1. ОПРЕДЕЛЕНИЕ КЛЮЧА ХРАНИЛИЩА ==========
 if (!window.storageKey) {
     window.storageKey = 'unified_province_manager'; // fallback
@@ -86,7 +86,24 @@ function applyGlobalTurn() {
         peopleState.turnsSinceDemography = (peopleState.turnsSinceDemography || 0) + 1;
     }
     addGlobalLog(`💰 Собрано налогов: ${totalTax.toLocaleString()} эрсов.`, 'general');
-
+	
+	// === Доход от Купеческой гильдии (Менсен) ===
+	const council = factionCouncils ? factionCouncils[currentFaction] : null;
+	if (council) {
+		const guild = council.houses.find(h => h.isMerchantGuild === true);
+		if (guild) {
+			const loyalty = guild.loyaltyToRuler || 50;
+			let guildIncome = 0;
+			if (loyalty >= 50) {
+				guildIncome = 5000 + (loyalty - 50) * 1000;
+			} else {
+				guildIncome = (loyalty - 50) * 1000;  // теперь при 45 даёт -5000, при 0 -50000
+			}
+			window.factionTreasury += guildIncome;
+			addGlobalLog(`💰 Купеческая гильдия: ${guildIncome >= 0 ? '+' : ''}${guildIncome.toLocaleString()} эрсов (лояльность ${loyalty}%)`, 'general');
+		}
+	}
+	
     // 2. Восстановление раненых
     if (typeof recoverWoundedUnits === 'function') {
         recoverWoundedUnits();
@@ -285,7 +302,6 @@ function saveAllData() {
             currentWeek: (typeof peopleState !== 'undefined') ? peopleState.currentWeek : 1,
             currentMonth: (typeof peopleState !== 'undefined') ? peopleState.currentMonth : 5,
             currentYear: (typeof peopleState !== 'undefined') ? peopleState.currentYear : 1598,
-            // НОВАЯ СТРОКА:
             corruption: (typeof peopleState !== 'undefined' && peopleState.corruption) ? peopleState.corruption : { currentPercent: 1, turnsSinceLastGrowth: 0, agent: null }
         },
         globalTradeAgreements: (typeof globalTradeAgreements !== 'undefined') ? globalTradeAgreements : [],
@@ -299,6 +315,10 @@ function saveAllData() {
     };
     const key = window.storageKey || 'unified_province_manager';
     localStorage.setItem(key, JSON.stringify(data));
+    
+    // Отправляем сигнал другим вкладкам (карте), что данные изменились
+    localStorage.setItem('mapUpdateNeeded', Date.now().toString());
+    
     console.log(`💾 Данные сохранены в ${key} (дата: ${data.peopleState.currentWeek} нед. ${data.peopleState.currentMonth} мес. ${data.peopleState.currentYear})`);
 }
 

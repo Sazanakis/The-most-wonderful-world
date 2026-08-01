@@ -1,7 +1,7 @@
 // ============================================================================
 // МОДУЛЬ 13: ui.js (версия 5.0 – полный экспорт/импорт с обновлением UI)
 // ============================================================================
-// Загружено на гитхаб 18.07.2026
+// Загружено на гитхаб 01.08.2026
 // ========== 1. НАСТРОЙКА ВКЛАДОК ==========
 function setupTabs() {
     const tabs = document.querySelectorAll('.tab-button');
@@ -709,7 +709,24 @@ function showTreasuryBreakdown() {
         }
     }
 
-    // --- ДЕТАЛИЗАЦИЯ БОНУСОВ ТЕХНОЛОГИЙ (налоги) ---
+	// ========== НОВЫЙ БЛОК: ДОХОД ОТ КУПЕЧЕСКОЙ ГИЛЬДИИ ==========
+	let guildIncome = 0;
+	let guildLoyalty = 0;
+	const council = typeof factionCouncils !== 'undefined' ? factionCouncils[currentFaction] : null;
+	if (council) {
+		const guild = council.houses.find(h => h.isMerchantGuild === true);
+		if (guild) {
+			guildLoyalty = guild.loyaltyToRuler || 50;
+			if (guildLoyalty >= 50) {
+				guildIncome = 5000 + (guildLoyalty - 50) * 1000;
+			} else {
+				guildIncome = (guildLoyalty - 50) * 1000;
+			}
+		}
+	}
+	// =======================================================
+
+    // --- БОНУСЫ ТЕХНОЛОГИЙ (налоги) ---
     let techTaxBonus = 0;
     let techTaxDetails = [];
     if (typeof researchData !== 'undefined' && researchData.completedTechs) {
@@ -723,7 +740,7 @@ function showTreasuryBreakdown() {
         }
     }
 
-    // --- ДЕТАЛИЗАЦИЯ БОНУСОВ ТОРГОВЛИ ---
+    // --- БОНУСЫ ТОРГОВЛИ (технологии + постройки) ---
     let techTradeBonus = 0;
     let techTradeDetails = [];
     if (typeof researchData !== 'undefined' && researchData.completedTechs) {
@@ -759,7 +776,7 @@ function showTreasuryBreakdown() {
 
     // --- ФОРМИРУЕМ HTML ---
     const currentTreasury = (typeof getCurrentTreasury === 'function') ? getCurrentTreasury() : window.factionTreasury || 0;
-    const netChange = finalTaxIncome + totalTradeIncome - armyUpkeep - researcherSalaries - chancelleryCost;
+    const netChange = finalTaxIncome + totalTradeIncome + guildIncome - armyUpkeep - researcherSalaries - chancelleryCost;
 
     let html = `
     <div style="background:#1f1c14; border:2px solid #b87c4f; border-radius:20px; padding:20px; max-width:600px; width:90%; color:#e6ddb3; text-align:left;">
@@ -831,8 +848,21 @@ function showTreasuryBreakdown() {
             <tr style="border-top:1px solid #b87c4f;">
                 <td><strong>📦 Изменение за счёт торговли</strong></td>
                 <td style="text-align:right; font-weight:bold; color:${totalTradeIncome >= 0 ? '#8bc34a' : '#ff6b6b'};">${totalTradeIncome >= 0 ? '+' : ''}${totalTradeIncome.toLocaleString()} эрсов</td>
-            </tr>
+            </tr>`;
 
+    // ===== НОВАЯ СТРОКА: КУПЕЧЕСКАЯ ГИЛЬДИЯ =====
+    if (guildIncome !== 0) {
+        const sign = guildIncome >= 0 ? '+' : '';
+        const color = guildIncome >= 0 ? '#8bc34a' : '#ff6b6b';
+        html += `
+            <tr>
+                <td>🏛️ Купеческая гильдия (лояльность ${guildLoyalty}%)</td>
+                <td style="text-align:right; color:${color};">${sign}${guildIncome.toLocaleString()} эрсов</td>
+            </tr>`;
+    }
+    // =============================================
+
+    html += `
             <tr>
                 <td>⚔️ Содержание армии</td>
                 <td style="text-align:right;">−${armyUpkeep.toLocaleString()} эрсов</td>

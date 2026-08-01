@@ -2,7 +2,7 @@
 // МОДУЛЬ: factions_constants.js
 // Константы для фракций, отсутствующие в карточном constants.js
 // ============================================================================
-// Загружено на гитхаб 18.07.2026
+// Загружено на гитхаб 01.08.2026
 // ---------- ПРАВИТЕЛИ ФРАКЦИЙ ----------
 const FACTION_RULERS = {
     clan_daketa: "Кай Дакэта",
@@ -19,7 +19,8 @@ const FACTION_RULERS = {
 	county_skollfang: "Вальфрея Сколльфанг",
 	order_varsiltaers: "Антегро Илиинг",
 	county_takania: "Морглен Альфьеро Ла Валлет",
-	principality_lorein: "Ноэми Ванденхейде"
+	principality_lorein: "Ноэми Ванденхейде",
+	county_mensen: "Вальдэ Мар'Фалкин"
 };
 
 // ---------- НАЗВАНИЯ РИТОРИК (ИДЕОЛОГИЙ) ----------
@@ -48,9 +49,28 @@ const FACTION_LEADER_LINKS = {
 	county_skollfang: "https://vk.com/page-228463474_55105456",
 	county_takania: "https://vk.com/page-228463474_55105475",
 	order_varsiltaers: "https://vk.com/page-228463474_55105506",
-	principality_lorein: "https://vk.com/page-228463474_55105567"
+	principality_lorein: "https://vk.com/page-228463474_55105567",
+	county_mensen: "https://vk.ru/page-228463474_55105853"
 };
-
+const FACTION_MAIN_COATS = {
+    clan_daketa: "emblem/armoria.png",
+    clan_date: "emblem/date.png",
+    county_markarn: "emblem/Markarn.png",
+    county_vogelmark: "emblem/Vogelmark.png",
+    principality_gorski: "emblem/Gorski.png",
+    regency_council: "emblem/Regents.png",
+    lepus_union: "emblem/lepus.png",
+    county_ottergrund: "emblem/ottergrund.png",
+    elfheim: "emblem/elfheim.png",
+    county_meyan: "emblem/meyan.png",
+    county_dionia: "emblem/dionia.png",
+    county_takania: "emblem/takania.png",
+    county_skollfang: "emblem/skollfang.png",
+    order_varsiltaers: "emblem/varsiltaer.png",
+    principality_lorein: "emblem/lorein.png",
+	county_mensen: "emblem/mensen.png"
+};
+window.FACTION_MAIN_COATS = FACTION_MAIN_COATS;
 // ---------- РЕСУРСЫ (для торговли и построек) ----------
 const RESOURCES_REGISTRY = {
     wood:   { id: "wood",   name: "Древесина", icon: "icons/wood.png",  category: "basic",    tradeable: true,  defaultValue: 500 },
@@ -112,7 +132,12 @@ const VASSAL_ICONS = {
 	"house_vervut": { coat: "icons/emblem/house_vervut.png", portrait: "icons/default_portrait.png" },
 	"house_violette": { coat: "icons/emblem/house_violette.png", portrait: "icons/default_portrait.png" },
 	"house_iriswain": { coat: "icons/emblem/house_iriswain.png", portrait: "icons/default_portrait.png" },
-	"house_De_Rosa": { coat: "icons/emblem/house_De_Rosa.png", portrait: "icons/default_portrait.png" }
+	"house_De_Rosa": { coat: "icons/emblem/house_De_Rosa.png", portrait: "icons/default_portrait.png" },
+	"house_sakada": { coat: "icons/emblem/sakada.png", portrait: "icons/default_portrait.png" },
+	"house_gimadzu": { coat: "icons/emblem/gimadzu.png", portrait: "icons/default_portrait.png" },
+	"house_fraum": { coat: "icons/emblem/fraum.png", portrait: "icons/default_portrait.png" },
+	"house_ion": { coat: "icons/emblem/ion.png", portrait: "icons/default_portrait.png" },
+	"house_mensen_merchant_guild": { coat: "icons/emblem/mensen_merchant_guild.png", portrait: "icons/default_portrait.png" }
 };
 
 // ---------- МАППИНГ ПОВЫШЕНИЯ РАНГА ----------
@@ -199,8 +224,14 @@ const INITIAL_VASSALS = {
 	{ id: "house_vervut", name: "Род Вервут", type: "MINOR_CLAN", politicalFaction: "NOBILITY", leader: "Глава Вервут", baseLoyalty: 50 },
 	{ id: "house_violette", name: "Род Виолетт", type: "MINOR_CLAN", politicalFaction: "NOBILITY", leader: "Глава Виолетт", baseLoyalty: 50 },
 	{ id: "house_iriswain", name: "Род Ирисвейн", type: "MINOR_CLAN", politicalFaction: "NOBILITY", leader: "Глава Ирисвейн", baseLoyalty: 50 },
-
-	]
+	],
+	county_mensen: [
+	{ id: "house_sakada", name: "Род Сакада", type: "MINOR_CLAN", politicalFaction: "NOBILITY", leader: "Глава Сакада", baseLoyalty: 50 },
+	{ id: "house_gimadzu", name: "Род Гимадзу", type: "MINOR_CLAN", politicalFaction: "NOBILITY", leader: "Глава Гимадзу", baseLoyalty: 50 },
+	{ id: "house_fraum", name: "Род Фраум", type: "MINOR_CLAN", politicalFaction: "NOBILITY", leader: "Глава Фраум", baseLoyalty: 60 },
+	{ id: "house_ion", name: "Род Йон", type: "MINOR_CLAN", politicalFaction: "NOBILITY", leader: "Глава Йон", baseLoyalty: 60 },
+	{ id: "house_mensen_merchant_guild", name: "Купеческая гильдия Менсена", type: "MERCHANT_GUILD", politicalFaction: "MERCHANTS", leader: "Глава Гильдии", baseLoyalty: 45, isMerchantGuild: true },
+	],
 };
 
 const POLITICAL_PARTIES = {

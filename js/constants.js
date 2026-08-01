@@ -4,12 +4,12 @@
 // Данные о фракциях вынесены в 17_constants_factions.js
 // ВЕРСИЯ 2.0 – ПОЛНЫЙ SETTLEMENTS_DB
 // ============================================================================
-// Загружено на гитхаб 18.07.2026
+// Загружено на гитхаб 01.08.2026
 // ========== 1. ВРЕМЯ И ДАТЫ ==========
 const MONTH_NAMES = ["января", "февраля", "марта", "апреля", "мая", "июня", "июля", "августа", "сентября", "октября", "ноября", "декабря"];
 
 // ========== 2. ПРОВИНЦИИ (устаревший список) ==========
-const PROVINCE_IDS = ["clan_daketa", "county_markarn", "principality_gorski", "regency_council", "county_ottergrund", "elfheim", "county_meyan", "county_dionia", "county_skollfang", "county_takania", "order_varsiltaers", "principality_lorein"];
+const PROVINCE_IDS = ["clan_daketa", "county_markarn", "principality_gorski", "regency_council", "county_ottergrund", "elfheim", "county_meyan", "county_dionia", "county_skollfang", "county_takania", "order_varsiltaers", "principality_lorein", "county_mensen"];
 
 // ========== 3. СОВЕТ: ТИПЫ ВАССАЛОВ ==========
 const VASSAL_TYPES = {
@@ -223,7 +223,7 @@ const PROVINCE_NAMES = {
     // добавляем недостающие:
     oku_province_1: "Оку (провинция 1)",
     oku_province_2: "Оку (провинция 2)",
-    loyalist_province_2: "Лоялистская провинция 2",
+    mensen: "Менсен",
     neutral_province_1: "Нейтральная провинция 1",
     neutral_province_2: "Нейтральная провинция 2",
     neutral_province_5: "Нейтральная провинция 5",
@@ -246,9 +246,9 @@ const FACTION_NAMES = {
 	county_skollfang: "Графство Сколльфанг",
 	order_varsiltaers: "Орден Варсильтаеров",
 	principality_lorein: "Княжество Лорейн",
+	county_mensen: "Временная Республика Менсена",
     unknown_clan_1: "Неизвестный клан (1)",
     unknown_clan_2: "Неизвестный клан (2)",
-    unknown_feudal_2: "Неизвестный феодал (2)",
     unknown_feudal_6: "Неизвестный феодал (6)",
     unknown_feudal_7: "Неизвестный феодал (7)",
     unknown_feudal_10: "Неизвестный феодал (10)",
@@ -306,8 +306,16 @@ const VASSAL_HOUSE_NAMES = {
 	"house_vervut": "Род Вервут",
 	"house_violette": "Род Виолетт",
 	"house_iriswain": "Род Ирисвейн",
-	"house_De_Rosa": "Род Де Розе"
+	"house_De_Rosa": "Род Де Розе",
+	"house_sakada": "Род Сакада",
+	"house_gimadzu": "Род Гимадзу",
+	"house_fraum": "Род Фраум",
+	"house_ion": "Род Йон",
+	"house_mensen_merchant_guild": "Купеческая гильдия Менсена"
 };
+
+// Гербы главных родов фракций (для карты)
+
 // ========== 17. БАЗА ВСЕХ ПОСЕЛЕНИЙ (ПОЛНАЯ) ==========
 const SETTLEMENTS_DB = {
     // ========== ОРОЧИМА (Клан Дакэта, Даё) ==========
@@ -514,22 +522,22 @@ const SETTLEMENTS_DB = {
     "Ostenmark": { id: "Ostenmark", name: "Остенмарк", type: "village", province: "takania", faction: "county_takania", rhetoric: "loyal", px: 1537, py: 1021, icon: "emblem/house_cald.png", isVassal: true, vassalHouse: "house_cald" },
     "Rennford": { id: "Rennford", name: "Реннфорд", type: "village", province: "takania", faction: "county_takania", rhetoric: "loyal", px: 1565, py: 965, icon: "emblem/house_cald.png", isVassal: true, vassalHouse: "house_cald" },
 
-    // Провинция №5 (Loyalist Province No. 2) - Neutral
-    "neutral_city8": { id: "neutral_city8", name: "Город8", type: "city", province: "loyalist_province_2", faction: "unknown_feudal_2", rhetoric: "neutral", px: 1520, py: 565, icon: "draw.png", isVassal: false, vassalHouse: null },
-    "neutral_castle14": { id: "neutral_castle14", name: "Замок14", type: "castle", province: "loyalist_province_2", faction: "unknown_feudal_2", rhetoric: "neutral", px: 1525, py: 510, icon: "draw.png", isVassal: false, vassalHouse: null },
-    "neutral_castle15": { id: "neutral_castle15", name: "Замок15", type: "castle", province: "loyalist_province_2", faction: "unknown_feudal_2", rhetoric: "neutral", px: 1565, py: 562, icon: "draw.png", isVassal: false, vassalHouse: null },
-    "neutral_village56": { id: "neutral_village56", name: "Деревня56", type: "village", province: "loyalist_province_2", faction: "unknown_feudal_2", rhetoric: "neutral", px: 1230, py: 570, icon: "draw.png", isVassal: false, vassalHouse: null },
-    "neutral_village57": { id: "neutral_village57", name: "Деревня57", type: "village", province: "loyalist_province_2", faction: "unknown_feudal_2", rhetoric: "neutral", px: 1270, py: 540, icon: "draw.png", isVassal: false, vassalHouse: null },
-    "neutral_village58": { id: "neutral_village58", name: "Деревня58", type: "village", province: "loyalist_province_2", faction: "unknown_feudal_2", rhetoric: "neutral", px: 1300, py: 533, icon: "draw.png", isVassal: false, vassalHouse: null },
-    "neutral_village59": { id: "neutral_village59", name: "Деревня59", type: "village", province: "loyalist_province_2", faction: "unknown_feudal_2", rhetoric: "neutral", px: 1345, py: 545, icon: "draw.png", isVassal: false, vassalHouse: null },
-    "neutral_village60": { id: "neutral_village60", name: "Деревня60", type: "village", province: "loyalist_province_2", faction: "unknown_feudal_2", rhetoric: "neutral", px: 1387, py: 505, icon: "draw.png", isVassal: false, vassalHouse: null },
-    "neutral_village61": { id: "neutral_village61", name: "Деревня61", type: "village", province: "loyalist_province_2", faction: "unknown_feudal_2", rhetoric: "neutral", px: 1393, py: 575, icon: "draw.png", isVassal: false, vassalHouse: null },
-    "neutral_village62": { id: "neutral_village62", name: "Деревня62", type: "village", province: "loyalist_province_2", faction: "unknown_feudal_2", rhetoric: "neutral", px: 1375, py: 715, icon: "draw.png", isVassal: false, vassalHouse: null },
-    "neutral_village63": { id: "neutral_village63", name: "Деревня63", type: "village", province: "loyalist_province_2", faction: "unknown_feudal_2", rhetoric: "neutral", px: 1351, py: 735, icon: "draw.png", isVassal: false, vassalHouse: null },
-    "neutral_village64": { id: "neutral_village64", name: "Деревня64", type: "village", province: "loyalist_province_2", faction: "unknown_feudal_2", rhetoric: "neutral", px: 1475, py: 446, icon: "draw.png", isVassal: false, vassalHouse: null },
-    "neutral_village65": { id: "neutral_village65", name: "Деревня65", type: "village", province: "loyalist_province_2", faction: "unknown_feudal_2", rhetoric: "neutral", px: 1570, py: 605, icon: "draw.png", isVassal: false, vassalHouse: null },
-    "neutral_village66": { id: "neutral_village66", name: "Деревня66", type: "village", province: "loyalist_province_2", faction: "unknown_feudal_2", rhetoric: "neutral", px: 1602, py: 620, icon: "draw.png", isVassal: false, vassalHouse: null },
-    "neutral_village67": { id: "neutral_village67", name: "Деревня67", type: "village", province: "loyalist_province_2", faction: "unknown_feudal_2", rhetoric: "neutral", px: 1630, py: 575, icon: "draw.png", isVassal: false, vassalHouse: null },
+    // Провинция Менсен
+    "grotdtadt": { id: "grotdtadt", name: "Гротстадт", type: "city", province: "mensen", faction: "county_mensen", rhetoric: "loyal", px: 1520, py: 565, icon: "emblem/mensen.png", isVassal: false, vassalHouse: null },
+    "falkenstein": { id: "falkenstein", name: "Фалькенштайн", type: "castle", province: "mensen", faction: "county_mensen", rhetoric: "loyal", px: 1525, py: 510, icon: "emblem/ion.png", isVassal: true, vassalHouse: "house_ion" },
+    "eisenfels": { id: "eisenfels", name: "Айзенфельс", type: "castle", province: "mensen", faction: "county_mensen", rhetoric: "loyal", px: 1565, py: 562, icon: "emblem/mensen.png", isVassal: false, vassalHouse: null },
+    "Ayatan": { id: "Ayatan", name: "Аятан", type: "village", province: "mensen", faction: "county_mensen", rhetoric: "loyal", px: 1230, py: 570, icon: "emblem/gimadzu.png", isVassal: true, vassalHouse: "house_gimadzu" },
+    "Bergayan": { id: "Bergayan", name: "Бергаян", type: "village", province: "mensen", faction: "county_mensen", rhetoric: "loyal", px: 1270, py: 540, icon: "emblem/gimadzu.png", isVassal: true, vassalHouse: "house_gimadzu" },
+    "Dorono": { id: "Dorono", name: "Дороно", type: "village", province: "mensen", faction: "county_mensen", rhetoric: "loyal", px: 1300, py: 533, icon: "emblem/gimadzu.png", isVassal: true, vassalHouse: "house_gimadzu" },
+    "Ayayka": { id: "Ayayka", name: "Айяйка", type: "village", province: "mensen", faction: "county_mensen", rhetoric: "loyal", px: 1345, py: 545, icon: "emblem/sakada.png", isVassal: true, vassalHouse: "house_sakada" },
+    "Fellah": { id: "Fellah", name: "Фелла", type: "village", province: "mensen", faction: "county_mensen", rhetoric: "loyal", px: 1387, py: 505, icon: "emblem/mensen.png", isVassal: false, vassalHouse: null },
+    "Kirah": { id: "Kirah", name: "Кираха", type: "village", province: "mensen", faction: "county_mensen", rhetoric: "loyal", px: 1393, py: 575, icon: "emblem/sakada.png", isVassal: true, vassalHouse: "house_sakada" },
+    "Altendorf": { id: "Altendorf", name: "Альтендорф", type: "village", province: "mensen", faction: "county_mensen", rhetoric: "loyal", px: 1375, py: 715, icon: "emblem/fraum.png", isVassal: true, vassalHouse: "house_fraum" },
+    "Bergheim": { id: "Bergheim", name: "Бергхайм", type: "village", province: "mensen", faction: "county_mensen", rhetoric: "loyal", px: 1351, py: 735, icon: "emblem/fraum.png", isVassal: true, vassalHouse: "house_fraum" },
+    "Dornfeld": { id: "Dornfeld", name: "Дорнфельд", type: "village", province: "mensen", faction: "county_mensen", rhetoric: "loyal", px: 1475, py: 446, icon: "emblem/ion.png", isVassal: true, vassalHouse: "house_ion" },
+    "Eichenwald": { id: "Eichenwald", name: "Айхенвальд", type: "village", province: "mensen", faction: "county_mensen", rhetoric: "loyal", px: 1570, py: 605, icon: "emblem/mensen.png", isVassal: false, vassalHouse: null },
+    "Feldkirch": { id: "Feldkirch", name: "Фельдкирх", type: "village", province: "mensen", faction: "county_mensen", rhetoric: "loyal", px: 1602, py: 620, icon: "emblem/mensen.png", isVassal: false, vassalHouse: null },
+    "Kirchberg": { id: "Kirchberg", name: "Кирхберг", type: "village", province: "mensen", faction: "county_mensen", rhetoric: "loyal", px: 1630, py: 575, icon: "emblem/mensen.png", isVassal: false, vassalHouse: null },
 
     // Провинция Мейан
     "Meyan": { id: "Meyan", name: "Мейан", type: "city", province: "meyan", faction: "county_meyan", rhetoric: "loyal", px: 1785, py: 965, icon: "emblem/meyan.png", isVassal: false, vassalHouse: null },

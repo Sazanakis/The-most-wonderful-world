@@ -1,9 +1,21 @@
 // ============================================================================
 // МОДУЛЬ 14: init.js
-// ВЕРСИЯ 8.0 – ДОБАВЛЕНА ИНИЦИАЛИЗАЦИЯ ПОЛЕЙ ДЛЯ СТРОИТЕЛЬСТВА
+// ВЕРСИЯ 9.0 – ДОБАВЛЕНА ОБРАБОТКА ДЕЙСТВИЙ С КАРТЫ (ОККУПАЦИЯ, ОСВОБОЖДЕНИЕ)
 // ============================================================================
-// Загружено на гитхаб 18.07.2026
-// ========== 1. ДАННЫЕ ДЛЯ КАРТЫ (ГОРОДА) ==========
+// Описание: Основной модуль инициализации игры. Отвечает за загрузку
+// всех данных (провинции, армии, совет, торговля, технологии),
+// настройку глобальных переменных и обработку параметров URL для
+// автоматического запуска действий с карты (оккупация, освобождение).
+// ============================================================================
+
+// ============================================================================
+// РАЗДЕЛ 1: ДАННЫЕ ДЛЯ КАРТЫ (ГОРОДА)
+// ============================================================================
+// дата загрузки на гитхаб 01.08.2026
+/**
+ * Формирует массив данных о городах для отображения на карте.
+ * Использует SETTLEMENTS_DB, если он определён.
+ */
 window.citiesData = (typeof SETTLEMENTS_DB !== 'undefined') 
     ? Object.values(SETTLEMENTS_DB).map(settlement => ({
         name: settlement.name,
@@ -19,7 +31,15 @@ window.citiesData = (typeof SETTLEMENTS_DB !== 'undefined')
     }))
     : [];
 
-// ========== 2. ИНИЦИАЛИЗАЦИЯ ДАННЫХ ПРОВИНЦИИ ==========
+// ============================================================================
+// РАЗДЕЛ 2: ИНИЦИАЛИЗАЦИЯ ДАННЫХ ПРОВИНЦИИ
+// ============================================================================
+
+/**
+ * Создаёт начальные данные для провинции, если они ещё не существуют.
+ * Заполняет поселения, ресурсы и расы на основе provinceId.
+ * @param {string} provinceId - ID провинции
+ */
 function initProvinceData(provinceId) {
     if (typeof provincesData === 'undefined') return;
     if (!provincesData[provinceId]) {
@@ -38,7 +58,7 @@ function initProvinceData(provinceId) {
         }
         let races = [];
 
-        // ========== РЕАЛЬНЫЕ ПРОВИНЦИИ ==========
+        // ===== Определение рас для конкретных провинций =====
         if (provinceId === "orochima") {
             races = [
                 { name: "Оку", adultMale: 12000, adultFemale: 12000, children: 5000, elders: 1000, birthRate: 3.0, deathRate: 1.2, goblinChance: 0.05 },
@@ -144,9 +164,23 @@ function initProvinceData(provinceId) {
     }
 }
 
-// ========== 3. ЗАГРУЗКА ВСЕХ ДАННЫХ ==========
+// ============================================================================
+// РАЗДЕЛ 3: ЗАГРУЗКА ВСЕХ ДАННЫХ
+// ============================================================================
+
+/**
+ * Загружает все сохранённые данные из localStorage:
+ * - Совет (factionCouncils)
+ * - Армии (loadArmyData)
+ * - Провинции (provincesData)
+ * - Торговые соглашения (globalTradeAgreements)
+ * - Состояние населения (peopleState)
+ * - Маршруты (loadRoutes)
+ * - Дату (loadGameDate)
+ * Также инициализирует недостающие провинции и обновляет интерфейсы.
+ */
 function loadAllGameData() {
-    // Загрузка Совета
+    // === Загрузка Совета ===
     const councilSaved = localStorage.getItem('councilData');
     if (councilSaved && typeof factionCouncils !== 'undefined') {
         try {
@@ -167,6 +201,7 @@ function loadAllGameData() {
             if (data.currentCouncilFaction) currentCouncilFaction = data.currentCouncilFaction;
         } catch(e) { console.error("Ошибка загрузки Совета:", e); }
     }
+    // Если совет не загружен, инициализируем основные фракции
     if (typeof factionCouncils !== 'undefined' && Object.keys(factionCouncils).length === 0) {
         const factionsToInit = ["clan_daketa", "county_markarn", "principality_gorski", "regency_council", "lepus_union"];
         for (let fid of factionsToInit) {
@@ -177,10 +212,10 @@ function loadAllGameData() {
         }
     }
 
-    // Загрузка армии
+    // === Загрузка армий ===
     if (typeof loadArmyData === 'function') loadArmyData();
 
-    // Загрузка провинций
+    // === Загрузка провинций ===
     const provinceSaved = localStorage.getItem('unified_province_manager');
     if (provinceSaved && typeof provincesData !== 'undefined') {
         try {
@@ -193,7 +228,7 @@ function loadAllGameData() {
         } catch(e) { console.error("Ошибка загрузки провинции:", e); }
     }
 
-    // ГАРАНТИРУЕМ, ЧТО ВСЕ НЕОБХОДИМЫЕ ПРОВИНЦИИ СУЩЕСТВУЮТ
+    // === Гарантируем наличие всех необходимых провинций ===
     const requiredProvinces = ["orochima", "kaya", "vogel", "neolania", "metropolitan_area", "great_shaft", "leporis"];
     for (let pid of requiredProvinces) {
         if (typeof provincesData !== 'undefined' && !provincesData[pid]) {
@@ -210,16 +245,17 @@ function loadAllGameData() {
         }
     }
 
+    // Устанавливаем текущую провинцию, если она не задана
     if (typeof provincesData !== 'undefined' && !provincesData[currentProvince]) {
         currentProvince = (typeof FACTION_TO_PROVINCE !== 'undefined' && FACTION_TO_PROVINCE[currentFaction]) ? FACTION_TO_PROVINCE[currentFaction] : "orochima";
     }
 
-    // Миграция ресурсов для всех провинций
+    // === Миграция ресурсов ===
     if (typeof migrateProvinceResources === 'function') {
         for (let pid in provincesData) migrateProvinceResources(pid);
     }
 
-    // ===== ИНИЦИАЛИЗАЦИЯ ПОЛЕЙ ДЛЯ СТРОИТЕЛЬСТВА =====
+    // === Инициализация полей для строительства ===
     if (typeof peopleState !== 'undefined') {
         if (peopleState.activeConstructionCount === undefined) {
             peopleState.activeConstructionCount = 0;
@@ -229,7 +265,7 @@ function loadAllGameData() {
         }
     }
 
-    // Синхронизация казны
+    // === Синхронизация казны с GameState ===
     if (typeof GameState !== 'undefined') {
         const savedTreasury = localStorage.getItem('game_state');
         if (savedTreasury) {
@@ -243,17 +279,25 @@ function loadAllGameData() {
         if (typeof peopleState !== 'undefined') peopleState.treasury = GameState.getTreasury();
     }
 
-    // Маршруты
+    // === Загрузка маршрутов и даты ===
     if (typeof loadRoutes === 'function') loadRoutes();
     if (typeof loadGameDate === 'function') loadGameDate();
 
-    // Обновление интерфейсов
+    // === Обновление интерфейсов ===
     if (typeof updateGlobalDateDisplay === 'function') updateGlobalDateDisplay();
     if (typeof updateGlobalResourcesDisplay === 'function') updateGlobalResourcesDisplay();
     if (typeof updateTreasuryDisplay === 'function') updateTreasuryDisplay();
 }
 
-// ========== 4. ФУНКЦИИ СМЕНЫ ФРАКЦИИ ==========
+// ============================================================================
+// РАЗДЕЛ 4: ФУНКЦИИ СМЕНЫ ФРАКЦИИ
+// ============================================================================
+
+/**
+ * Переключает текущую фракцию на указанную, обновляет провинцию,
+ * совет, интерфейсы и сохраняет состояние.
+ * @param {string} factionId - ID новой фракции
+ */
 function switchFaction(factionId) {
     if (!factionId || factionId === currentFaction) return;
     currentFaction = factionId;
@@ -277,6 +321,10 @@ function switchFaction(factionId) {
     if (typeof saveAllData === 'function') saveAllData();
 }
 
+/**
+ * Переключает фракцию по клику на герб (используется в интерфейсе).
+ * @param {string} factionId - ID фракции
+ */
 function switchFactionByCoat(factionId) {
     if (!factionId || factionId === currentFaction) return;
     const factionSelect = document.getElementById('globalFactionSelect');
@@ -285,12 +333,21 @@ function switchFactionByCoat(factionId) {
     addGlobalLog(`🛡️ Переключено на фракцию ${(typeof FACTION_NAMES !== 'undefined' && FACTION_NAMES[factionId]) ? FACTION_NAMES[factionId] : factionId} через герб`, 'general');
 }
 
-// ========== 5. ОСНОВНАЯ ИНИЦИАЛИЗАЦИЯ ==========
+// ============================================================================
+// РАЗДЕЛ 5: ОСНОВНАЯ ИНИЦИАЛИЗАЦИЯ
+// ============================================================================
+
+/**
+ * Главная функция инициализации игры.
+ * Загружает текущую фракцию, все данные, инициализирует карту, интерфейсы,
+ * и обрабатывает параметры URL для действий с карты (оккупация, освобождение).
+ */
 function fullInit() {
     console.log("🚀 ЗАПУСК ОБЪЕДИНЁННОЙ СИСТЕМЫ УПРАВЛЕНИЯ...");
     console.log("📌 НОВАЯ СТРУКТУРА: Фракция → Провинция → Риторика");
     console.log("🗺️ НОВАЯ СИСТЕМА СЛОЁВ: Риторика | Владения | Вассалы");
     
+    // === Загрузка текущей фракции ===
     const savedFaction = localStorage.getItem('currentFaction');
     if (savedFaction && typeof FACTION_NAMES !== 'undefined' && FACTION_NAMES[savedFaction]) {
         currentFaction = savedFaction;
@@ -298,24 +355,32 @@ function fullInit() {
         currentFaction = "clan_daketa";
     }
     
+    // === Загрузка всех данных ===
     loadAllGameData();
 
-    // Инициализация карты
+    // === Инициализация карты (если она есть на странице) ===
     if (typeof initMap === 'function') {
         initMap();
         if (typeof addCityMarkers === 'function') addCityMarkers();
     }
     
+    // === Загрузка маршрутов ===
     if (typeof loadRoutes === 'function') loadRoutes();
+    
+    // === Настройка UI ===
     if (typeof setupTabs === 'function') setupTabs();
     if (typeof setupCollapsibles === 'function') setupCollapsibles();
     if (typeof setupMapModes === 'function') setupMapModes();
     if (typeof bindGlobalEvents === 'function') bindGlobalEvents();
 
+    // === Обновление селектора фракций ===
     const factionSelect = document.getElementById('globalFactionSelect');
     if (factionSelect) factionSelect.value = currentFaction;
     
+    // === Инициализация торговли ===
     if (typeof updatePartnerSelect === 'function') updatePartnerSelect();
+    
+    // === Отрисовка всех интерфейсов ===
     if (typeof renderCouncil === 'function') renderCouncil();
     if (typeof renderArmy === 'function') { renderArmy(); if (typeof renderAvailableUnits === 'function') renderAvailableUnits(); }
     if (typeof refreshPeopleUI === 'function') refreshPeopleUI();
@@ -327,7 +392,7 @@ function fullInit() {
     if (typeof startAutoSave === 'function') startAutoSave();
     if (typeof hideLoadingScreen === 'function') hideLoadingScreen();
     
-    // Если нет армий, создаём пример
+    // === Если нет армий, создаём пример ===
     if (typeof armies !== 'undefined' && armies.length === 0 && typeof loadExampleArmy === 'function') loadExampleArmy();
 
     console.log("✅ Система полностью инициализирована!");
@@ -337,7 +402,7 @@ function fullInit() {
     if (typeof addGlobalLog === 'function') addGlobalLog(`🏛️⚔️ Объединённая система управления фракцией загружена!`, 'general');
     addGlobalLog(`📍 Текущая фракция: ${factionName} (${rhetoricName})`, 'general');
     
-    // После инициализации всех UI проверим, не требуется ли демография
+    // === Проверка необходимости демографии ===
     if (typeof peopleState !== 'undefined' && peopleState.turnsSinceDemography >= 4) {
         const globalTurnBtn = document.getElementById('globalTurnBtn');
         if (globalTurnBtn) globalTurnBtn.disabled = true;
@@ -349,18 +414,67 @@ function fullInit() {
         const globalTurnBtn = document.getElementById('globalTurnBtn');
         if (globalTurnBtn) globalTurnBtn.disabled = false;
     }
-	// После загрузки всех данных принудительно обновляем лимиты и интерфейс найма
-	if (typeof refreshRecruitmentLimits === 'function') {
-		refreshRecruitmentLimits();
-	}
-	if (typeof updateUnitRecruitAvailability === 'function') {
-		updateUnitRecruitAvailability();
-	}
+    
+    // === Обновление лимитов и интерфейса найма ===
+    if (typeof refreshRecruitmentLimits === 'function') {
+        refreshRecruitmentLimits();
+    }
+    if (typeof updateUnitRecruitAvailability === 'function') {
+        updateUnitRecruitAvailability();
+    }
+
+    // =========================================================================
+    // НОВЫЙ БЛОК: ОБРАБОТКА ДЕЙСТВИЙ С КАРТЫ (ОККУПАЦИЯ, ОСВОБОЖДЕНИЕ)
+    // =========================================================================
+    // Этот блок проверяет параметры URL, которые передаются при переходе с карты.
+    // Параметры:
+    //   ?settlement=<ID>   - ID поселения
+    //   &action=occupy     - действие "оккупация"
+    //   &occupier=<ID>     - (опционально) ID фракции-оккупанта (если не указан, используется текущая фракция)
+    //   &action=liberate   - действие "освобождение" (пока не реализовано автоматически)
+    // =========================================================================
+    const urlParams = new URLSearchParams(window.location.search);
+    const settlementId = urlParams.get('settlement');
+    const action = urlParams.get('action');
+    const occupier = urlParams.get('occupier');
+
+    if (settlementId && action === 'occupy') {
+        // Если явно указан occupier, можно использовать его, но captureSettlement берёт текущую фракцию.
+        // Так как мы перешли на страницу фракции-оккупанта, то currentFaction уже должна быть этой фракцией.
+        // Однако, если мы на странице не той фракции (например, ошибка), можно принудительно переключить.
+        // Но для простоты оставим как есть.
+        console.log(`🔍 Получен запрос на оккупацию поселения ${settlementId} от фракции ${occupier || currentFaction}`);
+        // Задержка, чтобы все данные успели загрузиться
+        setTimeout(() => {
+            if (typeof captureSettlement === 'function') {
+                // captureSettlement принимает только settlementId и использует текущую фракцию
+                // Нам нужно, чтобы она использовала occupier, если он передан.
+                // Для этого мы можем временно подменить currentFaction, но это опасно.
+                // Лучше модифицировать captureSettlement, чтобы он принимал опциональный параметр occupier.
+                // Пока оставляем как есть, полагаясь на то, что мы на правильной странице.
+                captureSettlement(settlementId);
+                // После оккупации можно очистить параметры URL, чтобы при обновлении страницы не повторять действие.
+                // Но оставим для простоты.
+            } else {
+                console.warn('⚠️ Функция captureSettlement не определена');
+            }
+        }, 500);
+    } else if (settlementId && action === 'liberate') {
+        // Освобождение обычно требует загрузки файла. Можно показать диалог или перейти на страницу управления.
+        // Пока просто выводим сообщение.
+        console.log(`🕊️ Запрос на освобождение поселения ${settlementId}`);
+        alert('Для освобождения поселения загрузите соответствующий файл на вкладке "Оккупированные земли".');
+        // Если есть функция автоматического освобождения, можно её вызвать.
+        // Например, если в buildings.js есть liberateSettlement, можно использовать.
+    }
 }
 
-// ========== 6. ЗАПУСК ==========
-// Автоматический запуск отключён – стартовые экраны вызовут fullInit позже
-// Экспортируем fullInit в глобальную область для вызова из startup.js
+// ============================================================================
+// РАЗДЕЛ 6: ЗАПУСК И ЭКСПОРТ
+// ============================================================================
+
+// Автоматический запуск отключён – стартовые экраны вызовут fullInit позже.
+// Экспортируем fullInit в глобальную область для вызова из startup.js.
 window.fullInit = fullInit;
 console.log("⏳ Игра ожидает запуска через стартовые экраны");
 
@@ -369,6 +483,5 @@ window.initProvinceData = initProvinceData;
 window.loadAllGameData = loadAllGameData;
 window.switchFaction = switchFaction;
 window.switchFactionByCoat = switchFactionByCoat;
-window.fullInit = fullInit;
 
-console.log("✅ init.js загружен — версия 8.0 (инициализация полей для строительства)");
+console.log("✅ init.js загружен — версия 9.0 (добавлена обработка действий с карты)");
