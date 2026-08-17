@@ -512,6 +512,8 @@
                         <button id="saveRouteBtn" title="Сохранить маршрут">💾</button>
                         <button id="fullscreenMapBtn" title="На весь экран">⛶</button>
                         <button id="markerModeBtn" class="mode-btn" title="Добавить маркер">📍</button>
+						<button id="toggleCompassBtn" style="background:#3a5a2a;" title="Показать/скрыть компас">🧭 Компас</button>
+						<button id="toggleCitiesBtn" style="background:#3a5a2a;" title="Показать/скрыть панель городов">🏙️ Города</button>
                     </div>
                     <div style="display: flex; gap: 4px; margin-bottom: 6px; flex-wrap: wrap;">
                         <button id="modeRhetoricBtn" class="mode-btn" title="Маски риторики">🎭</button>
@@ -564,11 +566,11 @@
         </div>
 
         <!-- Панель городов -->
-        <div class="map-panel map-panel-cities">
-            <div class="map-panel-header" id="citiesHeader">
-                <span>🏙️ Города</span><span>▶</span>
-            </div>
-            <div class="map-panel-content" id="citiesContent">
+		<div class="map-panel map-panel-cities" id="citiesPanel">
+			<div class="map-panel-header" id="citiesHeader">
+				<span>🏙️ Города</span><span>▶</span>
+			</div>
+			<div class="map-panel-content" id="citiesContent">
                 <label><input type="checkbox" id="showCities" checked> Показать города</label>
                 <select id="factionFilter">
                     <option value="all">Все фракции</option>
