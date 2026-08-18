@@ -1,7 +1,7 @@
 // ============================================================================
 // МОДУЛЬ: army_ui.js (версия 20.0 – диалог импорта битвы, метки раненых)
 // ============================================================================
-// Загружено на гитхаб 18.07.2026
+// Загружено на гитхаб 19.08.2026
 function renderArmy() {
     const container = document.getElementById('armiesContainer');
     if (!container) return;
@@ -48,16 +48,20 @@ function renderArmy() {
                     woundedBadge = `<span style="position:absolute; top:2px; right:2px; font-size:1.5rem; color:#ff4444;" title="Ранено: ${unit.wounded}">❤️‍🩹</span>`;
                 }
 
-                unitsHtml += `
+				unitsHtml += `
 					<div style="display:flex; flex-direction:column; align-items:center; background:#1f1c14; padding:6px; border-radius:10px; width:110px; text-align:center; position:relative;">
 						${iconHtml}
 						${woundedBadge}
 						<span style="font-size:1rem; margin-top:4px;">${escapeHtml(unit.name)}</span>
 						<span style="font-size:1rem; color:#cfc294;">👥 ${unit.count}</span>
-						<div style="display:flex; gap:4px; justify-content:center; margin-top:4px;">
+						<div style="display:flex; gap:4px; justify-content:center; margin-top:4px; flex-wrap:wrap;">
 							<button onclick="window.removeUnitFromArmy('${army.id}', '${unit.id}')" style="background:#7a2a2a; padding:2px 6px; font-size:0.6rem;" title="Удалить отряд">✖</button>
 							<button onclick="openUnitManualEdit('${army.id}', '${unit.id}')" style="background:#b8860b; padding:2px 6px; font-size:0.6rem;" title="Редактировать отряд">🗡️</button>
 							<button onclick="(function(){ const db = window.unitDatabase || {}; const mercs = window.MERCENARY_UNITS || {}; const unit = db['${unit.unitKey}'] || mercs['${unit.unitKey}']; if(unit && typeof openUnitDetailModal === 'function') openUnitDetailModal(unit); })()" style="background:#3a5a2a; padding:2px 6px; font-size:0.6rem;" title="Подробнее">🔍</button>
+						</div>
+						<!-- Кнопка перемещения внизу -->
+						<div style="margin-top:6px; width:100%; display:flex; justify-content:center;">
+							<button onclick="openMoveUnitModal('${unit.id}', '${army.id}')" style="background:#3a6b3a; padding:2px 6px; font-size:0.6rem; width:100%;" title="Переместить в другую армию">🔄 Переместить</button>
 						</div>
 					</div>`;
             }
@@ -1101,6 +1105,96 @@ function showCustomConfirm(message, onConfirm, onCancel) {
         if (onCancel) onCancel();
     });
 }
+
+// ========== ПЕРЕМЕЩЕНИЕ ОТРЯДА В ДРУГУЮ АРМИЮ ==========
+
+/**
+ * Открывает модальное окно со списком армий для перемещения отряда.
+ * @param {string} unitId - ID отряда
+ * @param {string} fromArmyId - ID текущей армии
+ */
+function openMoveUnitModal(unitId, fromArmyId) {
+    const fromArmy = window.armies.find(a => a.id === fromArmyId);
+    if (!fromArmy) return;
+    const unit = fromArmy.units.find(u => u.id === unitId);
+    if (!unit) return;
+
+    // Список армий той же фракции, исключая текущую
+    const targetArmies = window.armies.filter(a => 
+        a.factionId === window.currentFaction && a.id !== fromArmyId
+    );
+
+    if (targetArmies.length === 0) {
+        alert('Нет других армий для перемещения.');
+        return;
+    }
+
+    // Создаём модальное окно
+    const modal = document.createElement('div');
+    modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:10000;display:flex;justify-content:center;align-items:center';
+
+    let listHtml = targetArmies.map(a => 
+        `<button data-army-id="${a.id}" style="display:block;width:100%;margin:5px 0;padding:10px;background:#2a2418;border:1px solid #b87c4f;border-radius:12px;color:#f0e6d0;">${escapeHtml(a.name)}${a.garrison ? ` (${SETTLEMENTS_DB[a.garrison]?.name || 'вне гарнизона'})` : ' (вне гарнизона)'}</button>`
+    ).join('');
+
+    modal.innerHTML = `
+        <div style="background:#1f1c14;border:2px solid #b87c4f;border-radius:24px;padding:25px;max-width:450px;width:90%;color:#e6ddb3;">
+            <h3 style="color:#ffd966;">🔄 Переместить отряд</h3>
+            <p><strong>${escapeHtml(unit.name)}</strong> (${unit.count} чел.) из <strong>${escapeHtml(fromArmy.name)}</strong></p>
+            <p style="font-size:0.9rem;color:#8a7a5a;">Выберите целевую армию:</p>
+            <div style="margin:15px 0; max-height:300px; overflow-y:auto; display:flex; flex-direction:column; gap:8px;">
+                ${listHtml}
+            </div>
+            <button id="cancelMoveUnitBtn" style="background:#7a2a2a;padding:8px 16px;width:100%;">Отмена</button>
+        </div>
+    `;
+    document.body.appendChild(modal);
+
+    modal.querySelectorAll('button[data-army-id]').forEach(btn => {
+        btn.onclick = function() {
+            const toArmyId = this.getAttribute('data-army-id');
+            modal.remove();
+            moveUnitToArmy(unitId, fromArmyId, toArmyId);
+        };
+    });
+
+    modal.querySelector('#cancelMoveUnitBtn').onclick = () => modal.remove();
+}
+
+/**
+ * Перемещает отряд из одной армии в другую.
+ * @param {string} unitId - ID отряда
+ * @param {string} fromArmyId - ID исходной армии
+ * @param {string} toArmyId - ID целевой армии
+ */
+function moveUnitToArmy(unitId, fromArmyId, toArmyId) {
+    const fromArmy = window.armies.find(a => a.id === fromArmyId);
+    const toArmy = window.armies.find(a => a.id === toArmyId);
+    if (!fromArmy || !toArmy) {
+        alert('Ошибка: армия не найдена.');
+        return;
+    }
+
+    const unitIndex = fromArmy.units.findIndex(u => u.id === unitId);
+    if (unitIndex === -1) {
+        alert('Отряд не найден.');
+        return;
+    }
+
+    // Извлекаем отряд из исходной армии
+    const [unit] = fromArmy.units.splice(unitIndex, 1);
+
+    // Добавляем в целевую армию
+    toArmy.units.push(unit);
+
+    // Сохраняем данные
+    if (typeof saveArmyData === 'function') saveArmyData();
+    if (typeof renderArmy === 'function') renderArmy();
+    if (typeof renderAvailableUnits === 'function') renderAvailableUnits();
+
+    addGlobalLog(`🔄 Отряд "${unit.name}" перемещён из "${fromArmy.name}" в "${toArmy.name}".`, 'army');
+}
+
 // Экспорт
 window.reinforceArmy = reinforceArmy;
 window.renderArmy = renderArmy;
