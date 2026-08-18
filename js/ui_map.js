@@ -2,7 +2,7 @@
 // МОДУЛЬ: ui_map.js – настройка UI карты (только обработчики)
 // Версия с едиными масками владений и вассалов (без аргументов)
 // ============================================================================
-// Загружено на гитхаб 18.07.2026
+// Загружено на гитхаб 18.08.2026
 function setupMapUI() {
     console.log("🔧 Настройка UI карты");
 
@@ -273,7 +273,33 @@ function setupMapUI() {
             });
         });
     }
-
+    // ===== НОВЫЙ БЛОК: ПЕРЕКЛЮЧЕНИЕ КОМПАСА =====
+    const toggleCompassBtn = document.getElementById('toggleCompassBtn');
+    if (toggleCompassBtn) {
+        toggleCompassBtn.textContent = '🧭 Скрыть';
+        toggleCompassBtn.addEventListener('click', function() {
+            if (window.compassContainer) {
+                const isVisible = window.compassContainer.style.display !== 'none';
+                window.compassContainer.style.display = isVisible ? 'none' : 'flex';
+                this.textContent = isVisible ? '🧭 Показать' : '🧭 Скрыть';
+            }
+        });
+    }
+	
+	    // ---------- ПЕРЕКЛЮЧЕНИЕ ПАНЕЛИ ГОРОДОВ ----------
+    const toggleCitiesBtn = document.getElementById('toggleCitiesBtn');
+    if (toggleCitiesBtn) {
+        const citiesPanel = document.getElementById('citiesPanel');
+        if (citiesPanel) {
+            toggleCitiesBtn.textContent = '🏙️ Скрыть';
+            toggleCitiesBtn.addEventListener('click', function() {
+                const isVisible = citiesPanel.style.display !== 'none';
+                citiesPanel.style.display = isVisible ? 'none' : 'block';
+                this.textContent = isVisible ? '🏙️ Показать' : '🏙️ Скрыть';
+            });
+        }
+    }
+	
     console.log("✅ UI карты настроен");
 }
 function buildMapLayersChecklist() {

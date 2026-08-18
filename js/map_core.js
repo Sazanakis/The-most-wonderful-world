@@ -7,7 +7,7 @@
 // ими через карту. Оккупация на карте теперь добавляет поселение в список
 // оккупированных земель фракции-оккупанта и снимает пометку у владельца.
 // ============================================================================
-// Дата загрузки на гитхаб 01.08.2026
+// Дата загрузки на гитхаб 18.08.2026
 // ============================================================================
 // РАЗДЕЛ 1: ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ
 // ============================================================================
@@ -83,6 +83,11 @@ function initMap() {
     const bgLayer = (typeof BG_LAYER !== 'undefined') ? BG_LAYER : 'images/Karta_countries.png';
     currentOverlay = L.imageOverlay(bgLayer, bounds, { opacity: 1 }).addTo(map);
     map.fitBounds(bounds);
+
+	// Добавляем компас (сохраняем ссылку на контейнер)
+	const compassData = addCompassControl();
+	map.addControl(compassData.control);
+	window.compassContainer = compassData.container; // делаем глобальным
 
     const zoom = map.getZoom();
     map.setMinZoom(zoom);
@@ -588,9 +593,14 @@ function updateCitiesVisibility() {
 function setMode(m) {
     if (map) {
         map.closePopup();
+        // Безопасно закрываем тултипы на слоях
         map.eachLayer(function(layer) {
             if (layer && typeof layer.closeTooltip === 'function') {
-                try { layer.closeTooltip(); } catch(e) {}
+                try {
+                    layer.closeTooltip();
+                } catch(e) {
+                    // Игнорируем ошибки
+                }
             }
         });
     }
@@ -1062,6 +1072,96 @@ function loadAllFactionsProvinceData() {
 
 function assignVassalOnMap(settlementId) {
     openTransferLandModal(settlementId, window.currentFaction);
+}
+
+// ========== КОМПАС ==========
+function addCompassControl() {
+    const container = L.DomUtil.create('div', 'leaflet-compass-control');
+    
+    // Стили для контейнера (круглая рамка, тень)
+    container.style.width = '250px';
+    container.style.height = '250px';
+    container.style.background = 'rgba(30, 25, 20, 0.85)';
+    container.style.border = '2px solid #b87c4f';
+    container.style.borderRadius = '50%';
+    container.style.display = 'flex';
+    container.style.alignItems = 'center';
+    container.style.justifyContent = 'center';
+    container.style.cursor = 'pointer';
+    container.style.boxShadow = '0 4px 15px rgba(0,0,0,0.6)';
+    container.style.transition = 'transform 0.2s ease, box-shadow 0.2s ease';
+    container.style.padding = '6px';
+    container.title = 'Показать север (сбросить поворот)';
+
+    // Создаём элемент изображения
+    const img = document.createElement('img');
+    img.src = 'icons/Compas.png';            // предполагаем, что файл лежит в папке icons/
+    // Если файл лежит в другой папке, измените путь: 'images/Compas.png'
+    img.alt = 'Компас';
+    img.style.width = '100%';
+    img.style.height = '100%';
+    img.style.objectFit = 'contain';
+    img.style.display = 'block';
+    img.style.borderRadius = '50%'; // чтобы изображение вписывалось в круг
+
+    // Обработчик ошибки загрузки (если файл не найден)
+    img.onerror = function() {
+        this.style.display = 'none';
+        // Показываем текстовую заглушку
+        const fallback = document.createElement('span');
+        fallback.textContent = '⬆';
+        fallback.style.fontSize = '24px';
+        fallback.style.color = '#ffd966';
+        container.appendChild(fallback);
+    };
+
+    container.appendChild(img);
+
+    // Клик – сброс поворота
+    container.onclick = function() {
+        if (typeof map.setBearing === 'function') {
+            map.setBearing(0);
+        } else {
+            console.log('Поворот карты не поддерживается');
+        }
+    };
+
+    // Эффекты наведения
+    container.onmouseenter = function() {
+        container.style.transform = 'scale(1.08)';
+        container.style.boxShadow = '0 0 20px rgba(180, 140, 80, 0.4)';
+    };
+    container.onmouseleave = function() {
+        container.style.transform = 'scale(1)';
+        container.style.boxShadow = '0 4px 15px rgba(0,0,0,0.6)';
+    };
+
+    // Создаём контрол Leaflet, который возвращает этот контейнер
+    const CompassControl = L.Control.extend({
+        options: { position: 'topright' },
+        onAdd: function() {
+            return container;
+        }
+    });
+
+    return { control: new CompassControl(), container: container };
+}
+
+// ========== ПЕРЕКЛЮЧЕНИЕ ВИДИМОСТИ КОМПАСА ==========
+function toggleCompassVisibility() {
+    if (!window.compassContainer) {
+        console.warn('Компас ещё не создан');
+        return;
+    }
+    const container = window.compassContainer;
+    const isVisible = container.style.display !== 'none';
+    container.style.display = isVisible ? 'none' : 'flex';
+    
+    // Меняем текст кнопки (опционально)
+    const btn = document.getElementById('toggleCompassBtn');
+    if (btn) {
+        btn.textContent = isVisible ? '🧭 Показать' : '🧭 Скрыть';
+    }
 }
 
 // ============================================================================

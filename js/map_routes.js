@@ -1,7 +1,7 @@
 // ============================================================================
 // МОДУЛЬ 11: map_routes.js (версия 5.2 – финальное исправление цветов)
 // ============================================================================
-// Загружено на гитхаб 01.08.2026
+// Загружено на гитхаб 18.08.2026
 // Гарантированно получаем глобальные функции форматирования
 const fmtDistFn = (typeof fmtDistance === 'function') ? fmtDistance : function(km) { return Math.floor(km).toLocaleString('ru-RU') + ' км'; };
 const fmtTurnsFn = (typeof fmtTurns === 'function') ? fmtTurns : function(turns) { return turns.toFixed(1) + ' ходов'; };
@@ -151,15 +151,25 @@ function addTempRulerPoint(latLng) {
 }
 
 function clearTemp() {
-	if (map) map.closeTooltip();
     if (typeof map === 'undefined' || !map) return;
-    tempLines.forEach(line => map.removeLayer(line));
-    tempMarkers.forEach(marker => map.removeLayer(marker));
+    
+    // Удаляем временные линии и маркеры
+    tempLines.forEach(line => {
+        if (map.hasLayer(line)) map.removeLayer(line);
+    });
+    tempMarkers.forEach(marker => {
+        if (map.hasLayer(marker)) map.removeLayer(marker);
+    });
+    
+    // Очищаем массивы
     tempPoints = [];
     tempSegments = [];
     tempLines = [];
     tempMarkers = [];
+    
+    // Закрываем модальное окно выбора типа
     if (window.typeModal) window.typeModal.remove();
+    
     updateRouteInfo();
 }
 
