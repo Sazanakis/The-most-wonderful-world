@@ -274,17 +274,22 @@ function setupMapUI() {
         });
     }
     // ===== НОВЫЙ БЛОК: ПЕРЕКЛЮЧЕНИЕ КОМПАСА =====
-    const toggleCompassBtn = document.getElementById('toggleCompassBtn');
-    if (toggleCompassBtn) {
-        toggleCompassBtn.textContent = '🧭 Скрыть';
-        toggleCompassBtn.addEventListener('click', function() {
-            if (window.compassContainer) {
-                const isVisible = window.compassContainer.style.display !== 'none';
-                window.compassContainer.style.display = isVisible ? 'none' : 'flex';
-                this.textContent = isVisible ? '🧭 Показать' : '🧭 Скрыть';
-            }
-        });
-    }
+	const toggleCompassBtn = document.getElementById('toggleCompassBtn');
+	if (toggleCompassBtn) {
+		if (window.compassContainer) {
+			// Проверяем начальное состояние компаса
+			const isVisible = window.compassContainer.style.display !== 'none';
+			toggleCompassBtn.textContent = isVisible ? '🧭 Скрыть' : '🧭 Показать';
+			
+			toggleCompassBtn.addEventListener('click', function() {
+				if (window.compassContainer) {
+					const isVisibleNow = window.compassContainer.style.display !== 'none';
+					window.compassContainer.style.display = isVisibleNow ? 'none' : 'flex';
+					this.textContent = isVisibleNow ? '🧭 Показать' : '🧭 Скрыть';
+				}
+			});
+		}
+	}
 	
 	    // ---------- ПЕРЕКЛЮЧЕНИЕ ПАНЕЛИ ГОРОДОВ ----------
     const toggleCitiesBtn = document.getElementById('toggleCitiesBtn');

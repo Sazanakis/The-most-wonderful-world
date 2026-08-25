@@ -58,7 +58,10 @@ const VASSAL_NAMES = {
 	"house_gimadzu": "Род Гимадзу",
 	"house_fraum": "Род Фраум",
 	"house_ion": "Род Йон",
-	"house_mensen_merchant_guild": "Купеческая гильдия Менсена"
+	"house_mensen_merchant_guild": "Купеческая гильдия Менсена",
+	"house_wynthorne": "Род Уинторн",
+	"house_ashbyrne": "Род Эшбирн",
+	"house_thornhill": "Род Торнхилл"
 };
 
 function getVassalForSettlement(settlementId) {

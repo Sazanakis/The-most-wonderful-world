@@ -1084,7 +1084,7 @@ function addCompassControl() {
     container.style.background = 'rgba(30, 25, 20, 0.85)';
     container.style.border = '2px solid #b87c4f';
     container.style.borderRadius = '50%';
-    container.style.display = 'flex';
+    container.style.display = 'none';
     container.style.alignItems = 'center';
     container.style.justifyContent = 'center';
     container.style.cursor = 'pointer';

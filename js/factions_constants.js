@@ -20,7 +20,8 @@ const FACTION_RULERS = {
 	order_varsiltaers: "Антегро Илиинг",
 	county_takania: "Морглен Альфьеро Ла Валлет",
 	principality_lorein: "Ноэми Ванденхейде",
-	county_mensen: "Вальдэ Мар'Фалкин"
+	county_mensen: "Вальдэ Мар'Фалкин",
+	county_corvail: "Альбрехт Корвайл",
 };
 
 // ---------- НАЗВАНИЯ РИТОРИК (ИДЕОЛОГИЙ) ----------
@@ -50,7 +51,8 @@ const FACTION_LEADER_LINKS = {
 	county_takania: "https://vk.com/page-228463474_55105475",
 	order_varsiltaers: "https://vk.com/page-228463474_55105506",
 	principality_lorein: "https://vk.com/page-228463474_55105567",
-	county_mensen: "https://vk.ru/page-228463474_55105853"
+	county_mensen: "https://vk.ru/page-228463474_55105853",
+	county_corvail: "https://vk.ru/page-228463474_55105970"
 };
 const FACTION_MAIN_COATS = {
     clan_daketa: "emblem/armoria.png",
@@ -68,7 +70,8 @@ const FACTION_MAIN_COATS = {
     county_skollfang: "emblem/skollfang.png",
     order_varsiltaers: "emblem/varsiltaer.png",
     principality_lorein: "emblem/lorein.png",
-	county_mensen: "emblem/mensen.png"
+	county_mensen: "emblem/mensen.png",
+	county_corvail: "emblem/corvail.png",
 };
 window.FACTION_MAIN_COATS = FACTION_MAIN_COATS;
 // ---------- РЕСУРСЫ (для торговли и построек) ----------
@@ -137,7 +140,10 @@ const VASSAL_ICONS = {
 	"house_gimadzu": { coat: "icons/emblem/gimadzu.png", portrait: "icons/default_portrait.png" },
 	"house_fraum": { coat: "icons/emblem/fraum.png", portrait: "icons/default_portrait.png" },
 	"house_ion": { coat: "icons/emblem/ion.png", portrait: "icons/default_portrait.png" },
-	"house_mensen_merchant_guild": { coat: "icons/emblem/mensen_merchant_guild.png", portrait: "icons/default_portrait.png" }
+	"house_mensen_merchant_guild": { coat: "icons/emblem/mensen_merchant_guild.png", portrait: "icons/default_portrait.png" },
+	"house_wynthorne": { coat: "icons/emblem/wynthorne.png", portrait: "icons/default_portrait.png" },
+	"house_ashbyrne": { coat: "icons/emblem/ashbyrne.png", portrait: "icons/default_portrait.png" },
+	"house_thornhill": { coat: "icons/emblem/thornhill.png", portrait: "icons/default_portrait.png" }
 };
 
 // ---------- МАППИНГ ПОВЫШЕНИЯ РАНГА ----------
@@ -231,6 +237,11 @@ const INITIAL_VASSALS = {
 	{ id: "house_fraum", name: "Род Фраум", type: "MINOR_CLAN", politicalFaction: "NOBILITY", leader: "Глава Фраум", baseLoyalty: 60 },
 	{ id: "house_ion", name: "Род Йон", type: "MINOR_CLAN", politicalFaction: "NOBILITY", leader: "Глава Йон", baseLoyalty: 60 },
 	{ id: "house_mensen_merchant_guild", name: "Купеческая гильдия Менсена", type: "MERCHANT_GUILD", politicalFaction: "MERCHANTS", leader: "Глава Гильдии", baseLoyalty: 45, isMerchantGuild: true },
+	],
+	county_corvail: [
+		{ id: "house_wynthorne", name: "Род Уинторн", type: "MINOR_CLAN", politicalFaction: "NOBILITY", leader: "Глава Уинторн", baseLoyalty: 50 },
+		{ id: "house_ashbyrne", name: "Род Эшбирн", type: "MINOR_CLAN", politicalFaction: "NOBILITY", leader: "Глава Эшбирн", baseLoyalty: 50 },
+		{ id: "house_thornhill", name: "Род Торнхилл", type: "MINOR_CLAN", politicalFaction: "NOBILITY", leader: "Глава Торнхилл", baseLoyalty: 50 },
 	],
 };
 

@@ -1,31 +1,50 @@
 // ============================================================================
-// DLC: АЛХИМИЧЕСКИЙ РАЙОН (уникальная постройка для Княжества Лорейн)
+// DLC: Дополнительный контент (безопасная версия)
 // ============================================================================
 
-// ---------- 1. НОВАЯ ПОСТРОЙКА ----------
+console.log("🔧 DLC Content загружается...");
+
+// ---------- 1. НОВЫЙ РЕСУРС (только если RESOURCES_REGISTRY определён) ----------
+if (typeof window.RESOURCES_REGISTRY !== 'undefined') {
+    window.RESOURCES_REGISTRY["elixir"] = {
+        id: "elixir",
+        name: "Эликсиры",
+        icon: "icons/elixir.png",
+        category: "strategic",
+        tradeable: true,
+        defaultValue: 0
+    };
+    console.log("✅ DLC: Ресурс «Эликсиры» добавлен");
+} else {
+    console.warn("⚠️ RESOURCES_REGISTRY не определён, ресурс «Эликсиры» не добавлен");
+}
+
+// ---------- 2. АЛХИМИЧЕСКИЙ РАЙОН (только если buildingsCatalog существует) ----------
 if (typeof window.buildingsCatalog !== 'undefined') {
     window.buildingsCatalog["Alchemy_District"] = {
         name: "Алхимический район",
         category: "economic",
         allowedSettlementTypes: ["city", "castle"],
-        description: "Отдельный район для алхимических исследований. Снижает стоимость гражданских технологий на 10 очков.",
+        description: "Отдельный район для алхимических исследований. 🔬 Снижает стоимость всех гражданских технологий на 10 очков (минимум 10 очков).",
         cost: {
-            wood: 300,
-            stone: 300,
+            wood: 400,
+            stone: 600,
             iron: 150,
-            gold: 10,
+            gold: 30,
             ers: 10000
         },
-        buildTime: 3,
+        buildTime: 6,
         income: {},
         special: "alchemy_district",
         faction: "principality_lorein",
         limit: { scope: "province", max: 1 }
     };
     console.log("✅ DLC: Постройка «Алхимический район» добавлена");
+} else {
+    console.warn("⚠️ buildingsCatalog не определён, постройка не добавлена");
 }
 
-// ---------- 2. ФУНКЦИЯ ПРОВЕРКИ АКТИВНОСТИ ПОСТРОЙКИ ----------
+// ---------- 3. ДРУГИЕ ФУНКЦИИ (с проверками) ----------
 function isAlchemyDistrictActive() {
     if (typeof provincesData === 'undefined' || typeof getCurrentFactionProvinces !== 'function') return false;
     const provinces = getCurrentFactionProvinces();
@@ -44,7 +63,7 @@ function isAlchemyDistrictActive() {
     return false;
 }
 
-// ---------- 3. БОНУС В getTechBonuses ----------
+// Переопределяем getTechBonuses (если функция существует)
 if (typeof window.getTechBonuses === 'function') {
     const originalGetTechBonuses = window.getTechBonuses;
     window.getTechBonuses = function() {
@@ -57,7 +76,7 @@ if (typeof window.getTechBonuses === 'function') {
     console.log("✅ DLC: getTechBonuses обновлён");
 }
 
-// ---------- 4. ПЕРЕОПРЕДЕЛЯЕМ processResearch ДЛЯ УЧЁТА СКИДКИ ----------
+// Переопределяем processResearch (если функция существует)
 if (typeof window.processResearch === 'function') {
     const originalProcessResearch = window.processResearch;
     window.processResearch = function() {
@@ -83,7 +102,7 @@ if (typeof window.processResearch === 'function') {
     console.log("✅ DLC: processResearch адаптирован");
 }
 
-// ---------- 5. ПЕРЕОПРЕДЕЛЯЕМ openAssignTechModal ----------
+// Переопределяем openAssignTechModal (если функция существует)
 if (typeof window.openAssignTechModal === 'function') {
     const originalOpenAssignTechModal = window.openAssignTechModal;
     window.openAssignTechModal = function(slot) {
@@ -145,8 +164,7 @@ if (typeof window.openAssignTechModal === 'function') {
     console.log("✅ DLC: openAssignTechModal адаптирован");
 }
 
-// ---------- 6. ПРИНУДИТЕЛЬНОЕ ОБНОВЛЕНИЕ ИНТЕРФЕЙСА ТЕХНОЛОГИЙ ----------
-// Функция, которая перерисовывает всё, что связано с технологиями
+// ---------- 4. ОБНОВЛЕНИЕ ИНТЕРФЕЙСА (с проверками) ----------
 function refreshTechUI() {
     if (typeof renderAllTechSlots === 'function') renderAllTechSlots();
     if (typeof renderAvailableTechs === 'function') renderAvailableTechs();
@@ -156,24 +174,20 @@ function refreshTechUI() {
     console.log('🔄 Интерфейс технологий обновлён');
 }
 
-// Переопределяем processConstruction, чтобы после завершения строительства обновлять технологии
 if (typeof window.processConstruction === 'function') {
     const originalProcessConstruction = window.processConstruction;
     window.processConstruction = function() {
         const result = originalProcessConstruction();
-        // Если что-то завершилось, обновляем технологии (на случай, если это был Алхимический район)
         refreshTechUI();
         return result;
     };
-    console.log("✅ DLC: processConstruction адаптирован для обновления технологий");
+    console.log("✅ DLC: processConstruction адаптирован");
 }
 
-// Переопределяем refreshBuildingsUI (она вызывается после строительства)
 if (typeof window.refreshBuildingsUI === 'function') {
     const originalRefreshBuildingsUI = window.refreshBuildingsUI;
     window.refreshBuildingsUI = function() {
         originalRefreshBuildingsUI();
-        // После обновления построек проверяем, активен ли Алхимический район, и обновляем технологии
         if (isAlchemyDistrictActive()) {
             refreshTechUI();
         }
@@ -181,25 +195,21 @@ if (typeof window.refreshBuildingsUI === 'function') {
     console.log("✅ DLC: refreshBuildingsUI адаптирован");
 }
 
-// Добавляем обновление при переключении на вкладку "Технологии"
-// Подменяем setupTabs (если она определена)
 if (typeof window.setupTabs === 'function') {
     const originalSetupTabs = window.setupTabs;
     window.setupTabs = function() {
         originalSetupTabs();
-        // Добавляем дополнительный обработчик на вкладку tech
         const techTab = document.querySelector('.tab-button[data-tab="tech"]');
         if (techTab) {
             techTab.addEventListener('click', function() {
-                // Небольшая задержка, чтобы DOM успел обновиться
                 setTimeout(refreshTechUI, 100);
             });
         }
     };
-    console.log("✅ DLC: setupTabs адаптирован для обновления технологий при переключении");
+    console.log("✅ DLC: setupTabs адаптирован");
 }
 
-// ---------- 7. ОТОБРАЖЕНИЕ УМЕНЬШЕННОЙ СТОИМОСТИ В UI (рендер) ----------
+// ---------- 5. ОТОБРАЖЕНИЕ СТОИМОСТИ (с проверками) ----------
 if (typeof window.renderAvailableTechs === 'function') {
     const originalRenderAvailableTechs = window.renderAvailableTechs;
     window.renderAvailableTechs = function() {
@@ -250,10 +260,10 @@ if (typeof window.renderActiveResearch === 'function') {
     console.log("✅ DLC: renderActiveResearch адаптирован");
 }
 
-// ---------- 8. ФИЛЬТРАЦИЯ ПОСТРОЕК ПО ФРАКЦИИ ----------
+// ---------- 6. ФИЛЬТРАЦИЯ ПОСТРОЕК (с проверками) ----------
 (function() {
-    const originalShowBuildingSelector = window.showBuildingSelector;
-    if (typeof originalShowBuildingSelector === 'function') {
+    if (typeof window.showBuildingSelector === 'function') {
+        const originalShowBuildingSelector = window.showBuildingSelector;
         window.showBuildingSelector = function(settlementId) {
             const data = provincesData[currentProvince];
             if (!data) return;
@@ -276,8 +286,8 @@ if (typeof window.renderActiveResearch === 'function') {
         console.log("✅ DLC: Логика показа построек адаптирована");
     }
 
-    const originalStartBuilding = window.startBuilding;
-    if (typeof originalStartBuilding === 'function') {
+    if (typeof window.startBuilding === 'function') {
+        const originalStartBuilding = window.startBuilding;
         window.startBuilding = function(settlementId, buildingName, isUpgrade, baseBuilding) {
             const buildingDef = buildingsCatalog[buildingName];
             if (buildingDef && buildingDef.faction && buildingDef.faction !== window.currentFaction) {
@@ -291,13 +301,12 @@ if (typeof window.renderActiveResearch === 'function') {
     }
 })();
 
-// ---------- 9. ПРИНУДИТЕЛЬНОЕ ОБНОВЛЕНИЕ ПРИ ЗАГРУЗКЕ ----------
-// Если мы уже на странице Лорейн, обновляем интерфейс сразу
+// ---------- 7. ПРИНУДИТЕЛЬНОЕ ОБНОВЛЕНИЕ ПРИ ЗАГРУЗКЕ ----------
 setTimeout(function() {
     if (window.currentFaction === 'principality_lorein') {
         refreshTechUI();
-        console.log('🔄 Принудительное обновление технологий при загрузке DLC');
+        console.log('🔄 Принудительное обновление технологий при загрузке DLC (Лорейн)');
     }
 }, 500);
 
-console.log("✅ DLC «Алхимический район» для Лорейн полностью загружен");
+console.log("✅ DLC Content успешно загружен (без ошибок)");
