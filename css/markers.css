@@ -1,0 +1,1265 @@
+/* ============================================================================
+   MARKERS.CSS — система маркеров
+   ============================================================================ */
+
+/* ===== МАРКЕР НА КАРТЕ ===== */
+.marker-icon-wrap {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    filter: drop-shadow(0 4px 10px rgba(0,0,0,0.65));
+    transition: transform 0.18s ease, filter 0.18s ease;
+    cursor: pointer;
+    /* Создаём изолированный stacking context — эмодзи всегда сверху */
+    isolation: isolate;
+    /* Форсируем compositor layer — рендеринг стабильнее */
+    will-change: transform;
+}
+.marker-icon-wrap:hover {
+    transform: scale(1.12);
+    filter: drop-shadow(0 6px 14px rgba(0,0,0,0.8)) drop-shadow(0 0 12px rgba(255,217,102,0.5));
+    z-index: 9999 !important;
+}
+
+/* SVG формы — задний слой */
+.marker-shape-svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1;         /* ← задний план */
+}
+
+/* Иконка/эмодзи — передний слой, поверх формы */
+.marker-icon-layer {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    line-height: 1;
+    user-select: none;
+    z-index: 2;         /* ← ВАЖНО: поверх SVG */
+    color: #ffffff;      /* на случай monochrome-символов */
+    font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji', sans-serif;
+    font-weight: 700;
+    text-align: center;
+    /* Мягкая тень для контраста на любом цвете */
+    text-shadow:
+        0 1px 2px rgba(0,0,0,0.85),
+        0 0 4px rgba(0,0,0,0.5);
+}
+
+/* Эмодзи как span — блок с явным размером */
+.marker-icon-layer > span {
+    display: inline-block;
+    line-height: 1;
+}
+
+.marker-icon-layer img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    filter: drop-shadow(0 1px 2px rgba(0,0,0,0.7));
+}
+
+/* Позиционирование иконки внутри различных форм */
+.marker-icon-wrap.shape-drop      .marker-icon-layer { inset: 4% 8% 32% 8%; }
+.marker-icon-wrap.shape-triangle  .marker-icon-layer { inset: 32% 15% 8% 15%; }
+.marker-icon-wrap.shape-diamond   .marker-icon-layer { inset: 8%; transform: scale(0.75); }
+.marker-icon-wrap.shape-square    .marker-icon-layer { inset: 12%; }
+.marker-icon-wrap.shape-circle    .marker-icon-layer { inset: 12%; }
+
+/* Пульсация для важных маркеров (turn-события) */
+.marker-icon-wrap.marker-pulse::before {
+    content: '';
+    position: absolute;
+    inset: -8%;
+    border-radius: 50%;
+    border: 2px solid var(--fill-color, #ffd966);
+    opacity: 0;
+    animation: markerPulse 2.4s ease-out infinite;
+    pointer-events: none;
+}
+@keyframes markerPulse {
+    0%   { transform: scale(0.8); opacity: 0.9; }
+    100% { transform: scale(1.8); opacity: 0; }
+}
+
+/* ===== TOOLTIP ПРИ НАВЕДЕНИИ ===== */
+.marker-hover-tip {
+    position: fixed;
+    z-index: 99999;
+    max-width: 360px;
+    min-width: 200px;
+    background: linear-gradient(180deg, rgba(30,25,18,0.97), rgba(18,14,12,0.97));
+    border: 2px solid #b8943a;
+    border-radius: 8px;
+    padding: 12px 14px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.9), 0 0 30px rgba(180,140,80,0.2);
+    color: #d4c9b8;
+    font-family: 'Cinzel', 'Georgia', serif;
+    font-size: 0.85rem;
+    pointer-events: auto;
+    animation: markerTipIn 0.2s ease;
+}
+@keyframes markerTipIn {
+    from { opacity: 0; transform: translateY(6px) scale(0.96); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.marker-hover-tip::after {
+    content: '';
+    position: absolute;
+    left: 50%; bottom: -8px;
+    transform: translateX(-50%) rotate(45deg);
+    width: 14px; height: 14px;
+    background: rgba(18,14,12,0.97);
+    border-right: 2px solid #b8943a;
+    border-bottom: 2px solid #b8943a;
+}
+.marker-hover-tip .mht-title {
+    color: #ffd966;
+    font-weight: 700;
+    font-size: 0.95rem;
+    letter-spacing: 0.04em;
+    margin-bottom: 6px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid rgba(160,120,80,0.3);
+    text-shadow: 0 1px 3px rgba(0,0,0,0.7);
+}
+.marker-hover-tip .mht-content {
+    color: #cfc294;
+    font-size: 0.8rem;
+    line-height: 1.5;
+    max-height: 260px;
+    overflow: hidden;
+}
+.marker-hover-tip .mht-content img,
+.marker-hover-tip .mht-content iframe {
+    max-width: 100%;
+    border-radius: 4px;
+    margin: 4px 0;
+    border: 1px solid rgba(160,120,80,0.3);
+}
+.marker-hover-tip .mht-content iframe {
+    width: 320px;
+    height: 180px;
+}
+.marker-hover-tip .mht-badge {
+    display: inline-block;
+    margin-top: 6px;
+    font-size: 0.65rem;
+    padding: 2px 8px;
+    border-radius: 10px;
+    background: rgba(184,134,11,0.25);
+    border: 1px solid rgba(255,217,102,0.4);
+    color: #ffd966;
+    letter-spacing: 0.05em;
+}
+
+/* ===== БОКОВАЯ ПАНЕЛЬ НАСТРОЕК ===== */
+.marker-settings-panel {
+    position: fixed;
+    top: 0; right: 0;
+    width: 400px;
+    max-width: 95vw;
+    height: 100vh;
+    background: linear-gradient(180deg, #1f1c14 0%, #16120e 100%);
+    border-left: 2px solid rgba(184,124,79,0.55);
+    box-shadow: -20px 0 60px rgba(0,0,0,0.9);
+    z-index: 9998;
+    display: flex;
+    flex-direction: column;
+    transform: translateX(100%);
+    transition: transform 0.32s cubic-bezier(0.2, 0.9, 0.3, 1);
+    font-family: 'Cinzel', 'Georgia', serif;
+    color: #d4c9b8;
+}
+.marker-settings-panel.open {
+    transform: translateX(0);
+}
+.msp-header {
+    padding: 14px 18px;
+    background: linear-gradient(180deg, rgba(0,0,0,0.55), rgba(0,0,0,0.15));
+    border-bottom: 1px solid rgba(160,120,80,0.35);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+}
+.msp-title {
+    color: #ffd966;
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.7);
+    display: flex; align-items: center; gap: 8px;
+}
+.msp-close {
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    background: rgba(122,42,42,0.6);
+    border: 1px solid rgba(255,107,107,0.4);
+    color: #ffdddd;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: all 0.2s ease;
+    display: flex; align-items: center; justify-content: center;
+    font-family: inherit;
+}
+.msp-close:hover {
+    background: #9a3a3a;
+    border-color: #ff6b6b;
+    transform: rotate(90deg);
+}
+
+.msp-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px 18px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+.msp-body::-webkit-scrollbar { width: 8px; }
+.msp-body::-webkit-scrollbar-thumb {
+    background: #7a5f3a; border-radius: 4px; border: 1px solid #b8943a;
+}
+
+/* Превью маркера */
+.msp-preview {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 18px;
+    background: radial-gradient(circle at 50% 40%, rgba(60,50,35,0.5), rgba(15,12,10,0.8));
+    border: 1px solid rgba(160,120,80,0.3);
+    border-radius: 10px;
+    min-height: 100px;
+    position: relative;
+}
+.msp-preview::before {
+    content: 'ПРЕВЬЮ';
+    position: absolute;
+    top: 6px; left: 10px;
+    font-size: 0.6rem;
+    color: #8a7a5a;
+    letter-spacing: 0.15em;
+}
+
+/* Поля */
+.msp-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.msp-label {
+    font-size: 0.72rem;
+    color: #8a7a5a;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 700;
+}
+.msp-input,
+.msp-textarea {
+    width: 100%;
+    padding: 8px 10px;
+    background: #2a2418;
+    border: 1px solid rgba(160,120,80,0.4);
+    border-radius: 6px;
+    color: #f0e6d0;
+    font-family: inherit;
+    font-size: 0.85rem;
+    transition: border-color 0.2s ease;
+}
+.msp-input:focus,
+.msp-textarea:focus {
+    outline: none;
+    border-color: #d4af37;
+    box-shadow: 0 0 0 2px rgba(212,175,55,0.15);
+}
+.msp-textarea {
+    resize: vertical;
+    min-height: 60px;
+}
+
+/* Числовые поля с шагом */
+.msp-number {
+    display: flex;
+    align-items: center;
+    background: #2a2418;
+    border: 1px solid rgba(160,120,80,0.4);
+    border-radius: 6px;
+    overflow: hidden;
+}
+.msp-number input {
+    flex: 1;
+    padding: 7px 10px;
+    background: transparent;
+    border: none;
+    color: #f0e6d0;
+    font-family: inherit;
+    font-size: 0.85rem;
+    text-align: center;
+    -moz-appearance: textfield;
+}
+.msp-number input::-webkit-outer-spin-button,
+.msp-number input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+.msp-number button {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    background: rgba(0,0,0,0.3);
+    border: none;
+    color: #cfc294;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 700;
+    transition: all 0.15s ease;
+    font-family: inherit;
+    box-shadow: none;
+}
+.msp-number button::before { display: none; }
+.msp-number button:hover {
+    background: rgba(180,140,80,0.3);
+    color: #ffd966;
+    transform: none;
+}
+
+/* Ряд полей */
+.msp-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+/* Форма — плитки */
+.msp-shapes {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 6px;
+}
+.msp-shape-btn {
+    aspect-ratio: 1;
+    padding: 6px;
+    background: rgba(0,0,0,0.3);
+    border: 2px solid rgba(160,120,80,0.3);
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    box-shadow: none;
+}
+.msp-shape-btn::before { display: none; }
+.msp-shape-btn:hover {
+    border-color: #d4af37;
+    background: rgba(180,140,80,0.1);
+    transform: none;
+}
+.msp-shape-btn.active {
+    border-color: #ffd966;
+    background: rgba(184,134,11,0.25);
+    box-shadow: 0 0 12px rgba(255,217,102,0.25);
+}
+.msp-shape-btn svg {
+    width: 100%;
+    height: 100%;
+    max-width: 28px;
+    max-height: 28px;
+    fill: currentColor;
+}
+.msp-shape-btn.active svg { fill: #ffd966; }
+
+/* Цвета */
+.msp-colors {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+.msp-color-field {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+.msp-color-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    background: #2a2418;
+    border: 1px solid rgba(160,120,80,0.4);
+    border-radius: 6px;
+}
+.msp-color-wrap input[type="color"] {
+    width: 32px;
+    height: 28px;
+    padding: 0;
+    border: 1px solid rgba(160,120,80,0.5);
+    border-radius: 4px;
+    cursor: pointer;
+    background: transparent;
+}
+.msp-color-wrap input[type="color"]::-webkit-color-swatch-wrapper { padding: 2px; }
+.msp-color-wrap input[type="color"]::-webkit-color-swatch { border: none; border-radius: 3px; }
+.msp-color-wrap .hex {
+    font-family: monospace;
+    font-size: 0.75rem;
+    color: #cfc294;
+    flex: 1;
+    text-align: right;
+}
+
+/* Кнопки действий */
+.msp-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 6px;
+}
+.msp-btn {
+    padding: 10px 14px;
+    background: rgba(0,0,0,0.35);
+    border: 2px solid rgba(160,120,80,0.4);
+    border-radius: 8px;
+    color: #d4c9b8;
+    font-family: inherit;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    box-shadow: none;
+}
+.msp-btn::before { display: none; }
+.msp-btn:hover {
+    background: rgba(180,140,80,0.2);
+    border-color: #d4af37;
+    color: #f0e3c8;
+    transform: none;
+}
+.msp-btn.primary {
+    background: linear-gradient(180deg, rgba(58,107,58,0.9), rgba(30,60,30,0.9));
+    border-color: rgba(139,195,74,0.5);
+}
+.msp-btn.primary:hover {
+    background: linear-gradient(180deg, #4c8a4c, #3a6b3a);
+    border-color: #8bc34a;
+    box-shadow: 0 0 15px rgba(139,195,74,0.3);
+}
+.msp-btn.danger {
+    background: rgba(122,42,42,0.6);
+    border-color: rgba(255,107,107,0.5);
+    color: #ffdddd;
+}
+.msp-btn.danger:hover {
+    background: #9a3a3a;
+    border-color: #ff6b6b;
+}
+
+/* ===== РЕДАКТОР СОДЕРЖИМОГО ===== */
+.marker-editor-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(10,8,14,0.92);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    z-index: 10000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    animation: markerModalIn 0.22s ease;
+}
+@keyframes markerModalIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+.marker-editor-box {
+    width: min(800px, 100%);
+    max-height: min(700px, 90vh);
+    background: linear-gradient(180deg, #1f1c14 0%, #16120e 100%);
+    border: 2px solid rgba(184,124,79,0.55);
+    border-radius: 14px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.9);
+}
+.marker-editor-header {
+    padding: 14px 20px;
+    background: linear-gradient(180deg, rgba(0,0,0,0.5), rgba(0,0,0,0.15));
+    border-bottom: 1px solid rgba(160,120,80,0.35);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.marker-editor-header h3 {
+    margin: 0;
+    color: #ffd966;
+    font-size: 1rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+.marker-editor-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    padding: 8px 14px;
+    background: rgba(0,0,0,0.3);
+    border-bottom: 1px solid rgba(160,120,80,0.25);
+}
+.mrte-btn {
+    width: 32px; height: 32px;
+    padding: 0;
+    background: rgba(0,0,0,0.35);
+    border: 1px solid rgba(160,120,80,0.35);
+    border-radius: 6px;
+    color: #cfc294;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.9rem;
+    font-weight: 700;
+    transition: all 0.18s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: none;
+}
+.mrte-btn::before { display: none; }
+.mrte-btn:hover {
+    background: rgba(180,140,80,0.25);
+    border-color: #d4af37;
+    color: #f0e3c8;
+    transform: none;
+}
+.mrte-btn.wide { width: auto; padding: 0 10px; font-size: 0.7rem; letter-spacing: 0.05em; }
+.mrte-sep {
+    width: 1px;
+    background: rgba(160,120,80,0.3);
+    margin: 0 4px;
+    align-self: stretch;
+}
+.mrte-color-wrap {
+    display: inline-flex;
+    align-items: center;
+    background: rgba(0,0,0,0.35);
+    border: 1px solid rgba(160,120,80,0.35);
+    border-radius: 6px;
+    padding: 2px;
+    height: 32px;
+    cursor: pointer;
+    position: relative;
+}
+.mrte-color-wrap input[type="color"] {
+    width: 26px; height: 26px;
+    border: none;
+    border-radius: 4px;
+    padding: 0;
+    cursor: pointer;
+    background: transparent;
+}
+.mrte-color-wrap input[type="color"]::-webkit-color-swatch-wrapper { padding: 1px; }
+.mrte-color-wrap input[type="color"]::-webkit-color-swatch { border: none; border-radius: 3px; }
+
+.marker-editor-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px 20px;
+    background: #221e18;
+    color: #e6ddb3;
+    font-family: 'Georgia', serif;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    outline: none;
+    min-height: 200px;
+}
+.marker-editor-content:empty::before {
+    content: 'Введите описание…';
+    color: #6a5f4a;
+    font-style: italic;
+}
+.marker-editor-content img {
+    max-width: 100%;
+    border-radius: 6px;
+    border: 1px solid rgba(160,120,80,0.4);
+    margin: 6px 0;
+    display: block;
+}
+.marker-editor-content iframe {
+    width: 100%;
+    aspect-ratio: 16/9;
+    border: 1px solid rgba(160,120,80,0.4);
+    border-radius: 6px;
+    margin: 6px 0;
+}
+.marker-editor-content a {
+    color: #8bc34a;
+    text-decoration: underline;
+}
+
+.marker-editor-footer {
+    padding: 12px 20px;
+    background: linear-gradient(0deg, rgba(0,0,0,0.4), transparent);
+    border-top: 1px solid rgba(160,120,80,0.25);
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+}
+
+/* ===== ПИКЕР ИКОНОК ===== */
+.marker-icon-picker {
+    position: fixed;
+    inset: 0;
+    background: rgba(10,8,14,0.92);
+    backdrop-filter: blur(6px);
+    z-index: 10001;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+.marker-icon-picker-box {
+    width: min(620px, 100%);
+    max-height: 80vh;
+    background: linear-gradient(180deg, #1f1c14 0%, #16120e 100%);
+    border: 2px solid rgba(184,124,79,0.55);
+    border-radius: 14px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.9);
+}
+.mip-header {
+    padding: 12px 18px;
+    background: linear-gradient(180deg, rgba(0,0,0,0.5), rgba(0,0,0,0.15));
+    border-bottom: 1px solid rgba(160,120,80,0.35);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.mip-header h3 {
+    margin: 0;
+    color: #ffd966;
+    font-size: 0.95rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+.mip-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+.mip-categories {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+    padding-bottom: 6px;
+    border-bottom: 1px solid rgba(160,120,80,0.2);
+}
+.mip-cat {
+    padding: 4px 10px;
+    background: rgba(0,0,0,0.3);
+    border: 1px solid rgba(160,120,80,0.3);
+    border-radius: 14px;
+    color: #cfc294;
+    font-family: inherit;
+    font-size: 0.7rem;
+    cursor: pointer;
+    transition: all 0.18s ease;
+    box-shadow: none;
+}
+.mip-cat::before { display: none; }
+.mip-cat:hover { border-color: #d4af37; color: #f0e3c8; transform: none; }
+.mip-cat.active {
+    background: rgba(184,134,11,0.25);
+    border-color: #ffd966;
+    color: #ffd966;
+}
+.mip-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(44px, 1fr));
+    gap: 4px;
+}
+.mip-emoji {
+    aspect-ratio: 1;
+    padding: 0;
+    background: rgba(0,0,0,0.3);
+    border: 1px solid rgba(160,120,80,0.25);
+    border-radius: 6px;
+    font-size: 1.4rem;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: inherit;
+    box-shadow: none;
+}
+.mip-emoji::before { display: none; }
+.mip-emoji:hover {
+    background: rgba(180,140,80,0.2);
+    border-color: #d4af37;
+    transform: scale(1.12);
+}
+.mip-custom {
+    display: flex;
+    gap: 6px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(160,120,80,0.2);
+}
+.mip-custom input {
+    flex: 1;
+    padding: 7px 10px;
+    background: #2a2418;
+    border: 1px solid rgba(160,120,80,0.4);
+    border-radius: 6px;
+    color: #f0e6d0;
+    font-family: inherit;
+    font-size: 0.85rem;
+}
+
+/* ===== СПИСОК МАРКЕРОВ (РЕДИЗАЙН) ===== */
+.markers-filter-bar {
+    display: flex;
+    gap: 6px;
+    padding: 8px;
+    background: rgba(0,0,0,0.35);
+    border-radius: 8px;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+}
+.markers-filter-bar input,
+.markers-filter-bar select {
+    flex: 1;
+    min-width: 80px;
+    padding: 5px 8px;
+    background: #2a2418;
+    border: 1px solid rgba(160,120,80,0.35);
+    border-radius: 5px;
+    color: #f0e6d0;
+    font-family: inherit;
+    font-size: 0.72rem;
+}
+.markers-filter-bar input::placeholder {
+    color: #6a5f4a;
+}
+
+.markers-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.marker-card {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    background: linear-gradient(180deg, rgba(42,36,24,0.9), rgba(22,18,14,0.9));
+    border: 1px solid rgba(160,120,80,0.3);
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+.marker-card:hover {
+    border-color: #d4af37;
+    background: linear-gradient(180deg, rgba(50,40,26,0.95), rgba(30,24,16,0.95));
+    transform: translateX(-3px);
+    box-shadow: -3px 0 0 0 #ffd966, 0 4px 12px rgba(0,0,0,0.5);
+}
+.marker-card.hidden {
+    opacity: 0.5;
+    border-style: dashed;
+}
+.marker-card-preview {
+    width: 34px;
+    height: 34px;
+    flex-shrink: 0;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.marker-card-preview svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+}
+.marker-card-preview .mcp-icon {
+    position: relative;
+    z-index: 1;
+    font-size: 0.95rem;
+    line-height: 1;
+    filter: drop-shadow(0 1px 1px rgba(0,0,0,0.6));
+}
+.marker-card-preview.shape-drop .mcp-icon {
+    transform: translateY(-20%);
+    font-size: 0.8rem;
+}
+.marker-card-body {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+.marker-card-name {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #f0e3c8;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.marker-card-meta {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    font-size: 0.62rem;
+}
+.marker-card-badge {
+    padding: 1px 6px;
+    border-radius: 8px;
+    letter-spacing: 0.04em;
+    background: rgba(0,0,0,0.4);
+    color: #8a7a5a;
+    border: 1px solid rgba(160,120,80,0.25);
+}
+.marker-card-badge.type {
+    background: rgba(139,195,74,0.15);
+    border-color: rgba(139,195,74,0.4);
+    color: #a8e06a;
+}
+.marker-card-badge.turn {
+    background: rgba(255,217,102,0.15);
+    border-color: rgba(255,217,102,0.4);
+    color: #ffd966;
+}
+.marker-card-badge.permanent {
+    background: rgba(74,144,217,0.15);
+    border-color: rgba(74,144,217,0.4);
+    color: #6ab0ff;
+}
+.marker-card-actions {
+    display: flex;
+    gap: 3px;
+    flex-shrink: 0;
+}
+.marker-card-actions button {
+    width: 24px; height: 24px;
+    padding: 0;
+    background: rgba(0,0,0,0.35);
+    border: 1px solid rgba(160,120,80,0.35);
+    border-radius: 5px;
+    color: #cfc294;
+    cursor: pointer;
+    font-size: 0.7rem;
+    transition: all 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: none;
+    font-family: inherit;
+}
+.marker-card-actions button::before { display: none; }
+.marker-card-actions button:hover {
+    background: rgba(180,140,80,0.3);
+    border-color: #d4af37;
+    color: #f0e3c8;
+    transform: scale(1.1);
+}
+.marker-card-actions button.danger:hover {
+    background: rgba(122,42,42,0.7);
+    border-color: #ff6b6b;
+    color: #ffdddd;
+}
+
+.markers-empty {
+    text-align: center;
+    padding: 20px 10px;
+    color: #8a7a5a;
+    font-size: 0.78rem;
+    font-style: italic;
+    border: 1px dashed rgba(160,120,80,0.25);
+    border-radius: 8px;
+}
+
+/* Мобилка */
+@media (max-width: 700px) {
+    .marker-settings-panel { width: 100vw; max-width: 100vw; }
+    .marker-hover-tip { max-width: 240px; font-size: 0.75rem; }
+    .marker-hover-tip .mht-content iframe { width: 220px; height: 124px; }
+}
+/* ===== КНОПКА "РАЗВЕРНУТЬ" В ТУЛТИПЕ ===== */
+.marker-hover-tip.has-overflow .mht-content {
+    max-height: 180px;
+    overflow: hidden;
+    position: relative;
+    -webkit-mask-image: linear-gradient(to bottom, #000 55%, transparent 100%);
+    mask-image: linear-gradient(to bottom, #000 55%, transparent 100%);
+}
+.marker-hover-tip .mht-expand-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: 100%;
+    margin-top: 8px;
+    padding: 8px 12px;
+    background: linear-gradient(180deg, rgba(184,134,11,0.25), rgba(122,90,30,0.15));
+    border: 1px solid rgba(255,217,102,0.5);
+    border-radius: 6px;
+    color: #ffd966;
+    font-family: 'Cinzel', 'Georgia', serif;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.marker-hover-tip .mht-expand-btn:hover {
+    background: linear-gradient(180deg, rgba(184,134,11,0.4), rgba(122,90,30,0.3));
+    border-color: #ffd966;
+    color: #fff5d0;
+    box-shadow: 0 0 15px rgba(255,217,102,0.35);
+}
+
+/* ===== РАСШИРЕННЫЙ ПРОСМОТР МАРКЕРА ===== */
+.marker-detail-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(10,8,14,0.94);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    z-index: 10002;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    animation: markerDetailIn 0.28s ease;
+}
+@keyframes markerDetailIn { from { opacity: 0; } to { opacity: 1; } }
+
+.marker-detail-box {
+    width: min(900px, 100%);
+    max-height: min(880px, 92vh);
+    background:
+        radial-gradient(circle at 20% 10%, rgba(180,150,100,0.06), transparent 40%),
+        linear-gradient(180deg, #221d15 0%, #15110d 100%);
+    border: 2px solid #b8943a;
+    border-radius: 14px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 40px 100px rgba(0,0,0,0.95), inset 0 0 100px rgba(60,40,30,0.25);
+    animation: markerDetailBoxIn 0.32s cubic-bezier(0.2, 0.9, 0.3, 1);
+    position: relative;
+}
+@keyframes markerDetailBoxIn {
+    from { opacity: 0; transform: scale(0.96) translateY(14px); }
+    to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.marker-detail-box::before,
+.marker-detail-box::after {
+    content: '';
+    position: absolute;
+    width: 40px; height: 40px;
+    border: 2px solid #ffd966;
+    pointer-events: none;
+    opacity: 0.5;
+}
+.marker-detail-box::before {
+    top: 8px; left: 8px;
+    border-right: none; border-bottom: none;
+    border-top-left-radius: 8px;
+}
+.marker-detail-box::after {
+    bottom: 8px; right: 8px;
+    border-left: none; border-top: none;
+    border-bottom-right-radius: 8px;
+}
+
+.marker-detail-header {
+    padding: 18px 24px 16px;
+    background: linear-gradient(180deg, rgba(0,0,0,0.5), rgba(0,0,0,0.1));
+    border-bottom: 1px solid rgba(184,124,79,0.4);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-shrink: 0;
+    position: relative;
+}
+.marker-detail-preview {
+    width: 60px; height: 60px;
+    flex-shrink: 0;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.marker-detail-title-block {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.marker-detail-title {
+    font-family: 'Cinzel', 'Georgia', serif;
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #ffd966;
+    letter-spacing: 0.04em;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.7);
+    line-height: 1.2;
+    word-break: break-word;
+}
+.marker-detail-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    font-size: 0.75rem;
+}
+.marker-detail-badge {
+    padding: 3px 10px;
+    background: rgba(0,0,0,0.4);
+    border: 1px solid rgba(160,120,80,0.3);
+    border-radius: 12px;
+    color: #cfc294;
+    letter-spacing: 0.04em;
+}
+.marker-detail-badge.type {
+    background: rgba(139,195,74,0.15);
+    border-color: rgba(139,195,74,0.4);
+    color: #a8e06a;
+}
+.marker-detail-badge.turn {
+    background: rgba(255,217,102,0.15);
+    border-color: rgba(255,217,102,0.4);
+    color: #ffd966;
+}
+.marker-detail-badge.permanent {
+    background: rgba(74,144,217,0.15);
+    border-color: rgba(74,144,217,0.4);
+    color: #6ab0ff;
+}
+
+.marker-detail-close {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    background: rgba(122,42,42,0.6);
+    border: 1px solid rgba(255,107,107,0.4);
+    color: #ffdddd;
+    cursor: pointer;
+    font-size: 1.1rem;
+    transition: all 0.22s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: inherit;
+    flex-shrink: 0;
+}
+.marker-detail-close:hover {
+    background: #9a3a3a;
+    border-color: #ff6b6b;
+    transform: rotate(90deg);
+    box-shadow: 0 0 20px rgba(255,107,107,0.4);
+}
+
+.marker-detail-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px 28px;
+    color: #e6ddb3;
+    font-family: 'Georgia', serif;
+    font-size: 1rem;
+    line-height: 1.7;
+}
+.marker-detail-body::-webkit-scrollbar { width: 10px; }
+.marker-detail-body::-webkit-scrollbar-track { background: rgba(0,0,0,0.3); border-radius: 5px; }
+.marker-detail-body::-webkit-scrollbar-thumb {
+    background: #7a5f3a;
+    border-radius: 5px;
+    border: 1px solid #b8943a;
+}
+.marker-detail-body::-webkit-scrollbar-thumb:hover { background: #b8943a; }
+
+.marker-detail-body img {
+    max-width: 100%;
+    border-radius: 8px;
+    border: 1px solid rgba(160,120,80,0.4);
+    margin: 12px 0;
+    display: block;
+    cursor: zoom-in;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.marker-detail-body img:hover {
+    box-shadow: 0 0 25px rgba(180,140,80,0.3);
+}
+.marker-detail-body iframe {
+    width: 100%;
+    aspect-ratio: 16/9;
+    border: 1px solid rgba(160,120,80,0.4);
+    border-radius: 8px;
+    margin: 12px 0;
+    background: #000;
+}
+.marker-detail-body a {
+    color: #8bc34a;
+    text-decoration: underline;
+    transition: color 0.2s ease;
+}
+.marker-detail-body a:hover { color: #b8e070; }
+.marker-detail-body ul,
+.marker-detail-body ol { margin: 10px 0 10px 24px; }
+.marker-detail-body li { margin: 4px 0; }
+.marker-detail-body h1,
+.marker-detail-body h2,
+.marker-detail-body h3 {
+    color: #ffd966;
+    margin: 16px 0 8px;
+    font-family: 'Cinzel', 'Georgia', serif;
+    letter-spacing: 0.03em;
+}
+
+.marker-detail-empty {
+    text-align: center;
+    padding: 40px 20px;
+    color: #6a5f4a;
+    font-style: italic;
+    font-size: 0.9rem;
+}
+
+.marker-detail-footer {
+    padding: 14px 24px;
+    background: linear-gradient(0deg, rgba(0,0,0,0.5), transparent);
+    border-top: 1px solid rgba(184,124,79,0.3);
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    flex-shrink: 0;
+}
+.marker-detail-footer button {
+    padding: 9px 16px;
+    background: rgba(0,0,0,0.4);
+    border: 2px solid rgba(160,120,80,0.4);
+    border-radius: 8px;
+    color: #d4c9b8;
+    font-family: 'Cinzel', 'Georgia', serif;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: none;
+}
+.marker-detail-footer button::before { display: none; }
+.marker-detail-footer button:hover {
+    background: rgba(180,140,80,0.2);
+    border-color: #d4af37;
+    color: #f0e3c8;
+    transform: translateY(-1px);
+}
+.marker-detail-footer button.primary {
+    background: linear-gradient(180deg, rgba(58,107,58,0.9), rgba(30,60,30,0.9));
+    border-color: rgba(139,195,74,0.5);
+}
+.marker-detail-footer button.primary:hover {
+    background: linear-gradient(180deg, #4c8a4c, #3a6b3a);
+    border-color: #8bc34a;
+    box-shadow: 0 0 15px rgba(139,195,74,0.3);
+}
+.marker-detail-footer button.danger {
+    background: rgba(122,42,42,0.6);
+    border-color: rgba(255,107,107,0.5);
+    color: #ffdddd;
+}
+.marker-detail-footer button.danger:hover {
+    background: #9a3a3a;
+    border-color: #ff6b6b;
+}
+
+/* Лайтбокс для картинок */
+.marker-lightbox {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.96);
+    z-index: 10005;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    cursor: zoom-out;
+    animation: markerDetailIn 0.2s ease;
+}
+.marker-lightbox img {
+    max-width: 95vw;
+    max-height: 95vh;
+    border: 2px solid #b8943a;
+    border-radius: 8px;
+    box-shadow: 0 20px 80px rgba(0,0,0,0.9);
+}
+
+/* Кнопка fullscreen для видео */
+.marker-media-fs-btn {
+    position: absolute;
+    top: 8px; right: 8px;
+    width: 32px; height: 32px;
+    background: rgba(0,0,0,0.75);
+    border: 1px solid rgba(160,120,80,0.5);
+    border-radius: 6px;
+    color: #ffd966;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    z-index: 2;
+    font-size: 0.9rem;
+}
+.marker-detail-body > div:hover .marker-media-fs-btn { opacity: 1; }
+.marker-media-fs-btn:hover { opacity: 1; background: rgba(0,0,0,0.95); }
+
+@media (max-width: 700px) {
+    .marker-detail-box {
+        width: 100vw;
+        max-height: 100vh;
+        border-radius: 0;
+        border-left: none;
+        border-right: none;
+    }
+    .marker-detail-box::before,
+    .marker-detail-box::after { display: none; }
+    .marker-detail-header { padding: 14px 16px; gap: 12px; }
+    .marker-detail-preview { width: 48px; height: 48px; }
+    .marker-detail-title { font-size: 1.05rem; }
+    .marker-detail-body { padding: 16px 18px; font-size: 0.92rem; }
+    .marker-detail-footer { padding: 10px 14px; }
+    .marker-detail-footer button { font-size: 0.68rem; padding: 8px 12px; flex: 1; justify-content: center; }
+}
