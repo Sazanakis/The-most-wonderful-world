@@ -1,7 +1,7 @@
 // ============================================================================
 // МОДУЛЬ 04: databases.js (исправленная версия)
 // ============================================================================
-// Загружено на гитхаб 18.07.2026
+// загружено на гитхаб 26.09.26
 // ========== 1. БАЗА ДАННЫХ ЧЕРТ ХАРАКТЕРА (TRAITS_DB) ==========
 const TRAITS_DB = {
     AGRONOMIST: {
@@ -458,6 +458,24 @@ const buildingsCatalog = {
 		special: "fenrir_altar",
 		faction: "county_skollfang",
 		limit: { scope: "faction", max: 1 }
+	},
+	"Alchemy_District": {
+		name: "Алхимический район",
+		category: "economic",
+		allowedSettlementTypes: ["city", "castle"],
+		description: "Отдельный район для алхимических исследований. 🔬 Снижает стоимость всех гражданских технологий на 10 очков (минимум 10 очков).",
+		cost: {
+			wood: 400,
+			stone: 600,
+			iron: 150,
+			gold: 30,
+			ers: 10000
+		},
+		buildTime: 6,
+		income: {},
+		special: "alchemy_district",
+		faction: "principality_lorein",
+		limit: { scope: "province", max: 1 }
 	}
 };
 

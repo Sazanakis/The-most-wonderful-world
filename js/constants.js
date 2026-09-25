@@ -4,12 +4,14 @@
 // Данные о фракциях вынесены в 17_constants_factions.js
 // ВЕРСИЯ 2.0 – ПОЛНЫЙ SETTLEMENTS_DB
 // ============================================================================
-// Загружено на гитхаб 01.08.2026
+// загружено на гитхаб 26.09.26
 // ========== 1. ВРЕМЯ И ДАТЫ ==========
 const MONTH_NAMES = ["января", "февраля", "марта", "апреля", "мая", "июня", "июля", "августа", "сентября", "октября", "ноября", "декабря"];
 
 // ========== 2. ПРОВИНЦИИ (устаревший список) ==========
-const PROVINCE_IDS = ["clan_daketa", "county_markarn", "principality_gorski", "regency_council", "county_ottergrund", "elfheim", "county_meyan", "county_dionia", "county_skollfang", "county_takania", "order_varsiltaers", "principality_lorein", "county_mensen", "county_corvail"];
+const PROVINCE_IDS = ["clan_daketa", "county_markarn", "principality_gorski", "regency_council", "county_ottergrund", "elfheim", "county_meyan", "county_dionia", "county_skollfang", "county_takania", "order_varsiltaers", "principality_lorein", "county_mensen", "county_corvail", 
+"county_luun"
+];
 
 // ========== 3. СОВЕТ: ТИПЫ ВАССАЛОВ ==========
 const VASSAL_TYPES = {
@@ -224,7 +226,7 @@ const PROVINCE_NAMES = {
     oku_province_1: "Оку (провинция 1)",
     oku_province_2: "Оку (провинция 2)",
     mensen: "Менсен",
-    neutral_province_5: "Нейтральная провинция 5",
+    luun: "Луун",
     neutral_province_2: "Нейтральная провинция 2",
     corvail: "Корвайл",
     neutral_province_6: "Нейтральная провинция 6",
@@ -249,7 +251,7 @@ const FACTION_NAMES = {
 	county_mensen: "Временная Республика Менсена",
     unknown_clan_1: "Неизвестный клан (1)",
     unknown_clan_2: "Неизвестный клан (2)",
-    unknown_feudal_11: "Неизвестный феодал (11)",
+    county_luun: "Графство Луун",
     unknown_feudal_7: "Неизвестный феодал (7)",
     unknown_feudal_10: "Неизвестный феодал (10)",
     county_corvail: "Графство Корвайл",
@@ -314,8 +316,9 @@ const VASSAL_HOUSE_NAMES = {
 	"house_mensen_merchant_guild": "Купеческая гильдия Менсена",
 	"house_wynthorne": "Род Уинторн",
 	"house_ashbyrne": "Род Эшбирн",
-	"house_thornhill": "Род Торнхилл"
-	
+	"house_thornhill": "Род Торнхилл",
+	"house_cergard": "Род Цергард",
+	"house_gedorf": "Род Гедорф"
 };
 
 // Гербы главных родов фракций (для карты)
@@ -678,18 +681,18 @@ const SETTLEMENTS_DB = {
     "Fjorbi": { id: "Fjorbi", name: "Фьорби", type: "village", province: "moonmane", faction: "county_skollfang", rhetoric: "neutral", px: 2535, py: 1405, icon: "emblem/skollfang.png", isVassal: false, vassalHouse: null },
 
     // Провинция №13 (Neutral Province No. 5) - Neutral
-    "Lungrad": { id: "Lungrad", name: "Лунград", type: "city", province: "neutral_province_5", faction: "unknown_feudal_11", rhetoric: "neutral", px: 2795, py: 1461, icon: "emblem/luun.png", isVassal: false, vassalHouse: null },
-    "neutral_castle36": { id: "neutral_castle36", name: "Замок36", type: "castle", province: "neutral_province_5", faction: "unknown_feudal_11", rhetoric: "neutral", px: 2931, py: 1517, icon: "emblem/luun.png", isVassal: false, vassalHouse: null },
-    "neutral_castle37": { id: "neutral_castle37", name: "Замок37", type: "castle", province: "neutral_province_5", faction: "unknown_feudal_11", rhetoric: "neutral", px: 2835, py: 1606, icon: "emblem/luun.png", isVassal: false, vassalHouse: null },
-    "neutral_village166": { id: "neutral_village166", name: "Деревня166", type: "village", province: "neutral_province_5", faction: "unknown_feudal_11", rhetoric: "neutral", px: 2665, py: 1575, icon: "emblem/luun.png", isVassal: false, vassalHouse: null },
-    "neutral_village167": { id: "neutral_village167", name: "Деревня167", type: "village", province: "neutral_province_5", faction: "unknown_feudal_11", rhetoric: "neutral", px: 2685, py: 1470, icon: "emblem/luun.png", isVassal: false, vassalHouse: null },
-    "neutral_village168": { id: "neutral_village168", name: "Деревня168", type: "village", province: "neutral_province_5", faction: "unknown_feudal_11", rhetoric: "neutral", px: 2700, py: 1400, icon: "emblem/luun.png", isVassal: false, vassalHouse: null },
-    "neutral_village169": { id: "neutral_village169", name: "Деревня169", type: "village", province: "neutral_province_5", faction: "unknown_feudal_11", rhetoric: "neutral", px: 2735, py: 1365, icon: "emblem/luun.png", isVassal: false, vassalHouse: null },
-    "neutral_village170": { id: "neutral_village170", name: "Деревня170", type: "village", province: "neutral_province_5", faction: "unknown_feudal_11", rhetoric: "neutral", px: 2750, py: 1400, icon: "emblem/luun.png", isVassal: false, vassalHouse: null },
-    "neutral_village171": { id: "neutral_village171", name: "Деревня171", type: "village", province: "neutral_province_5", faction: "unknown_feudal_11", rhetoric: "neutral", px: 2816, py: 1381, icon: "emblem/luun.png", isVassal: false, vassalHouse: null },
-    "neutral_village172": { id: "neutral_village172", name: "Деревня172", type: "village", province: "neutral_province_5", faction: "unknown_feudal_11", rhetoric: "neutral", px: 2834, py: 1425, icon: "emblem/luun.png", isVassal: false, vassalHouse: null },
-    "neutral_village173": { id: "neutral_village173", name: "Деревня173", type: "village", province: "neutral_province_5", faction: "unknown_feudal_11", rhetoric: "neutral", px: 2897, py: 1497, icon: "emblem/luun.png", isVassal: false, vassalHouse: null },
-    "neutral_village174": { id: "neutral_village174", name: "Деревня174", type: "village", province: "neutral_province_5", faction: "unknown_feudal_11", rhetoric: "neutral", px: 2839, py: 1497, icon: "emblem/luun.png", isVassal: false, vassalHouse: null },
+    "Lungrad": { id: "Lungrad", name: "Лунград", type: "city", province: "luun", faction: "county_luun", rhetoric: "neutral", px: 2795, py: 1461, icon: "emblem/luun.png", isVassal: false, vassalHouse: null },
+    "Mechegard": { id: "Mechegard", name: "Мечегард", type: "castle", province: "luun", faction: "county_luun", rhetoric: "neutral", px: 2931, py: 1517, icon: "emblem/cergard.png", isVassal: true, vassalHouse: "house_cergard" },
+    "Borivard": { id: "Borivard", name: "Боривард", type: "castle", province: "luun", faction: "county_luun", rhetoric: "neutral", px: 2835, py: 1606, icon: "emblem/luun.png", isVassal: false, vassalHouse: null },
+    "Lugozel": { id: "Lugozel", name: "Лугозель", type: "village", province: "luun", faction: "county_luun", rhetoric: "neutral", px: 2665, py: 1575, icon: "emblem/gedorf.png", isVassal: true, vassalHouse: "house_gedorf" },
+    "Ostrovdorf": { id: "Ostrovdorf", name: "Островдорф", type: "village", province: "luun", faction: "county_luun", rhetoric: "neutral", px: 2685, py: 1470, icon: "emblem/gedorf.png", isVassal: true, vassalHouse: "house_gedorf" },
+    "Topivard": { id: "Topivard", name: "Топивард", type: "village", province: "luun", faction: "county_luun", rhetoric: "neutral", px: 2700, py: 1400, icon: "emblem/gedorf.png", isVassal: true, vassalHouse: "house_gedorf" },
+    "Rozhdorf": { id: "Rozhdorf", name: "Рождорф", type: "village", province: "luun", faction: "county_luun", rhetoric: "neutral", px: 2735, py: 1365, icon: "emblem/luun.png", isVassal: false, vassalHouse: null },
+    "Strugovald": { id: "Strugovald", name: "Струговальд", type: "village", province: "luun", faction: "county_luun", rhetoric: "neutral", px: 2750, py: 1400, icon: "emblem/luun.png", isVassal: false, vassalHouse: null },
+    "Volkhovard": { id: "Volkhovard", name: "Волховард", type: "village", province: "luun", faction: "county_luun", rhetoric: "neutral", px: 2816, py: 1381, icon: "emblem/luun.png", isVassal: false, vassalHouse: null },
+    "Yazvald": { id: "Yazvald", name: "Язвальд", type: "village", province: "luun", faction: "county_luun", rhetoric: "neutral", px: 2834, py: 1425, icon: "emblem/luun.png", isVassal: false, vassalHouse: null },
+    "Mlindorf": { id: "Mlindorf", name: "Млиндорф", type: "village", province: "luun", faction: "county_luun", rhetoric: "neutral", px: 2897, py: 1497, icon: "emblem/cergard.png", isVassal: true, vassalHouse: "house_cergard" },
+    "Rudorf": { id: "Rudorf", name: "Рудорф", type: "village", province: "luun", faction: "county_luun", rhetoric: "neutral", px: 2839, py: 1497, icon: "emblem/cergard.png", isVassal: true, vassalHouse: "house_cergard" },
 
     // Провинция №14 (Neutral Province No. 6) - Neutral
     "neutral_city19": { id: "neutral_city19", name: "Город19", type: "city", province: "neutral_province_6", faction: "unknown_feudal_12", rhetoric: "neutral", px: 3157, py: 1221, icon: "draw.png", isVassal: false, vassalHouse: null },

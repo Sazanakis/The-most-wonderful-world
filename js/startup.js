@@ -1,4 +1,4 @@
-// Загружено на гитхаб 18.07.2026
+// загружено на гитхаб 26.09.26
 /**
  * startup.js – управление стартовыми экранами и музыкой.
  * Версия 3.0 – музыка не останавливается после старта,
@@ -25,22 +25,28 @@
         return;
     }
 
-    // Если сессия уже начата – пропускаем заставку
-    const sessionStarted = sessionStorage.getItem('gameSessionStarted');
-    if (sessionStarted === 'true') {
-        console.log('Сессия уже начата, пропускаем стартовые экраны');
-        startScreen.classList.remove('visible');
-        startScreen.classList.add('hidden');
-        welcomeScreen.classList.remove('visible');
-        welcomeScreen.classList.add('hidden');
-        if (mainContainer) mainContainer.classList.remove('hidden');
-        if (bgMusic && bgMusic.paused) {
-            bgMusic.volume = 0.4;
-            bgMusic.play().catch(() => {});
-        }
-        if (typeof window.fullInit === 'function') window.fullInit();
-        return;
-    }
+	// Если сессия уже начата – пропускаем заставку
+	const sessionStarted = sessionStorage.getItem('gameSessionStarted');
+	if (sessionStarted === 'true') {
+		console.log('Сессия уже начата, пропускаем стартовые экраны');
+		startScreen.classList.remove('visible');
+		startScreen.classList.add('hidden');
+		welcomeScreen.classList.remove('visible');
+		welcomeScreen.classList.add('hidden');
+		if (mainContainer) mainContainer.classList.remove('hidden');
+
+		// ← ДОБАВИТЬ: проверяем галочку перед запуском музыки
+		const musicDisabled = localStorage.getItem('musicDisabled') === 'true';
+		if (bgMusic && !musicDisabled && bgMusic.paused) {
+			bgMusic.volume = 0.4;
+			bgMusic.play().catch(() => {});
+		} else if (bgMusic) {
+			bgMusic.volume = 0;
+		}
+
+		if (typeof window.fullInit === 'function') window.fullInit();
+		return;
+	}
 
     // Плавный переход между экранами
     function transitionTo(current, next, callback) {
@@ -62,30 +68,42 @@
     }
 
     // Запуск фоновой музыки
-    function playMusic() {
-        if (bgMusic && bgMusic.paused) {
-            bgMusic.volume = 0.4;
-            bgMusic.play().catch(e => console.warn('Музыка не загружена:', e));
-        }
-    }
+	// Запуск фоновой музыки (с учётом отключённого состояния)
+	function playMusic() {
+		// Проверяем, не отключена ли музыка в настройках
+		const musicDisabled = localStorage.getItem('musicDisabled') === 'true';
+		if (musicDisabled) {
+			if (bgMusic) {
+				bgMusic.volume = 0;
+				bgMusic.pause();
+			}
+			return;
+		}
+
+		if (bgMusic && bgMusic.paused) {
+			bgMusic.volume = 0.4;
+			bgMusic.play().catch(e => console.warn('Музыка не загружена:', e));
+		}
+	}
 
     // Глобальная функция для затухания музыки и перехода по ссылке
-    window.stopMusicAndNavigate = function(url) {
-        if (!bgMusic) {
-            window.location.href = url;
-            return;
-        }
-        const fadeOut = setInterval(() => {
-            if (bgMusic.volume > 0.05) {
-                bgMusic.volume = Math.max(0, bgMusic.volume - 0.05);
-            } else {
-                clearInterval(fadeOut);
-                bgMusic.pause();
-                bgMusic.currentTime = 0;
-                window.location.href = url;
-            }
-        }, 50);
-    };
+	window.stopMusicAndNavigate = function(url) {
+		const musicDisabled = localStorage.getItem('musicDisabled') === 'true';
+		if (musicDisabled || !bgMusic) {
+			window.location.href = url;
+			return;
+		}
+		const fadeOut = setInterval(() => {
+			if (bgMusic.volume > 0.05) {
+				bgMusic.volume = Math.max(0, bgMusic.volume - 0.05);
+			} else {
+				clearInterval(fadeOut);
+				bgMusic.pause();
+				bgMusic.currentTime = 0;
+				window.location.href = url;
+			}
+		}, 50);
+	};
 
     // Стартовое состояние: начальный экран видим, приветствие скрыто, меню скрыто
     startScreen.classList.add('visible');

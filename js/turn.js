@@ -1,7 +1,7 @@
 // ============================================================================
 // МОДУЛЬ 12: turn.js (версия 4.1 – исправлен учёт торговли в казне)
 // ============================================================================
-// Загружено на гитхаб 01.08.2026
+// ===== загружено на гитхаб 26.09.26
 // ========== 1. ОПРЕДЕЛЕНИЕ КЛЮЧА ХРАНИЛИЩА ==========
 if (!window.storageKey) {
     window.storageKey = 'unified_province_manager'; // fallback
@@ -118,15 +118,18 @@ function applyGlobalTurn() {
     // 3. Обработка торговых договоров + ОБЯЗАТЕЛЬНЫЙ ПЕРЕСЧЁТ КАЗНЫ
     if (typeof processTradeAgreements === 'function') {
         processTradeAgreements();
-        // *** ВОТ ЭТА СТРОКА РЕШАЕТ ПРОБЛЕМУ ***
         recalcTotalTreasury();
 
         // Обновляем интерфейс торговли, если вкладка активна
         const tradeTab = document.getElementById('tab-trade');
         if (tradeTab && tradeTab.classList.contains('active')) {
-            if (typeof renderAgreements === 'function') renderAgreements();
-            if (typeof renderTradeableResources === 'function') renderTradeableResources();
-            if (typeof renderTradeSummary === 'function') renderTradeSummary();
+            if (typeof refreshTradeUI === 'function') {
+                refreshTradeUI();
+            } else {
+                if (typeof renderAgreements === 'function') renderAgreements();
+                if (typeof renderTradeableResources === 'function') renderTradeableResources();
+                if (typeof renderTradeSummary === 'function') renderTradeSummary();
+            }
         }
     }
 
@@ -220,10 +223,7 @@ function applyGlobalTurn() {
     if (typeof updateGlobalDateDisplay === 'function') updateGlobalDateDisplay();
     if (typeof refreshRecruitmentLimits === 'function') refreshRecruitmentLimits();
 
-    // 15. Сохранение всех данных
-    saveAllData();
-
-    // 16. Банкротство → дезертирство
+    // 15. Банкротство → дезертирство
     if (window.factionTreasury < 0) {
         if (typeof applyBankruptcyDesertion === 'function') {
             applyBankruptcyDesertion();   // сначала теряем 10% отрядов
@@ -232,9 +232,13 @@ function applyGlobalTurn() {
         addGlobalLog(`⚠️ Казна ушла в минус! Вы – банкрот!`, 'general');
     }
 
-	if (typeof processCorruptionTurn === 'function') processCorruptionTurn();
+    // 16. Обработка коррупции и агента (повышение навыка, сброс финансирования)
+    if (typeof processCorruptionTurn === 'function') processCorruptionTurn();
 
-    // 17. Разблокируем кнопку хода
+    // 17. ФИНАЛЬНОЕ сохранение — ПОСЛЕ всех изменений состояния
+    saveAllData();
+
+    // 18. Разблокируем кнопку хода
     const globalTurnBtn = document.getElementById('globalTurnBtn');
     if (globalTurnBtn) globalTurnBtn.disabled = false;
 

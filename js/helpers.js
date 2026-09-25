@@ -2,7 +2,7 @@
 // МОДУЛЬ 03: helpers.js
 // Вспомогательные функции (форматирование, логи, геометрия, DOM)
 // ============================================================================
-// Загружено на гитхаб 01.08.2026
+// загружено на гитхаб 26.09.26
 // ========== 1. ГЕНЕРАЦИЯ УНИКАЛЬНЫХ ID ==========
 
 /**
@@ -409,6 +409,18 @@ function updateGlobalDateDisplay() {
 function renderGlobalHeader() {
     // заглушка
 }
+
+function getSettlementTypeLabel(type) {
+    const map = {
+        'city': 'Город',
+        'castle': 'Замок',
+        'village': 'Деревня',
+        'wooden_fort': 'Деревянный форт',
+        'stone_fort': 'Каменный форт'
+    };
+    return map[type] || type;
+}
+
 // Глобальные синонимы для карты
 window.fmtDistance = formatDistance;
 window.fmtTurns = formatTurns;

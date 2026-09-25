@@ -3,7 +3,7 @@
 // Функции для работы с населением (расы, призыв, налоги, демография)
 // ВЕРСИЯ 6.1 — ЕДИНАЯ КАЗНА (СИНХРОНИЗИРОВАНА С BUILDINGS.JS 5.4)
 // ============================================================================
-// Загружено на гитхаб 18.07.2026
+/* ===== загружено на гитхаб 26.09.26
 // ========== 1. ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ==========
 
 /**
@@ -12,7 +12,18 @@
 function getRaceTotal(race) {
     return (race.adultMale || 0) + (race.adultFemale || 0) + (race.children || 0) + (race.elders || 0);
 }
-
+/**
+ * Определяет, является ли раса эльфийской (долгоживущей/бессмертной).
+ * Высшие эльфы и полукровки с их кровью — не стареют и не умирают от старости.
+ */
+function isElvenRace(raceName) {
+    if (!raceName) return false;
+    if (raceName === "Высшие эльфы") return true;
+    // Полукровки с высшими эльфами в любом порядке имён
+    if (raceName.startsWith("Полукровка") && raceName.includes("Высшие эльфы")) return true;
+    return false;
+}
+window.isElvenRace = isElvenRace;
 /**
  * Проверяет и преобразует старую структуру расы в новую
  */
@@ -343,6 +354,9 @@ function getUsedConscriptionByRaceGender() {
             if (army.factionId !== currentFaction) continue;
             // Уже нанятые отряды
             for (let unit of army.units) {
+                // Пропускаем юниты, которые не используют призыв
+                if (unit.usesConscription === false) continue;
+
                 const race = unit.race;
                 if (!used[race]) used[race] = { male: 0, female: 0 };
                 if (unit.gender === 'female') {
@@ -356,6 +370,9 @@ function getUsedConscriptionByRaceGender() {
                 for (let q of army.recruitmentQueue) {
                     const template = q.unitTemplate;
                     if (!template) continue;
+                    // Пропускаем очереди, если шаблон помечен как не использующий призыв
+                    if (template.usesConscription === false) continue;
+
                     const race = template.race;
                     const people = q.count * (template.countPerUnit || 100);
                     if (!used[race]) used[race] = { male: 0, female: 0 };
@@ -387,97 +404,169 @@ function getAvailableFemaleRaceRecruits(race) {
 // ========== 6. ОБНОВЛЕНИЕ ЛИМИТОВ В РЕАЛЬНОМ ВРЕМЕНИ ==========
 
 function refreshRecruitmentLimits() {
+    // Обновляем базовые данные (таблица рас, доходы и т.д.)
     if (typeof refreshPeopleUI === 'function') refreshPeopleUI();
     else if (typeof renderRaceTable === 'function') renderRaceTable();
 
-    const raceLimitsDisplay = document.getElementById('raceLimitsDisplay');
-    if (raceLimitsDisplay) {
-        const limits = getCurrentFactionConscriptionLimitByRaceGender();
-        const used = getUsedConscriptionByRaceGender();
-        const showHalfBreeds = peopleState.showHalfBreeds !== false;
+    const limits = getCurrentFactionConscriptionLimitByRaceGender();
+    const used = getUsedConscriptionByRaceGender();
+    const showHalfBreeds = peopleState.showHalfBreeds !== false;
+    const womenInArmy = (peopleState.settings && peopleState.settings.womenInArmy) === true;
+    const mobilizationBonus = (peopleState.mobilization && peopleState.mobilization.bonusPercent) || 0;
 
-        let html = `<div style="margin-bottom: 10px;">
-            <label><input type="checkbox" id="showHalfBreedsCheckbox" ${showHalfBreeds ? 'checked' : ''}> Отображать полукровок</label>
-        </div>`;
-        html += '<div style="display: flex; flex-wrap: wrap; gap: 12px; justify-content: center;">';
+    // === Считаем суммарные показатели ===
+    let totalMaleLimit = 0, totalMaleUsed = 0;
+    let totalFemaleLimit = 0, totalFemaleUsed = 0;
+    let raceCount = 0;
+    for (let raceName in limits) {
+        if (!showHalfBreeds && raceName.startsWith('Полукровка')) continue;
+        totalMaleLimit   += limits[raceName].male || 0;
+        totalMaleUsed    += (used[raceName] && used[raceName].male)   || 0;
+        totalFemaleLimit += limits[raceName].female || 0;
+        totalFemaleUsed  += (used[raceName] && used[raceName].female) || 0;
+        raceCount++;
+    }
+    const totalLimit = totalMaleLimit + (womenInArmy ? totalFemaleLimit : 0);
+    const totalUsed  = totalMaleUsed  + (womenInArmy ? totalFemaleUsed  : 0);
+    const totalFree  = Math.max(0, totalLimit - totalUsed);
+    const freePct    = totalLimit > 0 ? Math.round((totalUsed / totalLimit) * 100) : 0;
 
-        if (Object.keys(limits).length === 0) {
-            html = '<div style="text-align: center; color: #8a7a5a;">Нет данных о расах. Добавьте расы на вкладке "Провинция".</div>';
+    const container = document.getElementById('raceLimitsDisplay');
+    if (container) {
+        // --- Открываем панель ---
+        let html = '<div class="reserve-panel">';
+
+        // --- Шапка ---
+        html += '<div class="reserve-header">';
+        html += '<div class="reserve-title">🛡️ Резерв для найма</div>';
+        html += '<div class="reserve-summary">';
+
+        const freeClass = totalFree === 0 ? 'bad' : (freePct >= 80 ? 'warn' : '');
+        html += `<span class="reserve-summary-item" title="Свободно рекрутов">🎯 <strong>Свободно:</strong> <span class="value">${totalFree.toLocaleString()}</span></span>`;
+        html += `<span class="reserve-summary-item male" title="Использовано мужчин / всего">♂ <strong>${totalMaleUsed.toLocaleString()}</strong> / ${totalMaleLimit.toLocaleString()}</span>`;
+        if (womenInArmy) {
+            html += `<span class="reserve-summary-item female" title="Использовано женщин / всего">♀ <strong>${totalFemaleUsed.toLocaleString()}</strong> / ${totalFemaleLimit.toLocaleString()}</span>`;
         } else {
-            for (let [race, lims] of Object.entries(limits)) {
-                if (!showHalfBreeds && race.startsWith("Полукровка")) continue;
-
-                const usedMale = used[race]?.male || 0;
-                const usedFemale = used[race]?.female || 0;
-                const availMale = lims.male - usedMale;
-                const availFemale = lims.female - usedFemale;
-                const malePercent = lims.male > 0 ? Math.min(100, (usedMale / lims.male) * 100).toFixed(1) : 0;
-                const femalePercent = lims.female > 0 ? Math.min(100, (usedFemale / lims.female) * 100).toFixed(1) : 0;
-
-                html += `<div style="background: #2a2418; border-radius: 16px; padding: 8px 15px; min-width: 160px; text-align: center;">
-                    <strong>${escapeHtml(race)}</strong><br>
-                    👨 ${usedMale}/${lims.male} (${malePercent}%)
-                    <div style="width:100px;height:4px;background:#4a3a2a;margin:2px auto;">
-                        <div style="width:${malePercent}%;height:100%;background:#ffd966;"></div>
-                    </div>
-                    👩 ${usedFemale}/${lims.female} (${femalePercent}%)
-                    <div style="width:100px;height:4px;background:#4a3a2a;margin:2px auto;">
-                        <div style="width:${femalePercent}%;height:100%;background:#ffd966;"></div>
-                    </div>
-                    ${availMale > 0 ? `✅ Мужчины: ${availMale}` : '❌ Мужчины исчерпаны'}
-                    ${peopleState.settings.womenInArmy ? 
-                        (availFemale > 0 ? `✅ Женщины: ${availFemale}` : '❌ Женщины исчерпаны') : 
-                        '🔒 Реформа не введена'}
-                </div>`;
-            }
+            html += `<span class="reserve-summary-item" style="opacity:0.45;" title="Реформа «Женщины в армии» не введена">♀ 🔒</span>`;
         }
-        html += '</div>';
-        raceLimitsDisplay.innerHTML = html;
+        if (mobilizationBonus > 0) {
+            html += `<span class="reserve-summary-item mobilization" title="Бонус мобилизации">📢 <strong>+${mobilizationBonus}%</strong></span>`;
+        }
+        html += '</div>'; // reserve-summary
 
-        const checkbox = document.getElementById('showHalfBreedsCheckbox');
-        if (checkbox) {
-            checkbox.addEventListener('change', function(e) {
+        // Переключатель полукровок
+        html += `<label class="reserve-toggle" title="Показывать/скрывать полукровок">
+                    <input type="checkbox" id="showHalfBreedsCheckbox" ${showHalfBreeds ? 'checked' : ''}>
+                    🧬 Полукровки
+                 </label>`;
+        html += '</div>'; // reserve-header
+
+        // --- Сетка рас ---
+        if (raceCount === 0) {
+            html += `<div style="text-align:center; color:#8a7a5a; padding:20px; font-size:0.85rem;">Нет данных о расах. Добавьте расы на вкладке «Провинция».</div>`;
+        } else {
+            html += '<div class="reserve-grid">';
+            for (let [raceName, lims] of Object.entries(limits)) {
+                if (!showHalfBreeds && raceName.startsWith('Полукровка')) continue;
+                const raceUsed = used[raceName] || { male: 0, female: 0 };
+                html += _buildRaceReserveCard(raceName, lims, raceUsed, womenInArmy);
+            }
+            html += '</div>';
+        }
+
+        html += '</div>'; // reserve-panel
+        container.innerHTML = html;
+
+        // Обработчик переключателя
+        const chk = document.getElementById('showHalfBreedsCheckbox');
+        if (chk) {
+            chk.addEventListener('change', (e) => {
                 peopleState.showHalfBreeds = e.target.checked;
                 refreshRecruitmentLimits();
             });
         }
     }
 
-    const raceLimitsDetails = document.getElementById('raceLimitsDetails');
-    if (raceLimitsDetails) {
-        const limits = getCurrentFactionConscriptionLimitByRaceGender();
-        const used = getUsedConscriptionByRaceGender();
-        const showHalfBreeds = peopleState.showHalfBreeds !== false;
-        let html = '<div style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px;">';
-        for (let [race, lims] of Object.entries(limits)) {
-            if (!showHalfBreeds && race.startsWith("Полукровка")) continue;
-            const usedMale = used[race]?.male || 0;
-            const usedFemale = used[race]?.female || 0;
-            const availMale = lims.male - usedMale;
-            const availFemale = lims.female - usedFemale;
-            html += `<div style="background: #2a2418; padding: 8px 12px; border-radius: 12px; min-width: 150px;">
-                <strong>${escapeHtml(race)}</strong><br>
-                👨 ${usedMale}/${lims.male} (${lims.male > 0 ? Math.round(usedMale/lims.male*100) : 0}%)
-                <div style="width:100%;height:3px;background:#4a3a2a;margin:2px 0;">
-                    <div style="width:${Math.min(100, (usedMale/lims.male*100)||0)}%;height:100%;background:#ffd966;"></div>
-                </div>
-                👩 ${usedFemale}/${lims.female} (${lims.female > 0 ? Math.round(usedFemale/lims.female*100) : 0}%)
-                <div style="width:100%;height:3px;background:#4a3a2a;margin:2px 0;">
-                    <div style="width:${Math.min(100, (usedFemale/lims.female*100)||0)}%;height:100%;background:#ffd966;"></div>
-                </div>
-                <span style="font-size:0.75rem;">
-                    ${availMale > 0 ? `✅ Мужчины: ${availMale}` : '❌ Мужчины исчерпаны'}
-                    ${peopleState.settings.womenInArmy ?
-                        (availFemale > 0 ? `✅ Женщины: ${availFemale}` : '❌ Женщины исчерпаны') :
-                        '🔒 Реформа не введена'}
-                </span>
-            </div>`;
-        }
-        html += '</div>';
-        raceLimitsDetails.innerHTML = html;
-    }
+    // Старый компактный блок оставляем пустым, чтобы не дублировать
+    const detailsContainer = document.getElementById('raceLimitsDetails');
+    if (detailsContainer) detailsContainer.innerHTML = '';
 
     if (typeof updateUnitRecruitAvailability === 'function') updateUnitRecruitAvailability();
+}
+
+/**
+ * Строит HTML одной карточки расы для панели резерва.
+ */
+function _buildRaceReserveCard(raceName, lims, used, womenInArmy) {
+    const maleLimit   = lims.male   || 0;
+    const femaleLimit = lims.female || 0;
+    const maleUsed    = used.male   || 0;
+    const femaleUsed  = used.female || 0;
+
+    const maleFree   = Math.max(0, maleLimit - maleUsed);
+    const femaleFree = Math.max(0, femaleLimit - femaleUsed);
+    const totalFree  = maleFree + (womenInArmy ? femaleFree : 0);
+    const totalLimit = maleLimit + (womenInArmy ? femaleLimit : 0);
+
+    const malePercent   = maleLimit   > 0 ? Math.min(100, (maleUsed   / maleLimit)   * 100) : 0;
+    const femalePercent = femaleLimit > 0 ? Math.min(100, (femaleUsed / femaleLimit) * 100) : 0;
+    const usedPercent   = totalLimit > 0 ? ((maleUsed + (womenInArmy ? femaleUsed : 0)) / totalLimit) : 0;
+
+    // Статус
+    let statusClass, statusText;
+    if (totalLimit === 0)        { statusClass = 'empty'; statusText = 'Нет';      }
+    else if (totalFree === 0)    { statusClass = 'empty'; statusText = 'Исчерпан'; }
+    else if (usedPercent >= 0.8) { statusClass = 'low';   statusText = 'Мало';     }
+    else                         { statusClass = 'ok';    statusText = 'Есть';     }
+
+    // Цвет полосок: синий → жёлтый → красный
+    const maleColor   = malePercent   >= 90 ? '#ff6b6b' : (malePercent   >= 70 ? '#ffd966' : '#4a90d9');
+    const femaleColor = femalePercent >= 90 ? '#ff6b6b' : (femalePercent >= 70 ? '#ffd966' : '#d94a90');
+
+    const isHalfbreed = raceName.startsWith('Полукровка');
+    const freeClass = totalFree === 0 ? 'bad' : (usedPercent >= 0.8 ? 'warn' : '');
+
+    let html = `<div class="race-reserve-card ${totalFree === 0 ? 'exhausted' : ''} ${isHalfbreed ? 'is-halfbreed' : ''}">`;
+
+    // --- Заголовок ---
+    html += '<div class="race-reserve-title">';
+    html += `<span class="race-name" title="${escapeHtml(raceName)}">${escapeHtml(raceName)}${isHalfbreed ? '<span class="halfbreed-badge">HB</span>' : ''}</span>`;
+    html += `<span class="race-reserve-status ${statusClass}">${statusText}</span>`;
+    html += '</div>';
+
+    // --- Мужчины ---
+    html += '<div class="gender-row">';
+    html += '<div class="gender-icon male" title="Мужчины">♂</div>';
+    html += '<div class="gender-bar-wrap">';
+    html += `<div class="gender-bar"><div class="gender-bar-fill" style="width:${malePercent}%;background:${maleColor};color:${maleColor};"></div></div>`;
+    html += `<div class="gender-numbers"><span class="used">${maleUsed.toLocaleString()}</span><span class="total">/ ${maleLimit.toLocaleString()}</span></div>`;
+    html += '</div></div>';
+
+    // --- Женщины ---
+    if (femaleLimit > 0) {
+        if (womenInArmy) {
+            html += '<div class="gender-row">';
+            html += '<div class="gender-icon female" title="Женщины">♀</div>';
+            html += '<div class="gender-bar-wrap">';
+            html += `<div class="gender-bar"><div class="gender-bar-fill" style="width:${femalePercent}%;background:${femaleColor};color:${femaleColor};"></div></div>`;
+            html += `<div class="gender-numbers"><span class="used">${femaleUsed.toLocaleString()}</span><span class="total">/ ${femaleLimit.toLocaleString()}</span></div>`;
+            html += '</div></div>';
+        } else {
+            html += '<div class="gender-row locked" title="Реформа «Женщины в армии» не введена">';
+            html += '<div class="gender-icon locked">🔒</div>';
+            html += '<div class="gender-bar-wrap"><div style="font-size:0.65rem; color:#8a7a5a; padding:2px 0;">Реформа не введена</div></div>';
+            html += '</div>';
+        }
+    }
+
+    // --- Футер ---
+    html += '<div class="race-reserve-footer">';
+    html += '<span>Доступно:</span>';
+    html += `<span class="available ${freeClass}">${totalFree.toLocaleString()}</span>`;
+    html += '</div>';
+
+    html += '</div>';
+    return html;
 }
 
 // ========== 7. УПРАВЛЕНИЕ РАСАМИ ==========
@@ -900,24 +989,37 @@ function applyDemography() {
 
             if (r.name.startsWith("Полукровка")) {
                 const match = r.name.match(/^Полукровка \((.+)\+(.+)\)$/);
-                if (!match) return false;
-                const pair = [match[1].trim(), match[2].trim()].sort();
-                const allowed = ALLOWED_HALF_BREEDS.some(p => p[0] === pair[0] && p[1] === pair[1]);
-                if (!allowed) return false;  // удаляем запрещённые
+                if (!match) return false;   // кривое имя — удаляем
+
+                const a = match[1].trim();
+                const b = match[2].trim();
+
+                // СИММЕТРИЧНАЯ проверка — пара разрешена в любом порядке имён
+                const allowed = ALLOWED_HALF_BREEDS.some(p =>
+                    (p[0] === a && p[1] === b) ||
+                    (p[0] === b && p[1] === a)
+                );
+                if (!allowed) return false;  // пара не в списке — удаляем
             }
             return true;
         });
 
         // ----- Добавление недостающих разрешённых полукровок -----
+        // ----- Добавление недостающих разрешённых полукровок -----
         const presentRaceNames = races.map(r => r.name);
         for (let pair of ALLOWED_HALF_BREEDS) {
             if (presentRaceNames.includes(pair[0]) && presentRaceNames.includes(pair[1])) {
-                const hbName = `Полукровка (${pair[0]}+${pair[1]})`;
-                if (!races.some(r => r.name === hbName)) {
+                // Проверяем оба порядка имени — какой бы ни был
+                const hbName1 = `Полукровка (${pair[0]}+${pair[1]})`;
+                const hbName2 = `Полукровка (${pair[1]}+${pair[0]})`;
+                if (!races.some(r => r.name === hbName1 || r.name === hbName2)) {
+                    // Полукровки с Высшими эльфами — бессмертны (deathRate: 0)
+                    const isElvenHalfBreed = isElvenRace(hbName1);
                     races.push({
-                        name: hbName,
+                        name: hbName1,
                         adultMale: 0, adultFemale: 0, children: 0, elders: 0,
-                        birthRate: 2.0, deathRate: 1.0
+                        birthRate: 2.0,
+                        deathRate: isElvenHalfBreed ? 0 : 1.0
                     });
                 }
             }
@@ -925,6 +1027,10 @@ function applyDemography() {
 
         // Основной цикл по расам
         for (let race of races) {
+            // Авто-фикс: бессмертные расы не должны иметь deathRate
+            if (isElvenRace(race.name) && race.deathRate !== 0) {
+                race.deathRate = 0;
+            }
             totalBefore += getRaceTotal(race);
             const effectiveBirthRate = race.birthRate * birthMultiplier * buildingBirthModifier;
             const effectiveDeathRate = race.name !== "Высшие эльфы" ? race.deathRate * deathMultiplier : 0;
@@ -972,14 +1078,16 @@ function applyDemography() {
                 race.adultFemale += newAdults - Math.floor(newAdults / 2);
             }
 
-            // Старение (0.2% взрослых становятся стариками)
-            const newElders = Math.floor((race.adultMale + race.adultFemale) * 0.002);
-            race.adultMale = Math.max(0, race.adultMale - Math.floor(newElders / 2));
-            race.adultFemale = Math.max(0, race.adultFemale - Math.ceil(newElders / 2));
-            race.elders = (race.elders || 0) + newElders;
+            // Старение — только для смертных рас. Эльфы и их полукровки не стареют.
+            if (!isElvenRace(race.name)) {
+                const newElders = Math.floor((race.adultMale + race.adultFemale) * 0.002);
+                race.adultMale = Math.max(0, race.adultMale - Math.floor(newElders / 2));
+                race.adultFemale = Math.max(0, race.adultFemale - Math.ceil(newElders / 2));
+                race.elders = (race.elders || 0) + newElders;
+            }
 
-            // Смертность (кроме высших эльфов)
-            if (race.name !== "Высшие эльфы" && effectiveDeathRate > 0) {
+            // Смертность — только для смертных рас. Эльфы и их полукровки бессмертны.
+            if (!isElvenRace(race.name) && effectiveDeathRate > 0) {
                 const totalPop = race.adultMale + race.adultFemale + race.elders;
                 const deaths = Math.floor(totalPop * (effectiveDeathRate / 100));
                 let remaining = deaths;
@@ -1180,6 +1288,16 @@ function refreshPeopleUI() {
 
     renderRaceTable();
 	recalcMaxConstructionSlots();
+	// Синхронизируем инпуты настроек с актуальным состоянием
+    syncSettingsToInputs();
+	// Обновляем чипы и (если открыт) обзор
+	if (typeof renderRaceQuickStats === 'function') renderRaceQuickStats();
+	if (typeof renderRaceOverview === 'function') {
+		const overviewView = document.querySelector('.race-view[data-race-view="overview"]');
+		if (overviewView && overviewView.classList.contains('active')) {
+			renderRaceOverview();
+		}
+	}
 }
 
 function validateArmy() { return; }
@@ -1327,6 +1445,158 @@ function deductPopulation(raceName, gender, amount) {
     }
     // Пересчёт казны/интерфейса не требуется, так как это не влияет на налоги сразу
 }
+// ==================== ТАБЫ РАЗДЕЛА «РАСЫ И НАСЕЛЕНИЕ» ====================
+
+function switchRaceTab(tabName) {
+    document.querySelectorAll('.race-tab').forEach(t => {
+        t.classList.toggle('active', t.dataset.raceTab === tabName);
+    });
+    document.querySelectorAll('.race-view').forEach(v => {
+        v.classList.toggle('active', v.dataset.raceView === tabName);
+    });
+    localStorage.setItem('raceActiveTab', tabName);
+
+    if (tabName === 'overview') renderRaceOverview();
+    if (tabName === 'reserve' && typeof refreshRecruitmentLimits === 'function') refreshRecruitmentLimits();
+    if (tabName === 'races' && typeof renderRaceTable === 'function') renderRaceTable();
+}
+window.switchRaceTab = switchRaceTab;
+
+function initRaceTabs() {
+    document.querySelectorAll('.race-tab').forEach(btn => {
+        btn.addEventListener('click', () => switchRaceTab(btn.dataset.raceTab));
+    });
+    const saved = localStorage.getItem('raceActiveTab');
+    if (saved) switchRaceTab(saved);
+    else renderRaceOverview();
+}
+
+// --- Быстрые цифры в шапке ---
+function renderRaceQuickStats() {
+    const el = document.getElementById('raceQuickStats');
+    if (!el) return;
+    const totalPop = (typeof getTotalPopulation === 'function') ? getTotalPopulation() : 0;
+    const reserveLimit = (typeof getTotalConscriptionLimit === 'function') ? getTotalConscriptionLimit() : 0;
+    const weeklyIncome = (typeof getWeeklyIncome === 'function') ? getWeeklyIncome() : 0;
+    el.innerHTML = `
+        <span class="stat-chip">👥 <strong>${totalPop.toLocaleString()}</strong></span>
+        <span class="stat-chip">⚔️ <strong>${reserveLimit.toLocaleString()}</strong></span>
+        <span class="stat-chip good">💰 <strong>${weeklyIncome.toLocaleString()}</strong> эрс/ход</span>
+    `;
+}
+window.renderRaceQuickStats = renderRaceQuickStats;
+
+// --- Обзорная вкладка ---
+function renderRaceOverview() {
+    const container = document.getElementById('raceOverviewContent');
+    if (!container) return;
+
+    const totalPop = (typeof getTotalPopulation === 'function') ? getTotalPopulation() : 0;
+    const taxpayers = (typeof getTaxpayers === 'function') ? getTaxpayers() : 0;
+    const weeklyIncome = (typeof getWeeklyIncome === 'function') ? getWeeklyIncome() : 0;
+    const reserveLimit = (typeof getTotalConscriptionLimit === 'function') ? getTotalConscriptionLimit() : 0;
+    const armySize = (typeof getCurrentTotalArmySize === 'function') ? getCurrentTotalArmySize() : 0;
+    const poorPercent = (peopleState && peopleState.settings && peopleState.settings.poorPercent) || 10;
+    const taxRate = (peopleState && peopleState.settings && peopleState.settings.taxRate) || 1;
+
+    const reservePct = reserveLimit > 0 ? Math.round((armySize / reserveLimit) * 100) : 0;
+    const reserveClass = reservePct > 90 ? 'bad' : (reservePct > 70 ? 'warn' : 'good');
+
+    let html = '<div class="overview-grid">';
+
+    html += `
+        <div class="overview-card">
+            <div class="oc-label">👥 Всего населения</div>
+            <div class="oc-value">${totalPop.toLocaleString()}</div>
+            <div class="oc-sub">Налогоплательщиков: ${taxpayers.toLocaleString()} (бедняков ${poorPercent}%)</div>
+            <div class="oc-bar"><div class="oc-bar-fill" style="width:100%"></div></div>
+        </div>`;
+
+    html += `
+        <div class="overview-card good">
+            <div class="oc-label">💰 Недельный доход</div>
+            <div class="oc-value">${weeklyIncome.toLocaleString()}</div>
+            <div class="oc-sub">Ставка: ${taxRate} эрс/чел</div>
+        </div>`;
+
+    html += `
+        <div class="overview-card ${reserveClass}">
+            <div class="oc-label">⚔️ Призывной резерв</div>
+            <div class="oc-value">${reserveLimit.toLocaleString()}</div>
+            <div class="oc-sub">В армии: ${armySize.toLocaleString()} (${reservePct}%)</div>
+            <div class="oc-bar"><div class="oc-bar-fill" style="width:${Math.min(100, reservePct)}%;background:${reserveClass === 'bad' ? '#ff6b6b' : (reserveClass === 'warn' ? '#ffd966' : '#8bc34a')}"></div></div>
+        </div>`;
+
+    // Сводка по расам
+    const provinces = (typeof getCurrentFactionProvinces === 'function') ? getCurrentFactionProvinces() : [];
+    const byRace = {};
+    for (let pid of provinces) {
+        const data = window.provincesData[pid];
+        if (!data || !data.races) continue;
+        for (let r of data.races) {
+            const total = (r.adultMale || 0) + (r.adultFemale || 0) + (r.children || 0) + (r.elders || 0);
+            if (!byRace[r.name]) byRace[r.name] = 0;
+            byRace[r.name] += total;
+        }
+    }
+    const sorted = Object.entries(byRace).sort((a, b) => b[1] - a[1]);
+
+    html += '</div>'; // Закрываем первый grid
+
+    if (sorted.length > 0) {
+        html += `<h4 style="color:#ffd966;margin:20px 0 10px 0;font-size:0.9rem;letter-spacing:0.08em;text-transform:uppercase;">🧬 Состав по расам</h4>`;
+        html += '<div class="overview-grid">';
+        for (let [raceName, count] of sorted) {
+            const pct = totalPop > 0 ? ((count / totalPop) * 100).toFixed(1) : '0';
+            html += `
+                <div class="overview-card">
+                    <div class="oc-label">${escapeHtml(raceName)}</div>
+                    <div class="oc-value" style="font-size:1.2rem;">${count.toLocaleString()}</div>
+                    <div class="oc-sub">${pct}% от всего населения</div>
+                    <div class="oc-bar"><div class="oc-bar-fill" style="width:${pct}%"></div></div>
+                </div>`;
+        }
+        html += '</div>';
+    }
+
+    container.innerHTML = html;
+}
+window.renderRaceOverview = renderRaceOverview;
+
+// --- Автозапуск ---
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initRaceTabs);
+} else {
+    initRaceTabs();
+}
+
+console.log('✅ Табы «Расы и население» инициализированы');
+/**
+ * Синхронизирует значения в инпутах налогов и призыва с peopleState.
+ * Вызывается при загрузке, после импорта и при каждом refreshPeopleUI().
+ */
+function syncSettingsToInputs() {
+    if (typeof peopleState === 'undefined' || !peopleState.settings) return;
+
+    const taxInput = document.getElementById('taxRate');
+    const conscriptInput = document.getElementById('conscriptPercent');
+    const womenCheckbox = document.getElementById('womenInArmyCheckbox');
+
+    if (taxInput) {
+        taxInput.value = (peopleState.settings.taxRate !== undefined)
+            ? peopleState.settings.taxRate
+            : 1;
+    }
+    if (conscriptInput) {
+        conscriptInput.value = (peopleState.settings.conscriptPercent !== undefined)
+            ? peopleState.settings.conscriptPercent
+            : 25;
+    }
+    if (womenCheckbox) {
+        womenCheckbox.checked = peopleState.settings.womenInArmy === true;
+    }
+}
+window.syncSettingsToInputs = syncSettingsToInputs;
 window.deductPopulation = deductPopulation;
 
 window.showDemographyRequiredModal = showDemographyRequiredModal;

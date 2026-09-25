@@ -1,12 +1,25 @@
 // ============================================================================
 // МОДУЛЬ: trade.js (полностью переписанная версия)
 // ============================================================================
-// Загружено на гитхаб 18.07.2026
+// загружено на гитхаб 26.09.26
 // Глобальный массив торговых соглашений
 window.globalTradeAgreements = window.globalTradeAgreements || [];
 
 let selectedTradeResource = null;
+// === НАСТРОЙКИ ТОРГОВЛИ ===
+function initTradeSettings() {
+    if (typeof peopleState !== 'undefined') {
+        if (!peopleState.tradeSettings) {
+            peopleState.tradeSettings = {
+                tariffPercent: 5    // ← пошлина по умолчанию 5%
+            };
+        }
+    }
+}
+initTradeSettings();
 
+// Экспорт, чтобы можно было менять из UI
+window.initTradeSettings = initTradeSettings;
 function getTradeBonusPercent() {
     let totalBonus = 0;
     const provinces = (typeof getCurrentFactionProvinces === 'function') ? getCurrentFactionProvinces() : [];
@@ -110,8 +123,10 @@ function selectResourceForTrade(resourceId) {
     if (hiddenInput) hiddenInput.value = resourceId;
     const panel = document.getElementById('selectedResourceDisplay');
     if (panel) {
-        panel.innerHTML = `✅ Выбран для торговли: <strong>${RESOURCES_REGISTRY[resourceId]?.name || resourceId}</strong>`;
+        const basePrice = RESOURCES_REGISTRY[resourceId]?.basePrice || '—';
+        panel.innerHTML = `✅ Выбран для торговли: <strong>${RESOURCES_REGISTRY[resourceId]?.name || resourceId}</strong> <span style="color:#8a7a5a;">(базовая цена: ${basePrice} эрс)</span>`;
     }
+    updatePriceFromResource(resourceId);   // ← ДОБАВЛЕНО
 }
 
 // ========== 2. ОБНОВЛЕНИЕ СПИСКА ПАРТНЁРОВ ==========
@@ -128,11 +143,20 @@ function updatePartnerSelect() {
         select.appendChild(option);
     }
 }
-
+// Обновляем поле цены при выборе ресурса — базовой ценой
+function updatePriceFromResource(resourceId) {
+    const priceInput = document.getElementById('newAgreementPrice');
+    if (!priceInput) return;
+    const base = RESOURCES_REGISTRY[resourceId]?.basePrice;
+    if (base) priceInput.value = base;
+}
 // ========== 3. ОТОБРАЖЕНИЕ АКТИВНЫХ ДОГОВОРОВ ==========
 function renderAgreements() {
     const container = document.getElementById('agreementsList');
     if (!container) return;
+
+    // ← ОЧИЩАЕМ КОНТЕЙНЕР ПЕРЕД ОТРИСОВКОЙ
+    container.innerHTML = '';
 
     const relevant = window.globalTradeAgreements.filter(a => a.factionId === window.currentFaction);
     if (relevant.length === 0) {
@@ -140,37 +164,112 @@ function renderAgreements() {
         return;
     }
 
-    container.innerHTML = '';
-    for (let a of relevant) {
+    // Сортировка (по умолчанию — по прибыли, убыточные сверху не идут)
+    const sortBy = localStorage.getItem('tradeSortBy') || 'profit';
+    const sorted = [...relevant].sort((a, b) => {
+        if (sortBy === 'partner') {
+            const pa = FACTION_NAMES[a.partnerId] || a.partnerId;
+            const pb = FACTION_NAMES[b.partnerId] || b.partnerId;
+            return pa.localeCompare(pb);
+        } else if (sortBy === 'resource') {
+            const ra = RESOURCES_REGISTRY[a.resource]?.name || a.resource;
+            const rb = RESOURCES_REGISTRY[b.resource]?.name || b.resource;
+            return ra.localeCompare(rb);
+        } else {
+            // по прибыли (модуль суммы)
+            const sa = a.amountPerTurn * a.price;
+            const sb = b.amountPerTurn * b.price;
+            return sb - sa;
+        }
+    });
+
+    const tariff = (typeof peopleState !== 'undefined' && peopleState.tradeSettings)
+        ? (peopleState.tradeSettings.tariffPercent || 0)
+        : 5;
+
+    // Заголовок с сортировкой
+    let html = `
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:8px;">
+            <span style="font-size:0.85rem; color:#8a7a5a;">Сортировка:</span>
+            <div style="display:flex; gap:6px;">
+                <button class="trade-sort-btn" data-sort="profit" style="padding:3px 10px; font-size:0.7rem; ${sortBy === 'profit' ? 'background:#3a6b3a;' : ''}">💰 По прибыли</button>
+                <button class="trade-sort-btn" data-sort="partner" style="padding:3px 10px; font-size:0.7rem; ${sortBy === 'partner' ? 'background:#3a6b3a;' : ''}">🤝 По партнёру</button>
+                <button class="trade-sort-btn" data-sort="resource" style="padding:3px 10px; font-size:0.7rem; ${sortBy === 'resource' ? 'background:#3a6b3a;' : ''}">📦 По ресурсу</button>
+            </div>
+        </div>
+    `;
+
+    for (let a of sorted) {
         const partnerName = (typeof FACTION_NAMES !== 'undefined' && FACTION_NAMES[a.partnerId])
             ? FACTION_NAMES[a.partnerId] : a.partnerId;
-        const direction = a.type === 'export' ? '📤 Экспорт →' : '📥 Импорт ←';
+        const direction = a.type === 'export' ? '📤 Экспорт' : '📥 Импорт';
         const res = RESOURCES_REGISTRY[a.resource] || { name: a.resource, icon: '' };
-        const resIcon = res.icon ? `<img src="${res.icon}" style="width:16px;height:16px;vertical-align:middle;">` : '';
+        const resIcon = res.icon ? `<img src="${res.icon}" style="width:20px;height:20px;vertical-align:middle;">` : '';
         const durationText = (a.duration && a.duration > 0)
-            ? ` | ⏳ Осталось: ${a.remainingTurns} ходов`
-            : ' | ♾️ Бессрочный';
+            ? `⏳ Осталось: ${a.remainingTurns} ходов`
+            : '♾️ Бессрочный';
+
+        const sum = a.amountPerTurn * a.price;
+        const tariffCut = Math.floor(sum * tariff / 100);
+        let total, totalColor;
+        if (a.type === 'export') {
+            total = sum - tariffCut;
+            totalColor = total >= 0 ? '#8bc34a' : '#ff6b6b';
+        } else {
+            total = -(sum + tariffCut);
+            totalColor = '#ff6b6b';
+        }
 
         const div = document.createElement('div');
         div.className = 'agreement-item';
-        div.style.cssText = 'display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #b87c4f; padding:8px 0;';
+        div.setAttribute('data-tip', `Договор: ${direction} ${res.name} с ${partnerName}. Сумма: ${sum} эрсов. Пошлина: ${tariff}%. Итого: ${total} эрсов/ход.`);
+        div.style.cssText = 'display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #b87c4f; padding:10px 8px; border-left:3px solid ' + totalColor + '; background:rgba(0,0,0,0.15); margin-bottom:4px; border-radius:4px;';
         div.innerHTML = `
-            <div>
-                <strong>${direction} ${partnerName}</strong><br>
-                ${resIcon} ${res.name} | ${a.amountPerTurn} ед./ход | Цена: ${a.price} эрс/ед.${durationText}
+            <div style="flex:1;">
+                <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+                    ${resIcon}
+                    <strong style="color:#f0e3c8;">${direction} ${res.name}</strong>
+                    <span style="color:#8a7a5a;">→</span>
+                    <span style="color:#d4c9b8;">${partnerName}</span>
+                </div>
+                <div style="font-size:0.75rem; color:#8a7a5a;">
+                    ${a.amountPerTurn} ед./ход × ${a.price} эрс/ед.
+                    <span style="margin-left:8px;">|</span>
+                    <span style="margin-left:8px;">💰 ${sum} эрс</span>
+                    <span style="color:#ff6b6b; margin-left:8px;">−${tariff}% пошлина</span>
+                    <span style="margin-left:8px;">|</span>
+                    <span style="margin-left:8px;">${durationText}</span>
+                </div>
             </div>
-            <button class="delete-agreement" data-id="${a.id}" style="background:#7a2a2a; padding:4px 10px;">🗑️ Расторгнуть</button>
+            <div style="text-align:right;">
+                <div style="font-size:1.1rem; font-weight:bold; color:${totalColor};">${total >= 0 ? '+' : ''}${total}</div>
+                <div style="font-size:0.7rem; color:#8a7a5a;">эрс/ход</div>
+            </div>
+            <button class="delete-agreement" data-id="${a.id}" style="background:#7a2a2a; padding:4px 10px; margin-left:10px;">🗑️</button>
         `;
         container.appendChild(div);
     }
 
+    // Обработчики сортировки
+    container.querySelectorAll('.trade-sort-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            localStorage.setItem('tradeSortBy', btn.dataset.sort);
+            renderAgreements();
+        });
+    });
+
     // Обработчики удаления
-    document.querySelectorAll('.delete-agreement').forEach(btn => {
+    container.querySelectorAll('.delete-agreement').forEach(btn => {
         btn.addEventListener('click', function() {
             const id = this.getAttribute('data-id');
             window.globalTradeAgreements = window.globalTradeAgreements.filter(a => a.id != id);
             if (typeof saveAllData === 'function') saveAllData();
-            renderAgreements();
+            if (typeof refreshTradeUI === 'function') {
+                refreshTradeUI();
+            } else {
+                renderAgreements();
+                renderTradeSummary();
+            }
             if (typeof addBuildingsLog === 'function') addBuildingsLog('Торговый договор расторгнут.');
         });
     });
@@ -184,11 +283,14 @@ function addTradeAgreement() {
     let amount = parseInt(document.getElementById('newAgreementAmount')?.value);
     let durationInput = parseInt(document.getElementById('newAgreementDuration')?.value);
     const direction = document.querySelector('input[name="tradeDirection"]:checked')?.value;
-    
-    if (isNaN(price) || price <= 0) price = 10;
+
+    // Если цена не задана — берём базовую
+    if (isNaN(price) || price <= 0) {
+        price = (RESOURCES_REGISTRY[resource]?.basePrice) || 10;
+    }
     if (isNaN(amount) || amount <= 0) amount = 10;
     const duration = (isNaN(durationInput) || durationInput <= 0) ? 0 : durationInput;
-    
+
     if (!partnerFaction || currentFaction === partnerFaction) {
         addBuildingsLog("Нельзя заключить договор с самим собой.");
         return;
@@ -201,7 +303,7 @@ function addTradeAgreement() {
         addBuildingsLog("Выберите направление торговли (экспорт/импорт).");
         return;
     }
-    
+
     // Проверяем наличие ресурса при экспорте
     if (direction === 'export') {
         let totalAvailable = 0;
@@ -219,7 +321,7 @@ function addTradeAgreement() {
             return;
         }
     }
-    
+
     // Проверяем, нет ли уже договора с этим партнёром по этому ресурсу
     const existing = (typeof globalTradeAgreements !== 'undefined')
         ? globalTradeAgreements.find(a => a.factionId === currentFaction && a.partnerId === partnerFaction && a.resource === resource)
@@ -228,7 +330,7 @@ function addTradeAgreement() {
         addBuildingsLog("Договор по этому ресурсу с данной фракцией уже существует.");
         return;
     }
-    
+
     const newAgreement = {
         id: (typeof generateId === 'function') ? generateId() : Date.now() + '-' + Math.random(),
         factionId: currentFaction,
@@ -238,12 +340,18 @@ function addTradeAgreement() {
         price: price,
         amountPerTurn: amount,
         duration: duration,
-        remainingTurns: duration
+        remainingTurns: duration,
+        basePrice: RESOURCES_REGISTRY[resource]?.basePrice || price
     };
     if (typeof globalTradeAgreements !== 'undefined') {
         globalTradeAgreements.push(newAgreement);
         if (typeof saveAllData === 'function') saveAllData();
-        renderAgreements();
+        if (typeof refreshTradeUI === 'function') {
+            refreshTradeUI();
+        } else {
+            renderAgreements();
+            renderTradeSummary();
+        }
     }
     const partnerName = (typeof FACTION_NAMES !== 'undefined' && FACTION_NAMES[partnerFaction]) ? FACTION_NAMES[partnerFaction] : partnerFaction;
     const resName = RESOURCES_REGISTRY[resource]?.name || resource;
@@ -256,6 +364,11 @@ function addTradeAgreement() {
 function processTradeAgreements() {
     if (!window.globalTradeAgreements) return;
     const toRemove = [];
+
+    // Пошлина (5% по умолчанию)
+    const tariff = (typeof peopleState !== 'undefined' && peopleState.tradeSettings)
+        ? (peopleState.tradeSettings.tariffPercent || 0) / 100
+        : 0.05;
 
     for (let agreement of window.globalTradeAgreements) {
         if (agreement.factionId !== window.currentFaction) continue;
@@ -279,7 +392,6 @@ function processTradeAgreements() {
             : [];
 
         if (agreement.type === 'export') {
-            // Проверяем наличие ресурса
             let available = 0;
             for (let pid of provinces) {
                 if (typeof provincesData !== 'undefined' && provincesData[pid]?.resources) {
@@ -303,11 +415,14 @@ function processTradeAgreements() {
                 if (remaining <= 0) break;
             }
 
-            // Применяем бонус рынков и технологий
+            // Бонус рынков и технологий
             const tradeBonusPercent = (typeof getTradeBonusPercent === 'function')
                 ? getTradeBonusPercent()
                 : 0;
-            const totalIncome = Math.floor(totalCost * (1 + tradeBonusPercent / 100));
+            // Сначала применяем бонус, потом — пошлину
+            const withBonus = Math.floor(totalCost * (1 + tradeBonusPercent / 100));
+            const tariffCut = Math.floor(withBonus * tariff);
+            const totalIncome = withBonus - tariffCut;
 
             // Добавляем эрсы в столицу
             const capitalPid = provinces[0] || Object.keys(provincesData)[0];
@@ -315,27 +430,30 @@ function processTradeAgreements() {
                 provincesData[capitalPid].resources.ers += totalIncome;
             }
 
-            if (typeof addBuildingsLog === 'function')
-                addBuildingsLog(
-                    `✅ Экспорт: продано ${amount} ед. ${resource} за ${totalIncome} эрсов` +
-                    (tradeBonusPercent > 0 ? ` (включая бонус ${tradeBonusPercent}%)` : '')
-                );
+            if (typeof addBuildingsLog === 'function') {
+                let msg = `✅ Экспорт: продано ${amount} ед. ${resource} за ${totalIncome} эрсов`;
+                if (tradeBonusPercent > 0) msg += ` (бонус ${tradeBonusPercent}%)`;
+                if (tariffCut > 0) msg += ` (пошлина −${tariffCut})`;
+                addBuildingsLog(msg);
+            }
         } else if (agreement.type === 'import') {
-            // Проверяем наличие эрсов
+            // Импорт: пошлина увеличивает цену
+            const withTariff = Math.floor(totalCost * (1 + tariff));
+
             let totalErs = 0;
             for (let pid of provinces) {
                 if (typeof provincesData !== 'undefined' && provincesData[pid]?.resources) {
                     totalErs += provincesData[pid].resources.ers || 0;
                 }
             }
-            if (totalErs < totalCost) {
+            if (totalErs < withTariff) {
                 if (typeof addBuildingsLog === 'function')
-                    addBuildingsLog(`❌ Недостаточно эрсов для импорта ${resource}`);
+                    addBuildingsLog(`❌ Недостаточно эрсов для импорта ${resource} (нужно ${withTariff}, есть ${totalErs})`);
                 continue;
             }
 
             // Списываем эрсы
-            let remainingErs = totalCost;
+            let remainingErs = withTariff;
             for (let pid of provinces) {
                 if (typeof provincesData === 'undefined' || !provincesData[pid]?.resources) continue;
                 const res = provincesData[pid].resources;
@@ -345,7 +463,7 @@ function processTradeAgreements() {
                 if (remainingErs <= 0) break;
             }
 
-            // Добавляем ресурс в первую провинцию
+            // Добавляем ресурс
             const targetPid = provinces[0] || Object.keys(provincesData)[0];
             if (targetPid && provincesData[targetPid]?.resources) {
                 provincesData[targetPid].resources[resource] =
@@ -353,11 +471,10 @@ function processTradeAgreements() {
             }
 
             if (typeof addBuildingsLog === 'function')
-                addBuildingsLog(`✅ Импорт: куплено ${amount} ед. ${resource} за ${totalCost} эрсов.`);
+                addBuildingsLog(`✅ Импорт: куплено ${amount} ед. ${resource} за ${withTariff} эрсов (вкл. пошлину ${tariffCutLabel(withTariff - totalCost)})`);
         }
     }
 
-    // Удаляем истекшие
     if (toRemove.length > 0) {
         window.globalTradeAgreements = window.globalTradeAgreements.filter(
             a => !toRemove.includes(a.id)
@@ -367,92 +484,130 @@ function processTradeAgreements() {
     }
 }
 
+// Вспомогательная функция для красивого вывода пошлины
+function tariffCutLabel(value) {
+    return `+${value}`;
+}
+
 // ========== 6. ИНИЦИАЛИЗАЦИЯ ==========
 function initTradeData() {
-    // Убедимся, что есть массив
     if (!window.globalTradeAgreements) window.globalTradeAgreements = [];
-    // Миграция старых договоров (если без factionId)
     if (window.globalTradeAgreements.length && !window.globalTradeAgreements[0].hasOwnProperty('factionId')) {
         window.globalTradeAgreements = [];
         if (typeof saveAllData === 'function') saveAllData();
     }
 
+    initTradeSettings();
+
     updatePartnerSelect();
     renderAgreements();
     renderTradeableResources();
-	renderTradeSummary();
+    renderTradeSummary();
+
+    // Настройка пошлины
+    const tariffInput = document.getElementById('tariffPercentInput');
+    if (tariffInput && !tariffInput._bound) {
+        tariffInput._bound = true;
+        tariffInput.value = peopleState.tradeSettings.tariffPercent || 5;
+        tariffInput.addEventListener('change', function() {
+            const val = Math.max(0, Math.min(50, parseFloat(this.value) || 0));
+            peopleState.tradeSettings.tariffPercent = val;
+            this.value = val;
+            if (typeof saveAllData === 'function') saveAllData();
+            if (typeof refreshTradeUI === 'function') {
+                refreshTradeUI();
+            } else {
+                renderAgreements();
+                renderTradeSummary();
+            }
+        });
+    }
 }
 
 function renderTradeSummary() {
     const container = document.getElementById('tradeSummary');
-    if (!container) {
-        console.warn('tradeSummary не найден');
-        return;
-    }
+    if (!container) return;
 
-    const agreements = (typeof globalTradeAgreements !== 'undefined') 
-        ? globalTradeAgreements.filter(a => a.factionId === currentFaction) 
+    const agreements = (typeof globalTradeAgreements !== 'undefined')
+        ? globalTradeAgreements.filter(a => a.factionId === currentFaction)
         : [];
-    
+
     if (agreements.length === 0) {
         container.innerHTML = '';
         return;
     }
 
     const bonusPercent = getTradeBonusPercent();
+    const tariff = (typeof peopleState !== 'undefined' && peopleState.tradeSettings)
+        ? (peopleState.tradeSettings.tariffPercent || 0)
+        : 5;
+
     let totalExport = 0;
     let totalImport = 0;
+    let totalTariffPaid = 0;
+    let totalTariffReceived = 0;
     let rowsHtml = '';
 
     for (let a of agreements) {
-        const res = RESOURCES_REGISTRY[a.resource] || { name: a.resource };
+        const res = RESOURCES_REGISTRY[a.resource] || { name: a.resource, icon: '' };
         const partnerName = (typeof FACTION_NAMES !== 'undefined' && FACTION_NAMES[a.partnerId]) ? FACTION_NAMES[a.partnerId] : a.partnerId;
         const sum = a.amountPerTurn * a.price;
 
         if (a.type === 'export') {
             const bonusAmount = Math.floor(sum * (bonusPercent / 100));
-            totalExport += sum;
+            const withBonus = sum + bonusAmount;
+            const tariffCut = Math.floor(withBonus * tariff / 100);
+            totalExport += withBonus;
+            totalTariffPaid += tariffCut;
             rowsHtml += `
                 <tr>
                     <td>📤 ${res.name} → ${partnerName}</td>
                     <td style="text-align:right;">+${sum.toLocaleString()}</td>
-                    <td style="text-align:right;">${bonusPercent > 0 ? `+${bonusAmount} (${bonusPercent}%)` : '—'}</td>
-                    <td style="text-align:right;">+${(sum + bonusAmount).toLocaleString()}</td>
+                    <td style="text-align:right;">+${bonusAmount.toLocaleString()}</td>
+                    <td style="text-align:right; color:#ff6b6b;">−${tariffCut.toLocaleString()}</td>
+                    <td style="text-align:right; color:#8bc34a;">+${(withBonus - tariffCut).toLocaleString()}</td>
                 </tr>`;
         } else {
+            const tariffCut = Math.floor(sum * tariff / 100);
             totalImport += sum;
+            totalTariffReceived += tariffCut;
             rowsHtml += `
                 <tr>
                     <td>📥 ${res.name} ← ${partnerName}</td>
                     <td style="text-align:right;">−${sum.toLocaleString()}</td>
                     <td style="text-align:right;">—</td>
-                    <td style="text-align:right;">−${sum.toLocaleString()}</td>
+                    <td style="text-align:right; color:#ff6b6b;">+${tariffCut.toLocaleString()} (к цене)</td>
+                    <td style="text-align:right; color:#ff6b6b;">−${(sum + tariffCut).toLocaleString()}</td>
                 </tr>`;
         }
     }
 
-    const totalBonus = Math.floor(totalExport * (bonusPercent / 100));
-    const netIncome = totalExport + totalBonus - totalImport;
+    const netIncome = totalExport - totalTariffPaid - totalImport - totalTariffReceived;
 
     const html = `
         <div class="stat-card" style="margin-top:15px;">
             <h3>📊 Сводка торговли</h3>
-            <table style="width:100%; border-collapse:collapse; margin-top:10px;">
+            <div style="font-size:0.85rem; color:#8a7a5a; margin-bottom:10px;">
+                Пошлина: <strong style="color:#ffd966;">${tariff}%</strong> (настраивается в разделе «Настройки»)
+            </div>
+            <table style="width:100%; border-collapse:collapse; margin-top:10px; font-size:0.85rem;">
                 <thead>
-                    <tr style="border-bottom:1px solid #b87c4f;">
-                        <th>Сделка</th>
-                        <th style="text-align:right;">Сумма</th>
-                        <th style="text-align:right;">Бонус рынков</th>
-                        <th style="text-align:right;">Итого</th>
+                    <tr style="border-bottom:1px solid #b87c4f; color:#ffd966;">
+                        <th style="text-align:left; padding:6px;">Сделка</th>
+                        <th style="text-align:right; padding:6px;">Сумма</th>
+                        <th style="text-align:right; padding:6px;">Бонус</th>
+                        <th style="text-align:right; padding:6px;">Пошлина</th>
+                        <th style="text-align:right; padding:6px;">Итого</th>
                     </tr>
                 </thead>
                 <tbody>${rowsHtml}</tbody>
                 <tfoot>
                     <tr style="border-top:2px solid #ffd966; font-weight:bold;">
-                        <td>Общий итог</td>
-                        <td style="text-align:right;">${(totalExport > 0 ? '+' : '') + totalExport.toLocaleString()} / −${totalImport.toLocaleString()}</td>
-                        <td style="text-align:right;">+${totalBonus.toLocaleString()} (${bonusPercent}%)</td>
-                        <td style="text-align:right; color:${netIncome >= 0 ? '#8bc34a' : '#ff6b6b'};">${netIncome >= 0 ? '+' : ''}${netIncome.toLocaleString()} эрсов/ход</td>
+                        <td style="padding:8px 6px;">Общий итог</td>
+                        <td style="text-align:right; padding:8px 6px;">+${totalExport.toLocaleString()} / −${totalImport.toLocaleString()}</td>
+                        <td style="text-align:right; padding:8px 6px;">+${(totalExport - (totalExport - totalTariffPaid) + totalTariffPaid).toLocaleString()}</td>
+                        <td style="text-align:right; padding:8px 6px; color:#ff6b6b;">−${(totalTariffPaid + totalTariffReceived).toLocaleString()}</td>
+                        <td style="text-align:right; padding:8px 6px; color:${netIncome >= 0 ? '#8bc34a' : '#ff6b6b'};">${netIncome >= 0 ? '+' : ''}${netIncome.toLocaleString()} эрсов/ход</td>
                     </tr>
                 </tfoot>
             </table>
@@ -460,7 +615,18 @@ function renderTradeSummary() {
     `;
     container.innerHTML = html;
 }
-
+// ============================================================
+// ЦЕНТРАЛИЗОВАННОЕ ОБНОВЛЕНИЕ UI ТОРГОВЛИ
+// ============================================================
+function refreshTradeUI() {
+    if (typeof renderTradeableResources === 'function') renderTradeableResources();
+    if (typeof renderAgreements === 'function')         renderAgreements();
+    if (typeof renderTradeSummary === 'function')       renderTradeSummary();
+    if (typeof updateTreasuryDisplay === 'function')    updateTreasuryDisplay();
+    if (typeof renderProvinceDashboard === 'function')  renderProvinceDashboard();
+    if (typeof renderProvinceCells === 'function')      renderProvinceCells();
+}
+window.refreshTradeUI = refreshTradeUI;
 // ========== 7. ЭКСПОРТ ФУНКЦИЙ ==========
 window.processTradeAgreements = processTradeAgreements;
 window.initTradeData = initTradeData;

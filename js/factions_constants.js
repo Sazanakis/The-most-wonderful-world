@@ -2,7 +2,7 @@
 // МОДУЛЬ: factions_constants.js
 // Константы для фракций, отсутствующие в карточном constants.js
 // ============================================================================
-// Загружено на гитхаб 01.08.2026
+// загружено на гитхаб 26.09.26
 // ---------- ПРАВИТЕЛИ ФРАКЦИЙ ----------
 const FACTION_RULERS = {
     clan_daketa: "Кай Дакэта",
@@ -22,6 +22,7 @@ const FACTION_RULERS = {
 	principality_lorein: "Ноэми Ванденхейде",
 	county_mensen: "Вальдэ Мар'Фалкин",
 	county_corvail: "Альбрехт Корвайл",
+	county_luun: "Люциан Мунвар",
 };
 
 // ---------- НАЗВАНИЯ РИТОРИК (ИДЕОЛОГИЙ) ----------
@@ -52,7 +53,8 @@ const FACTION_LEADER_LINKS = {
 	order_varsiltaers: "https://vk.com/page-228463474_55105506",
 	principality_lorein: "https://vk.com/page-228463474_55105567",
 	county_mensen: "https://vk.ru/page-228463474_55105853",
-	county_corvail: "https://vk.ru/page-228463474_55105970"
+	county_corvail: "https://vk.ru/page-228463474_55105970",
+	county_luun: "https://vk.ru/most_wonderful_world"
 };
 const FACTION_MAIN_COATS = {
     clan_daketa: "emblem/armoria.png",
@@ -72,18 +74,56 @@ const FACTION_MAIN_COATS = {
     principality_lorein: "emblem/lorein.png",
 	county_mensen: "emblem/mensen.png",
 	county_corvail: "emblem/corvail.png",
+	county_luun: "emblem/luun.png"
 };
 window.FACTION_MAIN_COATS = FACTION_MAIN_COATS;
 // ---------- РЕСУРСЫ (для торговли и построек) ----------
 const RESOURCES_REGISTRY = {
-    wood:   { id: "wood",   name: "Древесина", icon: "icons/wood.png",  category: "basic",    tradeable: true,  defaultValue: 500 },
-    stone:  { id: "stone",  name: "Камень",    icon: "icons/stone.png", category: "basic",    tradeable: true,  defaultValue: 300 },
-    iron:   { id: "iron",   name: "Железо",    icon: "icons/iron.png",  category: "strategic",tradeable: true,  defaultValue: 200 },
-    gold:   { id: "gold",   name: "Золото",    icon: "icons/gold.png",  category: "luxury",   tradeable: true,  defaultValue: 10 },
-	sword_iron: { id: "sword_iron", name: "Железо меча", icon: "icons/sword_iron.png", category: "strategic", tradeable: true, defaultValue: 0 },
-	bison: { id: "bison", name: "Бизоны", icon: "icons/bison.png", category: "basic", tradeable: true, defaultValue: 0 },
-	elven_tobacco: { id: "elven_tobacco", name: "Эльфийский табак", icon: "icons/elven_tobacco.png", category: "luxury", tradeable: true, defaultValue: 0 },
-    ers:    { id: "ers",    name: "Эрсы",      icon: "icons/ers.png",   category: "currency", tradeable: true,  defaultValue: 10000 }
+    wood: {
+        id: "wood", name: "Древесина", icon: "icons/wood.png",
+        category: "basic", tradeable: true, defaultValue: 500,
+        basePrice: 5
+    },
+    stone: {
+        id: "stone", name: "Камень", icon: "icons/stone.png",
+        category: "basic", tradeable: true, defaultValue: 300,
+        basePrice: 10
+    },
+    iron: {
+        id: "iron", name: "Железо", icon: "icons/iron.png",
+        category: "strategic", tradeable: true, defaultValue: 200,
+        basePrice: 15
+    },
+    gold: {
+        id: "gold", name: "Золото", icon: "icons/gold.png",
+        category: "luxury", tradeable: true, defaultValue: 10,
+        basePrice: 100
+    },
+    sword_iron: {
+        id: "sword_iron", name: "Железо меча", icon: "icons/sword_iron.png",
+        category: "strategic", tradeable: true, defaultValue: 0,
+        basePrice: 400
+    },
+    bison: {
+        id: "bison", name: "Бизоны", icon: "icons/bison.png",
+        category: "basic", tradeable: true, defaultValue: 0,
+        basePrice: 20
+    },
+    elven_tobacco: {
+        id: "elven_tobacco", name: "Эльфийский табак", icon: "icons/elven_tobacco.png",
+        category: "luxury", tradeable: true, defaultValue: 0,
+        basePrice: 80
+    },
+    elixir: {
+        id: "elixir", name: "Эликсиры", icon: "icons/elixir.png",
+        category: "strategic", tradeable: true, defaultValue: 0,
+        basePrice: 50    // ← временная цена, поменяешь потом
+    },
+    ers: {
+        id: "ers", name: "Эрсы", icon: "icons/ers.png",
+        category: "currency", tradeable: true, defaultValue: 10000,
+        basePrice: 1
+    }
 };
 
 // ---------- ГЕРБЫ И ПОРТРЕТЫ ВАССАЛОВ ----------
@@ -143,7 +183,9 @@ const VASSAL_ICONS = {
 	"house_mensen_merchant_guild": { coat: "icons/emblem/mensen_merchant_guild.png", portrait: "icons/default_portrait.png" },
 	"house_wynthorne": { coat: "icons/emblem/wynthorne.png", portrait: "icons/default_portrait.png" },
 	"house_ashbyrne": { coat: "icons/emblem/ashbyrne.png", portrait: "icons/default_portrait.png" },
-	"house_thornhill": { coat: "icons/emblem/thornhill.png", portrait: "icons/default_portrait.png" }
+	"house_thornhill": { coat: "icons/emblem/thornhill.png", portrait: "icons/default_portrait.png" },
+	"house_cergard": { coat: "icons/emblem/cergard.png", portrait: "icons/default_portrait.png" },
+	"house_gedorf": { coat: "icons/emblem/gedorf.png", portrait: "icons/default_portrait.png" },
 };
 
 // ---------- МАППИНГ ПОВЫШЕНИЯ РАНГА ----------
@@ -242,6 +284,10 @@ const INITIAL_VASSALS = {
 		{ id: "house_wynthorne", name: "Род Уинторн", type: "MINOR_CLAN", politicalFaction: "NOBILITY", leader: "Глава Уинторн", baseLoyalty: 50 },
 		{ id: "house_ashbyrne", name: "Род Эшбирн", type: "MINOR_CLAN", politicalFaction: "NOBILITY", leader: "Глава Эшбирн", baseLoyalty: 50 },
 		{ id: "house_thornhill", name: "Род Торнхилл", type: "MINOR_CLAN", politicalFaction: "NOBILITY", leader: "Глава Торнхилл", baseLoyalty: 50 },
+	],
+	county_luun: [
+		{ id: "house_cergard", name: "Род Цергард", type: "MINOR_CLAN", politicalFaction: "LOYALISTS", leader: "Глава Цергард", baseLoyalty: 60 },
+		{ id: "house_gedorf", name: "Род Гедорф", type: "MINOR_CLAN", politicalFaction: "LOYALISTS", leader: "Глава Гедорф", baseLoyalty: 60 },
 	],
 };
 

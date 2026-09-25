@@ -2,7 +2,7 @@
 // МОДУЛЬ 09: buildings.js (версия 6.0 – финальная)
 // Полный перезаписанный файл с учётом всех правок.
 // ============================================================================
-// Загружено на гитхаб 01.08.2026
+// загружено на гитхаб 26.09.26
 // ========== 1. ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ДЛЯ ВАССАЛОВ ==========
 
 const VASSAL_NAMES = {
@@ -61,7 +61,9 @@ const VASSAL_NAMES = {
 	"house_mensen_merchant_guild": "Купеческая гильдия Менсена",
 	"house_wynthorne": "Род Уинторн",
 	"house_ashbyrne": "Род Эшбирн",
-	"house_thornhill": "Род Торнхилл"
+	"house_thornhill": "Род Торнхилл",
+	"house_cergard": "Род Цергард",
+	"house_gedorf": "Род Гедорф"
 };
 
 function getVassalForSettlement(settlementId) {
@@ -1620,6 +1622,7 @@ function exchangeGold() {
     saveAllData();
     refreshBuildingsUI();
     updateGlobalResourcesDisplay();
+	if (typeof refreshTradeUI === 'function') refreshTradeUI();
 }
 
 function smeltSwordIron() {
@@ -2679,7 +2682,27 @@ document.addEventListener('click', function(e) {
         demolishBuilding(settlementId, buildingId);
     }
 });
+
+function isAlchemyDistrictActive() {
+    if (typeof provincesData === 'undefined' || typeof getCurrentFactionProvinces !== 'function') return false;
+    const provinces = getCurrentFactionProvinces();
+    for (let pid of provinces) {
+        const prov = provincesData[pid];
+        if (!prov) continue;
+        for (let s of prov.settlements) {
+            if (s.captured) continue;
+            for (let b of s.buildings) {
+                if (b.completed && b.special === "alchemy_district") {
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
+
 // Экспорт
+window.isAlchemyDistrictActive = isAlchemyDistrictActive;
 window.demolishBuilding = demolishBuilding;
 window.cancelBuilding = cancelBuilding;
 window.freezeBuilding = freezeBuilding;

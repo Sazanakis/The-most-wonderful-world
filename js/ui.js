@@ -1,7 +1,7 @@
 // ============================================================================
 // МОДУЛЬ 13: ui.js (версия 5.0 – полный экспорт/импорт с обновлением UI)
 // ============================================================================
-// Загружено на гитхаб 01.08.2026
+// загружено на гитхаб 26.09.26
 // ========== 1. НАСТРОЙКА ВКЛАДОК ==========
 function setupTabs() {
     const tabs = document.querySelectorAll('.tab-button');
@@ -271,8 +271,24 @@ function bindGlobalEvents() {
     const removeSettlementBtn = document.getElementById('removeSettlementBtn');
     const addAgreementBtn = document.getElementById('addAgreementBtn');
     
-    if (taxRate) taxRate.addEventListener('input', (e) => { if (typeof peopleState !== 'undefined') peopleState.settings.taxRate = parseFloat(e.target.value) || 0; if (typeof refreshPeopleUI === 'function') refreshPeopleUI(); });
-    if (conscriptPercent) conscriptPercent.addEventListener('input', (e) => { if (typeof peopleState !== 'undefined') peopleState.settings.conscriptPercent = parseFloat(e.target.value) || 0; if (typeof refreshPeopleUI === 'function') refreshPeopleUI(); });
+	if (taxRate) taxRate.addEventListener('input', (e) => {
+		const val = parseFloat(e.target.value);
+		if (!isNaN(val) && val >= 0 && typeof peopleState !== 'undefined') {
+			peopleState.settings.taxRate = val;
+			if (typeof saveAllData === 'function') saveAllData();
+			if (typeof refreshPeopleUI === 'function') refreshPeopleUI();
+			if (typeof renderProvinceDashboard === 'function') renderProvinceDashboard();
+		}
+	});
+	if (conscriptPercent) conscriptPercent.addEventListener('input', (e) => {
+		const val = parseFloat(e.target.value);
+		if (!isNaN(val) && val >= 0 && val <= 100 && typeof peopleState !== 'undefined') {
+			peopleState.settings.conscriptPercent = val;
+			if (typeof saveAllData === 'function') saveAllData();
+			if (typeof refreshPeopleUI === 'function') refreshPeopleUI();
+			if (typeof refreshRecruitmentLimits === 'function') refreshRecruitmentLimits();
+		}
+	});
     if (womenInArmyCheckbox) womenInArmyCheckbox.addEventListener('change', (e) => { if (typeof peopleState !== 'undefined') peopleState.settings.womenInArmy = e.target.checked; if (typeof refreshPeopleUI === 'function') refreshPeopleUI(); });
     if (birthRate) birthRate.addEventListener('input', (e) => { if (typeof peopleState !== 'undefined') peopleState.demography.birthRate = parseFloat(e.target.value) || 0; });
     if (deathRate) deathRate.addEventListener('input', (e) => { if (typeof peopleState !== 'undefined') peopleState.demography.deathRate = parseFloat(e.target.value) || 0; });
@@ -448,35 +464,139 @@ function exportAllData() {
     URL.revokeObjectURL(a.href);
     addGlobalLog('💾 Полное сохранение игры выполнено.', 'general');
 }
+function adaptOldSave(data) {
+    console.log('🔄 Адаптация старого сохранения...');
 
+    // 1. Проверяем наличие researchData
+    if (!data.researchData) {
+        data.researchData = {
+            researchers: { military: null, civil: null, unique: null },
+            techQueue: [],
+            completedTechs: [],
+            pausedTechs: {}
+        };
+        console.log('   ✅ Добавлен researchData');
+    }
+
+    // 2. Гарантируем, что TECH_DB существует и содержит все технологии
+    if (typeof window.TECH_DB === 'undefined' || Object.keys(window.TECH_DB).length === 0) {
+        window.TECH_DB = {
+            "military_drills": { id: "military_drills", name: "Военные учения", category: "military", points: 80, effects: { conscriptionBonus: 5 } },
+            "improved_armor": { id: "improved_armor", name: "Улучшенные доспехи", category: "military", points: 120, effects: { infantryDefenseBonus: 1 } },
+            "fortifications": { id: "fortifications", name: "Фортификации", category: "military", points: 100, effects: { buildingStoneDiscount: 0.2 } },
+            "crop_rotation": { id: "crop_rotation", name: "Севооборот", category: "civil", points: 70, effects: { taxBonus: 5 } },
+            "trade_guilds": { id: "trade_guilds", name: "Купеческие гильдии", category: "civil", points: 90, effects: { tradeBonus: 10 } },
+            "advanced_metallurgy": { id: "advanced_metallurgy", name: "Передовая металлургия", category: "civil", points: 110, effects: { ironProductionBonus: 0.2 } },
+            "path_of_warrior": { id: "path_of_warrior", name: "Путь воина", category: "unique", points: 150, effects: { globalMoraleBonus: 2 } },
+            "vogel_statue": { id: "vogel_statue", name: "Реставрация Статуи Варситэи", category: "unique", faction: "county_vogelmark", points: 200, effects: { taxBonus: 5, hireDiscountByUnit: { "Боевые монахини Варситэи": 10 } } },
+            "vogel_siege_cell": { id: "vogel_siege_cell", name: "Фогельмаркская десантная клеть", category: "military", points: 60, effects: {} },
+            "dionia_cavalry_school": { id: "dionia_cavalry_school", name: "Кавалерийский отбор", category: "unique", faction: "county_dionia", points: 90, effects: { blackGuardLimitIncrease: 1 } },
+            "meyan_fortification": { id: "meyan_fortification", name: "Укрепление города Мейана", category: "military", faction: "county_meyan", points: 90, effects: { garrisonDefenseBonus: 2 }, exportable: false, _startCost: { stone: 100, iron: 20, ers: 25000 } }
+        };
+        console.log('   ✅ Создан базовый TECH_DB');
+    }
+
+    // 3. Синхронизируем techQueue и completedTechs: добавляем заглушки для отсутствующих технологий
+    const allTechIds = new Set();
+    if (data.researchData.techQueue) {
+        for (let item of data.researchData.techQueue) {
+            allTechIds.add(item.techId);
+        }
+    }
+    if (data.researchData.completedTechs) {
+        for (let id of data.researchData.completedTechs) {
+            allTechIds.add(id);
+        }
+    }
+
+    for (let techId of allTechIds) {
+        if (!window.TECH_DB[techId]) {
+            window.TECH_DB[techId] = {
+                id: techId,
+                name: techId.replace(/_/g, ' '),
+                category: 'unique',
+                description: 'Автоматически созданная заглушка для старого сохранения',
+                points: 100,
+                effects: {}
+            };
+            console.warn(`   ⚠️ Добавлена заглушка для технологии ${techId}`);
+        }
+    }
+
+    // 4. Очищаем очереди от невалидных (на случай, если заглушки не помогли)
+    if (data.researchData.techQueue) {
+        data.researchData.techQueue = data.researchData.techQueue.filter(q => window.TECH_DB && window.TECH_DB[q.techId]);
+    }
+    if (data.researchData.completedTechs) {
+        data.researchData.completedTechs = data.researchData.completedTechs.filter(id => window.TECH_DB && window.TECH_DB[id]);
+    }
+
+    // 5. Если есть армии, проверяем, что у них есть поле factionId
+    if (data.armies) {
+        for (let army of data.armies) {
+            if (!army.factionId) {
+                army.factionId = data.currentFaction || 'county_meyan';
+            }
+            if (!army.recruitmentQueue) army.recruitmentQueue = [];
+            if (!army.units) army.units = [];
+            if (!army.garrison) army.garrison = null;
+        }
+        console.log(`   ✅ Обработано ${data.armies.length} армий`);
+    }
+
+    // 6. Проверяем провинции
+    if (data.provincesData) {
+        for (let pid in data.provincesData) {
+            const prov = data.provincesData[pid];
+            if (!prov.settlements) prov.settlements = [];
+            if (!prov.resources) prov.resources = { wood: 500, stone: 300, iron: 200, gold: 10, ers: 20000 };
+            if (!prov.races) prov.races = [];
+            if (!prov.capturedSettlements) prov.capturedSettlements = [];
+        }
+        console.log('   ✅ Провинции адаптированы');
+    }
+
+    // 7. Дополнительная защита: если в researchData нет исследователей, создаём
+    if (data.researchData) {
+        if (!data.researchData.researchers) {
+            data.researchData.researchers = { military: null, civil: null, unique: null };
+        }
+        if (!data.researchData.pausedTechs) {
+            data.researchData.pausedTechs = {};
+        }
+    }
+
+    console.log('✅ Адаптация завершена');
+    return data;
+}
 // ========== 6. ПОЛНЫЙ ИМПОРТ ВСЕХ ДАННЫХ ==========
 function importAllData(file) {
     const reader = new FileReader();
     reader.onload = function(e) {
         try {
             const data = JSON.parse(e.target.result);
+            console.log('📂 Загружен файл сохранения:', data);
 
-            if (!data.provincesData) {
-                alert('Неверный формат файла сохранения.');
-                return;
-            }
+            // === АДАПТАЦИЯ СТАРОГО СОХРАНЕНИЯ ===
+            const adaptedData = adaptOldSave(data);
+            console.log('🔄 Данные адаптированы:', adaptedData);
 
             // Восстановление глобальных переменных
-            if (data.factionTreasury !== undefined) window.factionTreasury = data.factionTreasury;
-            if (data.armies) window.armies = data.armies;
-            if (data.provincesData) window.provincesData = data.provincesData;
-            if (data.currentProvince) window.currentProvince = data.currentProvince;
-            if (data.peopleState) window.peopleState = data.peopleState;
-            if (data.globalTradeAgreements) window.globalTradeAgreements = data.globalTradeAgreements;
-            if (data.savedRoutes) window.savedRoutes = data.savedRoutes;
-            if (data.researchData) window.researchData = data.researchData;
-            if (data.currentCouncilFaction) window.currentCouncilFaction = data.currentCouncilFaction;
-            if (data.currentFaction) window.currentFaction = data.currentFaction;
+            if (adaptedData.factionTreasury !== undefined) window.factionTreasury = adaptedData.factionTreasury;
+            if (adaptedData.armies) window.armies = adaptedData.armies;
+            if (adaptedData.provincesData) window.provincesData = adaptedData.provincesData;
+            if (adaptedData.currentProvince) window.currentProvince = adaptedData.currentProvince;
+            if (adaptedData.peopleState) window.peopleState = adaptedData.peopleState;
+            if (adaptedData.globalTradeAgreements) window.globalTradeAgreements = adaptedData.globalTradeAgreements;
+            if (adaptedData.savedRoutes) window.savedRoutes = adaptedData.savedRoutes;
+            if (adaptedData.researchData) window.researchData = adaptedData.researchData;
+            if (adaptedData.currentCouncilFaction) window.currentCouncilFaction = adaptedData.currentCouncilFaction;
+            if (adaptedData.currentFaction) window.currentFaction = adaptedData.currentFaction;
 
             // Восстановление советов с преобразованием в экземпляры классов
-            if (data.factionCouncils && typeof FactionCouncil !== 'undefined') {
-                for (let fid in data.factionCouncils) {
-                    const councilData = data.factionCouncils[fid];
+            if (adaptedData.factionCouncils && typeof FactionCouncil !== 'undefined') {
+                for (let fid in adaptedData.factionCouncils) {
+                    const councilData = adaptedData.factionCouncils[fid];
                     if (!(councilData instanceof FactionCouncil)) {
                         const council = new FactionCouncil(councilData.factionId, councilData.rulerName);
                         Object.assign(council, councilData);
@@ -490,41 +610,49 @@ function importAllData(file) {
                         window.factionCouncils[fid] = councilData;
                     }
                 }
-            } else if (data.factionCouncils) {
-                window.factionCouncils = data.factionCouncils;
+            } else if (adaptedData.factionCouncils) {
+                window.factionCouncils = adaptedData.factionCouncils;
             }
 
-            if (data.gameTime && typeof peopleState !== 'undefined') {
-                peopleState.currentWeek = data.gameTime.week || 1;
-                peopleState.currentMonth = data.gameTime.month || 5;
-                peopleState.currentYear = data.gameTime.year || 1598;
+            // Восстанавливаем дату
+            if (adaptedData.gameTime && typeof peopleState !== 'undefined') {
+                peopleState.currentWeek = adaptedData.gameTime.week || 1;
+                peopleState.currentMonth = adaptedData.gameTime.month || 5;
+                peopleState.currentYear = adaptedData.gameTime.year || 1598;
             }
 
-            // Сохранение в localStorage
+            // Сохраняем в localStorage
             if (typeof saveAllData === 'function') saveAllData();
 
             // Принудительное обновление всех интерфейсов
             if (typeof refreshPeopleUI === 'function') refreshPeopleUI();
+			// Синхронизируем инпуты настроек (налог, призыв) с импортированным состоянием
+            if (typeof syncSettingsToInputs === 'function') syncSettingsToInputs();
             if (typeof refreshBuildingsUI === 'function') refreshBuildingsUI();
             if (typeof renderProvinceDashboard === 'function') renderProvinceDashboard();
             if (typeof renderArmy === 'function') renderArmy();
             if (typeof renderAvailableUnits === 'function') renderAvailableUnits();
-            if (typeof initTechData === 'function') initTechData();
+            
+            // Инициализация технологий после адаптации
+            if (typeof initTechData === 'function') {
+                console.log('🔧 Вызов initTechData после адаптации...');
+                initTechData();
+            }
+            
             if (typeof initTradeData === 'function') initTradeData();
             if (typeof renderCouncil === 'function') renderCouncil();
             if (typeof renderCapturedSettlements === 'function') renderCapturedSettlements();
             if (typeof updateGlobalDateDisplay === 'function') updateGlobalDateDisplay();
             if (typeof refreshRecruitmentLimits === 'function') refreshRecruitmentLimits();
-
             if (typeof saveRoutes === 'function') saveRoutes();
             if (typeof renderRoutes === 'function') renderRoutes();
             if (typeof redrawRoutes === 'function') redrawRoutes();
 
             addGlobalLog("📂 Игра полностью загружена из файла.", 'general');
-            alert("Игра загружена! Все данные восстановлены.");
+            alert("✅ Игра загружена! Все данные восстановлены.");
         } catch(err) {
             console.error("Ошибка импорта:", err);
-            alert("Ошибка импорта: " + err.message);
+            alert("❌ Ошибка импорта: " + err.message);
         }
     };
     reader.readAsText(file);
@@ -915,6 +1043,109 @@ function showBankruptcyModal() {
     document.body.appendChild(modal);
     document.getElementById('closeBankruptcyBtn').addEventListener('click', () => modal.remove());
 }
+
+/**
+ * Адаптирует старое сохранение к новой структуре данных
+ * @param {Object} data - объект сохранения
+ * @returns {Object} - адаптированный объект
+ */
+function adaptOldSave(data) {
+    console.log('🔄 Адаптация старого сохранения...');
+
+    // 1. Проверяем наличие researchData
+    if (!data.researchData) {
+        data.researchData = {
+            researchers: { military: null, civil: null, unique: null },
+            techQueue: [],
+            completedTechs: [],
+            pausedTechs: {}
+        };
+        console.log('   ✅ Добавлен researchData');
+    }
+
+    // 2. Гарантируем, что TECH_DB существует и содержит все технологии
+    if (typeof window.TECH_DB === 'undefined' || Object.keys(window.TECH_DB).length === 0) {
+        // Если TECH_DB нет, создаём базовый набор
+        window.TECH_DB = {
+            "military_drills": { id: "military_drills", name: "Военные учения", category: "military", points: 80, effects: { conscriptionBonus: 5 } },
+            "improved_armor": { id: "improved_armor", name: "Улучшенные доспехи", category: "military", points: 120, effects: { infantryDefenseBonus: 1 } },
+            "fortifications": { id: "fortifications", name: "Фортификации", category: "military", points: 100, effects: { buildingStoneDiscount: 0.2 } },
+            "crop_rotation": { id: "crop_rotation", name: "Севооборот", category: "civil", points: 70, effects: { taxBonus: 5 } },
+            "trade_guilds": { id: "trade_guilds", name: "Купеческие гильдии", category: "civil", points: 90, effects: { tradeBonus: 10 } },
+            "advanced_metallurgy": { id: "advanced_metallurgy", name: "Передовая металлургия", category: "civil", points: 110, effects: { ironProductionBonus: 0.2 } },
+            "path_of_warrior": { id: "path_of_warrior", name: "Путь воина", category: "unique", points: 150, effects: { globalMoraleBonus: 2 } },
+            "vogel_statue": { id: "vogel_statue", name: "Реставрация Статуи Варситэи", category: "unique", faction: "county_vogelmark", points: 200, effects: { taxBonus: 5, hireDiscountByUnit: { "Боевые монахини Варситэи": 10 } } },
+            "vogel_siege_cell": { id: "vogel_siege_cell", name: "Фогельмаркская десантная клеть", category: "military", points: 60, effects: {} },
+            "dionia_cavalry_school": { id: "dionia_cavalry_school", name: "Кавалерийский отбор", category: "unique", faction: "county_dionia", points: 90, effects: { blackGuardLimitIncrease: 1 } },
+            "meyan_fortification": { id: "meyan_fortification", name: "Укрепление города Мейана", category: "military", faction: "county_meyan", points: 90, effects: { garrisonDefenseBonus: 2 }, exportable: false, _startCost: { stone: 100, iron: 20, ers: 25000 } }
+        };
+        console.log('   ✅ Создан базовый TECH_DB');
+    }
+
+    // 3. Синхронизируем techQueue и completedTechs: добавляем заглушки для отсутствующих технологий
+    const allTechIds = new Set();
+    if (data.researchData.techQueue) {
+        for (let item of data.researchData.techQueue) {
+            allTechIds.add(item.techId);
+        }
+    }
+    if (data.researchData.completedTechs) {
+        for (let id of data.researchData.completedTechs) {
+            allTechIds.add(id);
+        }
+    }
+
+    for (let techId of allTechIds) {
+        if (!window.TECH_DB[techId]) {
+            window.TECH_DB[techId] = {
+                id: techId,
+                name: techId.replace(/_/g, ' '),
+                category: 'unique',
+                description: 'Автоматически созданная заглушка для старого сохранения',
+                points: 100,
+                effects: {}
+            };
+            console.warn(`   ⚠️ Добавлена заглушка для технологии ${techId}`);
+        }
+    }
+
+    // 4. Очищаем очереди от невалидных (на случай, если заглушки не помогли)
+    if (data.researchData.techQueue) {
+        data.researchData.techQueue = data.researchData.techQueue.filter(q => window.TECH_DB && window.TECH_DB[q.techId]);
+    }
+    if (data.researchData.completedTechs) {
+        data.researchData.completedTechs = data.researchData.completedTechs.filter(id => window.TECH_DB && window.TECH_DB[id]);
+    }
+
+    // 5. Если есть армии, проверяем, что у них есть поле factionId
+    if (data.armies) {
+        for (let army of data.armies) {
+            if (!army.factionId) {
+                army.factionId = data.currentFaction || 'county_meyan';
+            }
+            if (!army.recruitmentQueue) army.recruitmentQueue = [];
+            if (!army.units) army.units = [];
+            if (!army.garrison) army.garrison = null;
+        }
+        console.log(`   ✅ Обработано ${data.armies.length} армий`);
+    }
+
+    // 6. Проверяем провинции
+    if (data.provincesData) {
+        for (let pid in data.provincesData) {
+            const prov = data.provincesData[pid];
+            if (!prov.settlements) prov.settlements = [];
+            if (!prov.resources) prov.resources = { wood: 500, stone: 300, iron: 200, gold: 10, ers: 20000 };
+            if (!prov.races) prov.races = [];
+            if (!prov.capturedSettlements) prov.capturedSettlements = [];
+        }
+        console.log('   ✅ Провинции адаптированы');
+    }
+
+    console.log('✅ Адаптация завершена');
+    return data;
+}
+
 // ========== 10. ЭКСПОРТ В ГЛОБАЛЬНУЮ ОБЛАСТЬ ==========
 window.showBankruptcyModal = showBankruptcyModal;
 window.showTreasuryBreakdown = showTreasuryBreakdown;

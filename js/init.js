@@ -11,7 +11,7 @@
 // ============================================================================
 // РАЗДЕЛ 1: ДАННЫЕ ДЛЯ КАРТЫ (ГОРОДА)
 // ============================================================================
-// дата загрузки на гитхаб 01.08.2026
+// загружено на гитхаб 26.09.26
 /**
  * Формирует массив данных о городах для отображения на карте.
  * Использует SETTLEMENTS_DB, если он определён.
@@ -391,7 +391,8 @@ function fullInit() {
     if (typeof refreshRecruitmentLimits === 'function') refreshRecruitmentLimits();
     if (typeof startAutoSave === 'function') startAutoSave();
     if (typeof hideLoadingScreen === 'function') hideLoadingScreen();
-    
+    // Применяем сохранённые настройки к инпутам налога/призыва
+    if (typeof syncSettingsToInputs === 'function') syncSettingsToInputs();
     // === Если нет армий, создаём пример ===
     if (typeof armies !== 'undefined' && armies.length === 0 && typeof loadExampleArmy === 'function') loadExampleArmy();
 
@@ -467,6 +468,9 @@ function fullInit() {
         // Если есть функция автоматического освобождения, можно её вызвать.
         // Например, если в buildings.js есть liberateSettlement, можно использовать.
     }
+    setTimeout(() => {
+        if (typeof syncSettingsToInputs === 'function') syncSettingsToInputs();
+    }, 100);
 }
 
 // ============================================================================
