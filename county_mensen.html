@@ -708,9 +708,17 @@
             for (let pid in window.provincesData) migrateProvinceResources(pid);
         }
 
-        let totalErs = 0;
-        for (let pid in window.provincesData) totalErs += window.provincesData[pid].resources?.ers || 0;
-        window.factionTreasury = totalErs;
+		// Синхронизация казны:
+		// Если factionTreasury в сохранении есть и отрицательный — доверяем ему.
+		// Иначе пересчитываем из провинций (для старых сохранений без factionTreasury).
+		if (typeof window.factionTreasury !== 'number' || window.factionTreasury >= 0) {
+			let totalErs = 0;
+			for (let pid in window.provincesData) totalErs += window.provincesData[pid].resources?.ers || 0;
+			// Если сохранённое значение меньше суммы провинций — значит была трата, доверяем ему
+			if (typeof window.factionTreasury !== 'number' || window.factionTreasury < totalErs) {
+				window.factionTreasury = totalErs;
+			}
+		}
 
         if (typeof recalcMaxConstructionSlots === 'function') recalcMaxConstructionSlots();
 
