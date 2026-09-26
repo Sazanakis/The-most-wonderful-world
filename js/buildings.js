@@ -125,7 +125,40 @@ function getFactionTreasury() {
 }
 
 function setFactionTreasury(amount) {
+    const old = window.factionTreasury || 0;
     window.factionTreasury = amount;
+
+    // Синхронизируем провинции
+    const diff = amount - old;
+    if (diff === 0) return;
+
+    if (typeof provincesData === 'undefined') return;
+
+    if (diff > 0) {
+        // Добавляем в столицу
+        const capitalId = Object.keys(provincesData).find(pid => provincesData[pid].isCapital)
+            || Object.keys(provincesData)[0];
+        if (capitalId && provincesData[capitalId]) {
+            provincesData[capitalId].resources.ers = (provincesData[capitalId].resources.ers || 0) + diff;
+        }
+    } else {
+        // Списываем по провинциям
+        let remaining = -diff;
+        const capitalId = Object.keys(provincesData).find(pid => provincesData[pid].isCapital)
+            || Object.keys(provincesData)[0];
+        const order = capitalId
+            ? [capitalId, ...Object.keys(provincesData).filter(p => p !== capitalId)]
+            : Object.keys(provincesData);
+        for (let pid of order) {
+            if (remaining <= 0) break;
+            const res = provincesData[pid]?.resources;
+            if (!res) continue;
+            const have = res.ers || 0;
+            const take = Math.min(remaining, have);
+            res.ers = have - take;
+            remaining -= take;
+        }
+    }
 }
 
 function recalcTotalTreasury() {

@@ -145,7 +145,11 @@ function applyGlobalTurn() {
     // 5. Содержание армий (реальное списание)
     const armyUpkeep = (typeof calculateTotalUpkeep === 'function') ? calculateTotalUpkeep() : 0;
     if (armyUpkeep > 0) {
-        window.factionTreasury -= armyUpkeep;
+        if (typeof deductTreasury === 'function') {
+            deductTreasury(armyUpkeep);
+        } else {
+            window.factionTreasury -= armyUpkeep;
+        }
         addGlobalLog(`⚔️ Содержание армии: -${armyUpkeep.toLocaleString()} эрсов.`, 'general');
     }
 
@@ -158,8 +162,12 @@ function applyGlobalTurn() {
         }
     }
     if (researcherSalaries > 0) {
-        window.factionTreasury -= researcherSalaries;
-        addGlobalLog(`👨‍🔬 Зарплаты исследователей: -${researcherSalaries.toLocaleString()} эрсов.`, 'general');
+        if (typeof deductTreasury === 'function') {
+            deductTreasury(researcherSalaries);
+        } else {
+            window.factionTreasury -= researcherSalaries;
+        }
+        addGlobalLog(`👨🔬 Зарплаты исследователей: -${researcherSalaries.toLocaleString()} эрсов.`, 'general');
     }
 
 	// 7. Чины Канцелярии (7% от чистого дохода после коррупции)
@@ -170,7 +178,11 @@ function applyGlobalTurn() {
 	const netIncome = Math.floor(weeklyIncome * (1 - corruption / 100));
 	const chancelleryCost = Math.floor(netIncome * 0.07);
 	if (chancelleryCost > 0) {
-		window.factionTreasury -= chancelleryCost;
+		if (typeof deductTreasury === 'function') {
+			deductTreasury(chancelleryCost);
+		} else {
+			window.factionTreasury -= chancelleryCost;
+		}
 		addGlobalLog(`📜 Чины Канцелярии: -${chancelleryCost.toLocaleString()} эрсов.`, 'general');
 	}
 

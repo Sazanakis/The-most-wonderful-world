@@ -11,19 +11,48 @@ function getCurrentTreasury() {
     return window.factionTreasury || 0;
 }
 
+/**
+ * Списывает деньги из казны, корректно распределяя по провинциям.
+ * Сначала списывает из столицы, потом из остальных.
+ * Если денег не хватает — уходит в минус в factionTreasury.
+ */
 function deductTreasury(amount) {
-    window.factionTreasury = Math.max(0, (window.factionTreasury || 0) - amount);
-    // Синхронизация с провинциями: списываем из столицы
-    const capitalId = Object.keys(provincesData).find(pid => provincesData[pid].isCapital) || Object.keys(provincesData)[0];
-    if (capitalId && provincesData[capitalId]) {
-        provincesData[capitalId].resources.ers = Math.max(0, (provincesData[capitalId].resources.ers || 0) - amount);
+    const current = window.factionTreasury || 0;
+    window.factionTreasury = current - amount;
+
+    if (typeof provincesData === 'undefined') return;
+
+    // Порядок провинций: сначала столица, потом остальные
+    const capitalId = Object.keys(provincesData).find(pid => provincesData[pid].isCapital)
+        || Object.keys(provincesData)[0];
+    const order = capitalId
+        ? [capitalId, ...Object.keys(provincesData).filter(p => p !== capitalId)]
+        : Object.keys(provincesData);
+
+    let remaining = amount;
+    for (let pid of order) {
+        if (remaining <= 0) break;
+        const res = provincesData[pid]?.resources;
+        if (!res) continue;
+        const have = res.ers || 0;
+        const take = Math.min(remaining, have);
+        res.ers = have - take;
+        remaining -= take;
     }
+    // Если remaining > 0 — казна ушла в минус.
+    // Отрицательное значение хранится только в window.factionTreasury,
+    // провинции не могут быть отрицательными.
 }
 
+/**
+ * Добавляет деньги в казну (в столицу).
+ */
 function addTreasury(amount) {
     window.factionTreasury = (window.factionTreasury || 0) + amount;
-    // Синхронизация с провинциями: добавляем в столицу
-    const capitalId = Object.keys(provincesData).find(pid => provincesData[pid].isCapital) || Object.keys(provincesData)[0];
+
+    if (typeof provincesData === 'undefined') return;
+    const capitalId = Object.keys(provincesData).find(pid => provincesData[pid].isCapital)
+        || Object.keys(provincesData)[0];
     if (capitalId && provincesData[capitalId]) {
         provincesData[capitalId].resources.ers = (provincesData[capitalId].resources.ers || 0) + amount;
     }
