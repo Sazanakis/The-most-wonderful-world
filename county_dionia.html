@@ -3,6 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <script>
+        // Гарантирует, что глобальные объекты существуют до загрузки модулей.
+        // Предотвращает "provincesData is not defined" и подобные ошибки.
+        window.provincesData = window.provincesData || {};
+        window.armies = window.armies || [];
+        window.wars = window.wars || [];
+        window.warsAgainst = window.warsAgainst || [];
+        window.occupations = window.occupations || [];
+        window.factionCouncils = window.factionCouncils || {};
+        window.globalTradeAgreements = window.globalTradeAgreements || [];
+        window.savedRoutes = window.savedRoutes || [];
+    </script>
     <title>Графство Диония – Самый дивный мир</title>
 	<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
 	<link rel="stylesheet" href="css/faction-base.css">
