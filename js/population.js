@@ -114,6 +114,8 @@ function getTotalPopulation() {
 }
 
 function getCurrentProvinceRaces() {
+    // ФИКС: provincesData может быть ещё не определена при DOMContentLoaded
+    if (typeof provincesData === 'undefined') return [];
     if (!currentProvince || !provincesData[currentProvince]) return [];
     if (!provincesData[currentProvince].races) {
         provincesData[currentProvince].races = [];
@@ -123,6 +125,7 @@ function getCurrentProvinceRaces() {
 }
 
 function getCurrentProvinceArmy() {
+    if (typeof provincesData === 'undefined') return [];
     if (!provincesData[currentProvince]) initProvinceData(currentProvince);
     return provincesData[currentProvince]?.army || [];
 }
