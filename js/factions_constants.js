@@ -23,6 +23,7 @@ const FACTION_RULERS = {
 	county_mensen: "Вальдэ Мар'Фалкин",
 	county_corvail: "Альбрехт Корвайл",
 	county_luun: "Люциан Мунвар",
+	principality_batavia: "Пьер-Франсуа Люксембург-Оранский",
 };
 
 // ---------- НАЗВАНИЯ РИТОРИК (ИДЕОЛОГИЙ) ----------
@@ -54,27 +55,29 @@ const FACTION_LEADER_LINKS = {
 	principality_lorein: "https://vk.com/page-228463474_55105567",
 	county_mensen: "https://vk.ru/page-228463474_55105853",
 	county_corvail: "https://vk.ru/page-228463474_55105970",
-	county_luun: "https://vk.ru/most_wonderful_world"
+	county_luun: "https://vk.ru/most_wonderful_world",
+	principality_batavia: "https://vk.ru/page-228463474_55106854"
 };
 const FACTION_MAIN_COATS = {
-    clan_daketa: "emblem/armoria.png",
-    clan_date: "emblem/date.png",
-    county_markarn: "emblem/Markarn.png",
-    county_vogelmark: "emblem/Vogelmark.png",
-    principality_gorski: "emblem/Gorski.png",
-    regency_council: "emblem/Regents.png",
-    lepus_union: "emblem/lepus.png",
-    county_ottergrund: "emblem/ottergrund.png",
-    elfheim: "emblem/elfheim.png",
-    county_meyan: "emblem/meyan.png",
-    county_dionia: "emblem/dionia.png",
-    county_takania: "emblem/takania.png",
-    county_skollfang: "emblem/skollfang.png",
-    order_varsiltaers: "emblem/varsiltaer.png",
-    principality_lorein: "emblem/lorein.png",
-	county_mensen: "emblem/mensen.png",
-	county_corvail: "emblem/corvail.png",
-	county_luun: "emblem/luun.png"
+    clan_daketa: "icons/emblem/armoria.png",
+    clan_date: "icons/emblem/date.png",
+    county_markarn: "icons/emblem/Markarn.png",
+    county_vogelmark: "icons/emblem/Vogelmark.png",
+    principality_gorski: "icons/emblem/Gorski.png",
+    regency_council: "icons/emblem/Regents.png",
+    lepus_union: "icons/emblem/lepus.png",
+    county_ottergrund: "icons/emblem/ottergrund.png",
+    elfheim: "icons/emblem/elfheim.png",
+    county_meyan: "icons/emblem/meyan.png",
+    county_dionia: "icons/emblem/dionia.png",
+    county_takania: "icons/emblem/takania.png",
+    county_skollfang: "icons/emblem/skollfang.png",
+    order_varsiltaers: "icons/emblem/varsiltaer.png",
+    principality_lorein: "icons/emblem/lorein.png",
+	county_mensen: "icons/emblem/mensen.png",
+	county_corvail: "icons/emblem/corvail.png",
+	county_luun: "icons/emblem/luun.png",
+	principality_batavia: "icons/emblem/batavia.png",
 };
 window.FACTION_MAIN_COATS = FACTION_MAIN_COATS;
 // ---------- РЕСУРСЫ (для торговли и построек) ----------
@@ -186,6 +189,9 @@ const VASSAL_ICONS = {
 	"house_thornhill": { coat: "icons/emblem/thornhill.png", portrait: "icons/default_portrait.png" },
 	"house_cergard": { coat: "icons/emblem/cergard.png", portrait: "icons/default_portrait.png" },
 	"house_gedorf": { coat: "icons/emblem/gedorf.png", portrait: "icons/default_portrait.png" },
+	"house_malatecta": { coat: "icons/emblem/house_malatecta.png", portrait: "icons/default_portrait.png" },
+	"house_brabant": { coat: "icons/emblem/house_brabant.png", portrait: "icons/default_portrait.png" },
+	"house_flandre": { coat: "icons/emblem/house_flandre.png", portrait: "icons/default_portrait.png" },
 };
 
 // ---------- МАППИНГ ПОВЫШЕНИЯ РАНГА ----------
@@ -288,6 +294,11 @@ const INITIAL_VASSALS = {
 	county_luun: [
 		{ id: "house_cergard", name: "Род Цергард", type: "MINOR_CLAN", politicalFaction: "LOYALISTS", leader: "Глава Цергард", baseLoyalty: 60 },
 		{ id: "house_gedorf", name: "Род Гедорф", type: "MINOR_CLAN", politicalFaction: "LOYALISTS", leader: "Глава Гедорф", baseLoyalty: 60 },
+	],
+	principality_batavia: [
+		{ id: "house_malatecta", name: "Род Малатеста", type: "MINOR_CLAN", politicalFaction: "LOYALISTS", leader: "Граф Малатест", baseLoyalty: 70 },
+		{ id: "house_brabant", name: "Дом Брабант", type: "NOBLE_HOUSE", politicalFaction: "NOBILITY", leader: "Граф Брабантский", baseLoyalty: 55 },
+		{ id: "house_flandre", name: "Дом Арденн", type: "NOBLE_HOUSE", politicalFaction: "NOBILITY", leader: "Граф Арденнский", baseLoyalty: 30 }
 	],
 };
 

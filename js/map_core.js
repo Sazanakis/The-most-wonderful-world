@@ -7,7 +7,7 @@
 // ими через карту. Оккупация на карте теперь добавляет поселение в список
 // оккупированных земель фракции-оккупанта и снимает пометку у владельца.
 // ============================================================================
-// Дата загрузки на гитхаб 18.08.2026
+// Дата загрузки на гитхаб 25.08.2026
 // ============================================================================
 // РАЗДЕЛ 1: ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ
 // ============================================================================
@@ -203,7 +203,8 @@ function getFactionData(factionId) {
         'county_skollfang': 'moonmane',
         'order_varsiltaers': 'varsiltaers',
         'principality_lorein': 'lorein',
-		'county_mensen': 'mensen'
+		'county_mensen': 'mensen',
+		'principality_batavia': 'batavia',
     };
     const suffix = suffixMap[factionId];
     if (suffix === undefined) return null;
@@ -233,7 +234,8 @@ function saveFactionData(factionId, data) {
         'county_skollfang': 'moonmane',
         'order_varsiltaers': 'varsiltaers',
         'principality_lorein': 'lorein',
-		'county_mensen': 'mensen'
+		'county_mensen': 'mensen',
+		'principality_batavia': 'batavia',
     };
     const suffix = suffixMap[factionId];
     if (suffix === undefined) return false;
@@ -406,7 +408,7 @@ function updateSettlementInStorage(settlementId, newData) {
             'county_meyan': 'meyan', 'county_dionia': 'dionia',
             'county_takania': 'takania', 'county_skollfang': 'moonmane',
             'order_varsiltaers': 'varsiltaers', 'principality_lorein': 'lorein',
-			'county_mensen': 'mensen'
+			'county_mensen': 'mensen', 'principality_batavia': 'batavia',
         };
         const suffix = suffixMap[currentData.ownerFaction];
         if (suffix !== undefined) {
@@ -1020,6 +1022,8 @@ function zoomToSettlement(settlementId) {
 
 function loadAllFactionsProvinceData() {
     const allSettlementsData = {};
+
+    // 1. Соберём все ключи фракций
     const factionKeys = [];
     for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
@@ -1027,6 +1031,7 @@ function loadAllFactionsProvinceData() {
             factionKeys.push(key);
         }
     }
+
     const suffixMap = {
         '': 'clan_daketa', 'date': 'clan_date', 'vogelmark': 'county_vogelmark',
         'markarn': 'county_markarn', 'gorski': 'principality_gorski',
@@ -1034,12 +1039,15 @@ function loadAllFactionsProvinceData() {
         'meyan': 'county_meyan', 'dionia': 'county_dionia',
         'takania': 'county_takania', 'skollfang': 'county_skollfang',
         'varsiltaers': 'order_varsiltaers', 'lorein': 'principality_lorein',
-		'mensen': 'county_mensen'
+        'mensen': 'county_mensen', 'principality_batavia': 'batavia', 
     };
+
+    // 2. Проходим по всем ключам и собираем данные — КАК В ОРИГИНАЛЕ
     for (let key of factionKeys) {
         try {
             const saved = JSON.parse(localStorage.getItem(key));
             if (!saved || !saved.provincesData) continue;
+
             let ownerFaction;
             if (key === 'unified_province_manager') {
                 ownerFaction = 'clan_daketa';
@@ -1047,6 +1055,7 @@ function loadAllFactionsProvinceData() {
                 const suffix = key.substring('unified_province_manager_'.length);
                 ownerFaction = suffixMap[suffix] || saved.currentFaction || ('clan_' + suffix);
             }
+
             for (let pid in saved.provincesData) {
                 const prov = saved.provincesData[pid];
                 if (!prov || !prov.settlements) continue;
@@ -1063,6 +1072,48 @@ function loadAllFactionsProvinceData() {
             console.warn(`Не удалось загрузить данные из ключа ${key}:`, e);
         }
     }
+
+    // 3. НОВОЕ: обогащаем данными из центрального реестра
+    //    Приоритет у реестра для ownerFaction — он точнее
+    if (typeof getAllOwnersLatest === 'function') {
+        try {
+            const registryOwners = getAllOwnersLatest();
+            for (let sid in registryOwners) {
+                const owner = registryOwners[sid];
+                if (!allSettlementsData[sid]) {
+                    allSettlementsData[sid] = {
+                        vassalHouse: null,
+                        captured: false,
+                        capturedByFaction: null,
+                        ownerFaction: owner
+                    };
+                } else {
+                    // Переопределяем ownerFaction — реестр главнее
+                    allSettlementsData[sid].ownerFaction = owner;
+                }
+            }
+        } catch(e) {
+            console.warn('Не удалось прочитать центральный реестр:', e);
+        }
+    }
+
+    // 4. НОВОЕ: обогащаем данными об активных оккупациях
+    if (typeof loadWorldOccupations === 'function') {
+        try {
+            const occs = loadWorldOccupations();
+            for (let o of occs) {
+                const sid = o.settlementId;
+                if (!allSettlementsData[sid]) continue;
+                if (o.status === 'occupying') {
+                    allSettlementsData[sid].captured = true;
+                    allSettlementsData[sid].capturedByFaction = o.occupierFactionId;
+                }
+            }
+        } catch(e) {
+            console.warn('Не удалось прочитать оккупации:', e);
+        }
+    }
+
     return allSettlementsData;
 }
 

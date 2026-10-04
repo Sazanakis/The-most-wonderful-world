@@ -203,7 +203,7 @@ function loadAllGameData() {
     }
     // Если совет не загружен, инициализируем основные фракции
     if (typeof factionCouncils !== 'undefined' && Object.keys(factionCouncils).length === 0) {
-        const factionsToInit = ["clan_daketa", "county_markarn", "principality_gorski", "regency_council", "lepus_union"];
+        const factionsToInit = ["clan_daketa", "county_markarn", "principality_gorski", "regency_council", "lepus_union", "principality_batavia"];
         for (let fid of factionsToInit) {
             if (typeof initFactionCouncil === 'function') {
                 const rulerName = (typeof FACTION_RULERS !== 'undefined' && FACTION_RULERS[fid]) ? FACTION_RULERS[fid] : "Правитель";
@@ -229,7 +229,7 @@ function loadAllGameData() {
     }
 
     // === Гарантируем наличие всех необходимых провинций ===
-    const requiredProvinces = ["orochima", "kaya", "vogel", "neolania", "metropolitan_area", "great_shaft", "leporis"];
+    const requiredProvinces = ["orochima", "kaya", "vogel", "neolania", "metropolitan_area", "great_shaft", "leporis", "batavia"];
     for (let pid of requiredProvinces) {
         if (typeof provincesData !== 'undefined' && !provincesData[pid]) {
             initProvinceData(pid);

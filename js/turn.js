@@ -1,7 +1,7 @@
 // ============================================================================
 // МОДУЛЬ 12: turn.js (версия 4.1 – исправлен учёт торговли в казне)
 // ============================================================================
-// ===== загружено на гитхаб 26.09.26
+// ===== загружено на гитхаб 27.09.26
 // ========== 1. ОПРЕДЕЛЕНИЕ КЛЮЧА ХРАНИЛИЩА ==========
 if (!window.storageKey) {
     window.storageKey = 'unified_province_manager'; // fallback
@@ -28,6 +28,7 @@ function updateVassalsLoyalty() {
     // Будет реализовано, когда появится Совет
 }
 
+// ========== 5. ГЛОБАЛЬНЫЙ ХОД ==========
 // ========== 5. ГЛОБАЛЬНЫЙ ХОД ==========
 function applyGlobalTurn() {
     // ----- ПРОВЕРКА: можно ли выполнять ход -----
@@ -60,7 +61,8 @@ function applyGlobalTurn() {
 
         let provPop = 0;
         for (let race of prov.races) {
-            provPop += (typeof getRaceTotal === 'function') ? getRaceTotal(race) : (race.adultMale + race.adultFemale + race.children + race.elders);
+            provPop += (typeof getRaceTotal === 'function') ? getRaceTotal(race)
+                : (race.adultMale + race.adultFemale + race.children + race.elders);
         }
 
         const poor = Math.floor(provPop * ((peopleState.settings.poorPercent || 10) / 100));
@@ -86,28 +88,27 @@ function applyGlobalTurn() {
         peopleState.turnsSinceDemography = (peopleState.turnsSinceDemography || 0) + 1;
     }
     addGlobalLog(`💰 Собрано налогов: ${totalTax.toLocaleString()} эрсов.`, 'general');
-	
-	// === Доход от Купеческой гильдии (Менсен) ===
-	const council = factionCouncils ? factionCouncils[currentFaction] : null;
-	if (council) {
-		const guild = council.houses.find(h => h.isMerchantGuild === true);
-		if (guild) {
-			const loyalty = guild.loyaltyToRuler || 50;
-			let guildIncome = 0;
-			if (loyalty >= 50) {
-				guildIncome = 5000 + (loyalty - 50) * 1000;
-			} else {
-				guildIncome = (loyalty - 50) * 1000;  // теперь при 45 даёт -5000, при 0 -50000
-			}
-			window.factionTreasury += guildIncome;
-			addGlobalLog(`💰 Купеческая гильдия: ${guildIncome >= 0 ? '+' : ''}${guildIncome.toLocaleString()} эрсов (лояльность ${loyalty}%)`, 'general');
-		}
-	}
-	
+
+    // === Доход от Купеческой гильдии (Менсен) ===
+    const council = factionCouncils ? factionCouncils[currentFaction] : null;
+    if (council) {
+        const guild = council.houses.find(h => h.isMerchantGuild === true);
+        if (guild) {
+            const loyalty = guild.loyaltyToRuler || 50;
+            let guildIncome = 0;
+            if (loyalty >= 50) {
+                guildIncome = 5000 + (loyalty - 50) * 1000;
+            } else {
+                guildIncome = (loyalty - 50) * 1000;
+            }
+            window.factionTreasury += guildIncome;
+            addGlobalLog(`💰 Купеческая гильдия: ${guildIncome >= 0 ? '+' : ''}${guildIncome.toLocaleString()} эрсов (лояльность ${loyalty}%)`, 'general');
+        }
+    }
+
     // 2. Восстановление раненых
     if (typeof recoverWoundedUnits === 'function') {
         recoverWoundedUnits();
-        // Обновляем вкладку армии, если она сейчас открыта
         const armyTab = document.getElementById('tab-army');
         if (armyTab && armyTab.classList.contains('active')) {
             if (typeof renderArmy === 'function') renderArmy();
@@ -115,12 +116,11 @@ function applyGlobalTurn() {
         }
     }
 
-    // 3. Обработка торговых договоров + ОБЯЗАТЕЛЬНЫЙ ПЕРЕСЧЁТ КАЗНЫ
+    // 3. Обработка торговых договоров + ПЕРЕСЧЁТ КАЗНЫ
     if (typeof processTradeAgreements === 'function') {
         processTradeAgreements();
         recalcTotalTreasury();
 
-        // Обновляем интерфейс торговли, если вкладка активна
         const tradeTab = document.getElementById('tab-trade');
         if (tradeTab && tradeTab.classList.contains('active')) {
             if (typeof refreshTradeUI === 'function') {
@@ -133,6 +133,11 @@ function applyGlobalTurn() {
         }
     }
 
+    // 3.5. Обработка оккупаций и аннексий
+    if (typeof processOccupations === 'function') {
+        processOccupations();
+    }
+
     // 4. Завершение найма армии
     if (typeof processRecruitment === 'function') {
         processRecruitment();
@@ -142,7 +147,7 @@ function applyGlobalTurn() {
         saveArmyData();
     }
 
-    // 5. Содержание армий (реальное списание)
+    // 5. Содержание армий
     const armyUpkeep = (typeof calculateTotalUpkeep === 'function') ? calculateTotalUpkeep() : 0;
     if (armyUpkeep > 0) {
         if (typeof deductTreasury === 'function') {
@@ -170,39 +175,38 @@ function applyGlobalTurn() {
         addGlobalLog(`👨🔬 Зарплаты исследователей: -${researcherSalaries.toLocaleString()} эрсов.`, 'general');
     }
 
-	// 7. Чины Канцелярии (7% от чистого дохода после коррупции)
-	const weeklyIncome = (typeof getWeeklyIncome === 'function') ? getWeeklyIncome() : 0;
-	const corruption = (typeof peopleState !== 'undefined' && peopleState.corruption) 
-		? peopleState.corruption.currentPercent 
-		: 0;
-	const netIncome = Math.floor(weeklyIncome * (1 - corruption / 100));
-	const chancelleryCost = Math.floor(netIncome * 0.07);
-	if (chancelleryCost > 0) {
-		if (typeof deductTreasury === 'function') {
-			deductTreasury(chancelleryCost);
-		} else {
-			window.factionTreasury -= chancelleryCost;
-		}
-		addGlobalLog(`📜 Чины Канцелярии: -${chancelleryCost.toLocaleString()} эрсов.`, 'general');
-	}
+    // 7. Чины Канцелярии (7% от чистого дохода после коррупции)
+    const weeklyIncome = (typeof getWeeklyIncome === 'function') ? getWeeklyIncome() : 0;
+    const corruption = (typeof peopleState !== 'undefined' && peopleState.corruption)
+        ? peopleState.corruption.currentPercent
+        : 0;
+    const netIncome = Math.floor(weeklyIncome * (1 - corruption / 100));
+    const chancelleryCost = Math.floor(netIncome * 0.07);
+    if (chancelleryCost > 0) {
+        if (typeof deductTreasury === 'function') {
+            deductTreasury(chancelleryCost);
+        } else {
+            window.factionTreasury -= chancelleryCost;
+        }
+        addGlobalLog(`📜 Чины Канцелярии: -${chancelleryCost.toLocaleString()} эрсов.`, 'general');
+    }
 
     // 8. Синхронизация провинций с актуальной (возможно отрицательной) казной
-    const capitalId = Object.keys(provincesData).find(pid => provincesData[pid].isCapital) || Object.keys(provincesData)[0];
-    // Обнуляем эрсы во всех провинциях
+    const capitalId = Object.keys(provincesData).find(pid => provincesData[pid].isCapital)
+        || Object.keys(provincesData)[0];
     for (let pid in provincesData) {
         provincesData[pid].resources.ers = 0;
     }
-    // Записываем итоговый остаток (может быть отрицательным) в столицу
     if (capitalId && provincesData[capitalId]) {
         provincesData[capitalId].resources.ers = window.factionTreasury || 0;
     }
 
-    // 9. Строительство (уменьшение таймеров)
+    // 9. Строительство
     if (typeof processConstruction === 'function') {
         processConstruction();
     }
 
-    // 10. Исследования (обработка очков)
+    // 10. Исследования
     if (typeof processResearch === 'function') {
         processResearch();
     }
@@ -213,7 +217,8 @@ function applyGlobalTurn() {
     }
 
     // 12. Лояльность вассалов (раз в месяц)
-    if (typeof peopleState !== 'undefined' && (peopleState.turnsSinceDemography === 0 || peopleState.turnsSinceDemography % 4 === 0)) {
+    if (typeof peopleState !== 'undefined' &&
+        (peopleState.turnsSinceDemography === 0 || peopleState.turnsSinceDemography % 4 === 0)) {
         if (typeof updateVassalsLoyalty === 'function') {
             updateVassalsLoyalty();
         }
@@ -224,6 +229,41 @@ function applyGlobalTurn() {
         advanceWeek();
     } else if (typeof GameState !== 'undefined' && GameState.advanceTime) {
         GameState.advanceTime();
+    }
+
+    // =========================================================================
+    // 13.5. СИНХРОНИЗАЦИЯ ВЛАДЕНИЙ С ОБЩИМ РЕЕСТРОМ
+    // =========================================================================
+    // После продвижения даты пересматриваем журнал владения:
+    //   • Если за это время (в других фракциях / вкладках) поселения ушли — теряем их
+    //   • Если что-то вернулось — получаем обратно
+    //   • Обновляем оккупации из центрального реестра
+    // =========================================================================
+    if (typeof syncFactionOwnership === 'function') {
+        try {
+            const res = syncFactionOwnership();
+            if (res && (res.lost.length || res.gained.length)) {
+                console.log('📜 Синхронизация владений:', res);
+            }
+        } catch (e) {
+            console.error('syncFactionOwnership error:', e);
+        }
+    } else {
+        // Если реестра нет — работаем по-старому (не ломаем существующие сохранения)
+        console.log('ℹ️ syncFactionOwnership недоступна — работаем в старом режиме');
+    }
+
+    // Обновляем боевой блок войны после синхронизации
+    if (typeof renderWarPanel === 'function') {
+        try { renderWarPanel(); } catch(e) { console.warn('renderWarPanel error:', e); }
+    }
+
+    // 13.6. Миграция аннексированных провинций (авто-фикс)
+    if (typeof migrateAnnexedProvinces === 'function') {
+        migrateAnnexedProvinces();
+    }
+    if (typeof recalcTotalTreasury === 'function') {
+        recalcTotalTreasury();
     }
 
     // 14. Обновление интерфейса
@@ -238,21 +278,21 @@ function applyGlobalTurn() {
     // 15. Банкротство → дезертирство
     if (window.factionTreasury < 0) {
         if (typeof applyBankruptcyDesertion === 'function') {
-            applyBankruptcyDesertion();   // сначала теряем 10% отрядов
+            applyBankruptcyDesertion();
         }
         if (typeof showBankruptcyModal === 'function') showBankruptcyModal();
         addGlobalLog(`⚠️ Казна ушла в минус! Вы – банкрот!`, 'general');
     }
 
-    // 16. Обработка коррупции и агента (повышение навыка, сброс финансирования)
+    // 16. Обработка коррупции и агента
     if (typeof processCorruptionTurn === 'function') processCorruptionTurn();
 
     // 17. ФИНАЛЬНОЕ сохранение — ПОСЛЕ всех изменений состояния
     saveAllData();
 
     // 18. Разблокируем кнопку хода
-    const globalTurnBtn = document.getElementById('globalTurnBtn');
-    if (globalTurnBtn) globalTurnBtn.disabled = false;
+    const globalTurnBtn2 = document.getElementById('globalTurnBtn');
+    if (globalTurnBtn2) globalTurnBtn2.disabled = false;
 
     addGlobalLog(`✅ ХОД ЗАВЕРШЁН: ${(typeof getCurrentDateString === 'function') ? getCurrentDateString() : ''}`, 'general');
 }
@@ -321,6 +361,11 @@ function saveAllData() {
             corruption: (typeof peopleState !== 'undefined' && peopleState.corruption) ? peopleState.corruption : { currentPercent: 1, turnsSinceLastGrowth: 0, agent: null }
         },
         globalTradeAgreements: (typeof globalTradeAgreements !== 'undefined') ? globalTradeAgreements : [],
+        // ← НОВЫЕ СТРОКИ
+        wars: (typeof window.wars !== 'undefined') ? window.wars : [],
+        warsAgainst: (typeof window.warsAgainst !== 'undefined') ? window.warsAgainst : [],
+        occupations: (typeof window.occupations !== 'undefined') ? window.occupations : [],
+        // ← КОНЕЦ НОВЫХ СТРОК
         armies: (typeof window.armies !== 'undefined') ? window.armies : [],
         factionCouncils: (typeof factionCouncils !== 'undefined') ? factionCouncils : {},
         savedRoutes: (typeof savedRoutes !== 'undefined') ? savedRoutes : [],

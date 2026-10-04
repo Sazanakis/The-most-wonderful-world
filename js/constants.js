@@ -9,8 +9,11 @@
 const MONTH_NAMES = ["января", "февраля", "марта", "апреля", "мая", "июня", "июля", "августа", "сентября", "октября", "ноября", "декабря"];
 
 // ========== 2. ПРОВИНЦИИ (устаревший список) ==========
-const PROVINCE_IDS = ["clan_daketa", "county_markarn", "principality_gorski", "regency_council", "county_ottergrund", "elfheim", "county_meyan", "county_dionia", "county_skollfang", "county_takania", "order_varsiltaers", "principality_lorein", "county_mensen", "county_corvail", 
-"county_luun"
+const PROVINCE_IDS = [
+    "clan_daketa", "county_markarn", "principality_gorski", "regency_council",
+    "county_ottergrund", "elfheim", "county_meyan", "county_dionia",
+    "county_skollfang", "county_takania", "order_varsiltaers",
+    "principality_lorein", "county_mensen", "county_corvail", "county_luun", "principality_batavia",
 ];
 
 // ========== 3. СОВЕТ: ТИПЫ ВАССАЛОВ ==========
@@ -230,7 +233,7 @@ const PROVINCE_NAMES = {
     neutral_province_2: "Нейтральная провинция 2",
     corvail: "Корвайл",
     neutral_province_6: "Нейтральная провинция 6",
-    proyurgan_province_1: "Проюрганская провинция 1",
+    batavia: "Батавия",
 };
 const FACTION_NAMES = {
     clan_daketa: "Клан Дакэта",
@@ -253,7 +256,7 @@ const FACTION_NAMES = {
     unknown_clan_2: "Неизвестный клан (2)",
     county_luun: "Графство Луун",
     unknown_feudal_7: "Неизвестный феодал (7)",
-    unknown_feudal_10: "Неизвестный феодал (10)",
+    principality_batavia: "Княжество Батавия",
     county_corvail: "Графство Корвайл",
     unknown_feudal_12: "Неизвестный феодал (12)",
 	yurgan_empire: "Империя Юрган",
@@ -318,7 +321,11 @@ const VASSAL_HOUSE_NAMES = {
 	"house_ashbyrne": "Род Эшбирн",
 	"house_thornhill": "Род Торнхилл",
 	"house_cergard": "Род Цергард",
-	"house_gedorf": "Род Гедорф"
+	"house_gedorf": "Род Гедорф",
+    // ===== Княжество Батавия =====
+    "house_malatecta": "Род Малатеста",
+    "house_brabant": "Дом Брабант",
+    "house_flandre": "Дом Арденн",
 };
 
 // Гербы главных родов фракций (для карты)
@@ -753,16 +760,16 @@ const SETTLEMENTS_DB = {
     "Mulengrund": { id: "Mulengrund", name: "Розенхайм", type: "village", province: "ottergrund", faction: "county_ottergrund", rhetoric: "proyurgan", px: 3565, py: 1270, icon: "emblem/house_drachenfels.png", isVassal: true, vassalHouse: "house_drachenfels" },
     "Hinterbach": { id: "Hinterbach", name: "Вайсенбах", type: "village", province: "ottergrund", faction: "county_ottergrund", rhetoric: "proyurgan", px: 3636, py: 1245, icon: "emblem/house_levenwolf.png", isVassal: true, vassalHouse: "house_levenwolf" },
 
-    // ========== ПРОВИНЦИЯ №13 (Proyurgan Province No. 1) - незанятая проюрганская ==========
-    "neutral_city17": { id: "neutral_city17", name: "Город17", type: "city", province: "proyurgan_province_1", faction: "unknown_feudal_10", rhetoric: "neutral", px: 2871, py: 1055, icon: "draw.png", isVassal: false, vassalHouse: null },
-    "neutral_castle35": { id: "neutral_castle35", name: "Замок35", type: "castle", province: "proyurgan_province_1", faction: "unknown_feudal_10", rhetoric: "neutral", px: 2880, py: 1174, icon: "draw.png", isVassal: false, vassalHouse: null },
-    "neutral_village159": { id: "neutral_village159", name: "Деревня159", type: "village", province: "proyurgan_province_1", faction: "unknown_feudal_10", rhetoric: "neutral", px: 2831, py: 1005, icon: "draw.png", isVassal: false, vassalHouse: null },
-    "neutral_village160": { id: "neutral_village160", name: "Деревня160", type: "village", province: "proyurgan_province_1", faction: "unknown_feudal_10", rhetoric: "neutral", px: 2756, py: 1062, icon: "draw.png", isVassal: false, vassalHouse: null },
-    "neutral_village161": { id: "neutral_village161", name: "Деревня161", type: "village", province: "proyurgan_province_1", faction: "unknown_feudal_10", rhetoric: "neutral", px: 2783, py: 1100, icon: "draw.png", isVassal: false, vassalHouse: null },
-    "neutral_village162": { id: "neutral_village162", name: "Деревня162", type: "village", province: "proyurgan_province_1", faction: "unknown_feudal_10", rhetoric: "neutral", px: 2830, py: 1107, icon: "draw.png", isVassal: false, vassalHouse: null },
-    "neutral_village163": { id: "neutral_village163", name: "Деревня163", type: "village", province: "proyurgan_province_1", faction: "unknown_feudal_10", rhetoric: "neutral", px: 2805, py: 1210, icon: "draw.png", isVassal: false, vassalHouse: null },
-    "neutral_village164": { id: "neutral_village164", name: "Деревня164", type: "village", province: "proyurgan_province_1", faction: "unknown_feudal_10", rhetoric: "neutral", px: 2767, py: 1292, icon: "draw.png", isVassal: false, vassalHouse: null },
-    "neutral_village165": { id: "neutral_village165", name: "Деревня165", type: "village", province: "proyurgan_province_1", faction: "unknown_feudal_10", rhetoric: "neutral", px: 2854, py: 1354, icon: "draw.png", isVassal: false, vassalHouse: null },
+    // ========== ПРОВИНЦИЯ Ьатавия ==========
+    "Nue_Hafe": { id: "Nue_Hafe", name: "Нюэ-Хафэ", type: "city", province: "batavia", faction: "principality_batavia", rhetoric: "proyurgan", px: 2871, py: 1055, icon: "emblem/batavia.png", isVassal: false, vassalHouse: null },
+    "Antwerp": { id: "Antwerp", name: "Антверпен", type: "castle", province: "batavia", faction: "principality_batavia", rhetoric: "proyurgan", px: 2880, py: 1174, icon: "emblem/house_malatecta.png", isVassal: true, vassalHouse: "house_malatecta" },
+    "Luxembourg": { id: "Luxembourg", name: "Люксембург", type: "village", province: "batavia", faction: "principality_batavia", rhetoric: "proyurgan", px: 2762, py: 1214, icon: "emblem/batavia.png", isVassal: false, vassalHouse: null },
+    "Petange": { id: "Petange", name: "Петанж", type: "village", province: "batavia", faction: "principality_batavia", rhetoric: "proyurgan", px: 2756, py: 1062, icon: "emblem/batavia.png", isVassal: false, vassalHouse: null },
+    "Obanje": { id: "Obanje", name: "Обанж", type: "village", province: "batavia", faction: "principality_batavia", rhetoric: "proyurgan", px: 2783, py: 1100, icon: "emblem/batavia.png", isVassal: false, vassalHouse: null },
+    "Arlon": { id: "Arlon", name: "Арлон", type: "village", province: "batavia", faction: "principality_batavia", rhetoric: "proyurgan", px: 2830, py: 1107, icon: "emblem/house_malatecta.png", isVassal: true, vassalHouse: "house_malatecta" },
+    "Brang": { id: "Brang", name: "Бранг", type: "village", province: "batavia", faction: "principality_batavia", rhetoric: "proyurgan", px: 2805, py: 1210, icon: "emblem/house_brabant.png", isVassal: true, vassalHouse: "house_brabant" },
+    "Nenen": { id: "Nenen", name: "Ненен", type: "village", province: "batavia", faction: "principality_batavia", rhetoric: "proyurgan", px: 2767, py: 1292, icon: "emblem/house_brabant.png", isVassal: true, vassalHouse: "house_brabant" },
+    "Menenlog": { id: "Menenlog", name: "Меменлог", type: "village", province: "batavia", faction: "principality_batavia", rhetoric: "proyurgan", px: 2854, py: 1344, icon: "emblem/house_flandre.png", isVassal: true, vassalHouse: "house_flandre" },
 
 };
 
