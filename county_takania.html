@@ -296,16 +296,16 @@
 		<div id="corruptionContainer"></div>
 	</div>
     <!-- Оккупированные земли -->
-    <div id="tab-captured" class="tab-content">
-        <div class="stat-card">
-            <div class="flex-row" style="justify-content:space-between;">
-                <h2>🏴 ОККУПИРОВАННЫЕ ТЕРРИТОРИИ</h2>
-                <button id="importCapturedFileBtn">📥 Импортировать файл</button>
-                <input type="file" id="capturedFileInput" accept=".json" style="display:none;">
-            </div>
-            <div id="capturedSettlementsList" style="margin-top:15px;">Загрузка...</div>
-        </div>
-    </div>
+	<div id="tab-captured" class="tab-content">
+		<div class="war-controls">
+			<button id="declareWarBtn">⚔️ Объявить войну</button>
+			<button id="closeAllWarsBtn" class="danger-btn">🕊️ Заключить мир со всеми</button>
+		</div>
+		<div id="warSummary"></div>
+		<div id="warFactionsList"></div>
+		<div id="lostSettlementsList"></div>
+		<div id="warsAgainstBlock" style="margin-top:20px;"></div>
+	</div>
 	
 	<!-- Торговля -->
 	<div id="tab-trade" class="tab-content">
@@ -512,6 +512,8 @@
 <script src="js/factions_units.js"></script>
 <script src="js/army_core.js"></script>
 <script src="js/army_ui.js"></script>
+<script src="js/war_registry.js"></script>
+<script src="js/war.js"></script>
 <script src="js/trade.js"></script>
 <script src="js/technologies.js"></script>
 <script src="js/ui.js"></script>
@@ -602,6 +604,11 @@ function fullInit() {
             }
             if (data.globalTradeAgreements) window.globalTradeAgreements = data.globalTradeAgreements;
             if (data.factionTreasury !== undefined) window.factionTreasury = data.factionTreasury;
+			
+            // Загрузка состояния войн и оккупаций
+            window.wars = Array.isArray(data.wars) ? data.wars : [];
+            window.warsAgainst = Array.isArray(data.warsAgainst) ? data.warsAgainst : [];
+            window.occupations = Array.isArray(data.occupations) ? data.occupations : [];
 
             if (data.factionCouncils) {
                 for (let key in data.factionCouncils) {

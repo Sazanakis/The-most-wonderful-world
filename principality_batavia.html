@@ -3,15 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Графство Маркарн – Самый дивный мир</title>
-	<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
-	<link rel="stylesheet" href="css/faction-base.css">
+    <title>Княжество Батавия – Самый дивный мир</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/faction-base.css">
+    <style>
+        /* ============================================================
+           ЛОКАЛЬНЫЕ СТИЛИ ДЛЯ КНЯЖЕСТВА БАТАВИЯ
+           ============================================================ */
+        .faction-badge span:first-child::before {
+            /* Оранжевый акцент на бейдже фракции */
+            content: '';
+            display: inline-block;
+            width: 10px; height: 10px;
+            background: #e87a1e;
+            border-radius: 50%;
+            margin-right: 8px;
+            vertical-align: middle;
+            box-shadow: 0 0 6px #e87a1e;
+        }
+    </style>
 </head>
 <body>
 
 <!-- ===== ЗАГЛУШКИ ДЛЯ ОТСУТСТВУЮЩИХ МОДУЛЕЙ ===== -->
 <script>
-    // Заглушки для совместимости
     window.armies = [];
     window.calculateTotalUpkeep = function() { return 0; };
     window.processRecruitment = function() {};
@@ -31,7 +46,6 @@
     window.updateVassalsLoyalty = function() {};
     window.factionCouncils = {};
 
-    // Маппинги фракций (для совместимости)
     window.FACTION_TO_PROVINCE = {
         clan_daketa: 'orochima',
         clan_date: 'mutsura',
@@ -44,7 +58,7 @@
         county_dionia: 'dionia',
         order_varsiltaers: 'nightsten',
         principality_lorein: 'lorein',
-        county_mensen: 'mensen'
+        principality_batavia: 'batavia'
     };
     window.FACTION_TO_RHETORIC = {
         clan_daketa: 'dayo',
@@ -58,15 +72,15 @@
         county_dionia: 'loyal',
         order_varsiltaers: 'loyal',
         principality_lorein: 'neutral',
-        county_mensen: 'loyal'
+        principality_batavia: 'proyurgan'
     };
 
-    // ===== ИНДИВИДУАЛЬНЫЕ НАСТРОЙКИ ГРАФСТВА МАРКАРН =====
-    window.currentFaction = 'county_markarn';
-    window.currentProvince = 'kaya';
-    window.currentCouncilFaction = 'county_markarn';
-    window.storageKey = 'unified_province_manager_markarn';
-
+    // ===== ИНДИВИДУАЛЬНЫЕ НАСТРОЙКИ КНЯЖЕСТВА БАТАВИЯ =====
+    window.currentFaction = 'principality_batavia';
+    window.currentProvince = 'batavia';
+    window.currentCouncilFaction = 'principality_batavia';
+    window.storageKey = 'unified_province_manager_batavia';
+    window.provincesData = window.provincesData || {};
     window.peopleState = {
         settings: { taxRate: 1, conscriptPercent: 25, womenInArmy: false, poorPercent: 10 },
         demography: { birthRate: 2, deathRate: 1 },
@@ -77,7 +91,6 @@
         maxConstructionSlots: 2,
         corruption: { currentPercent: 1, turnsSinceLastGrowth: 0, agent: null }
     };
-
     window.factionTreasury = 0;
 </script>
 
@@ -91,8 +104,8 @@
 <div class="main-container" id="mainContent" style="display:none;">
     <div class="global-header">
         <div class="faction-badge" style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-            <span>🏛️ Фракция: Графство Маркарн</span>
-            <span>👑 Лидер: <span id="leaderName">Эльза Маркарн</span></span>
+            <span>🏛️ Фракция: Княжество Батавия</span>
+            <span>👑 Лидер: <span id="leaderName">Пьер-Франсуа Люксембург-Оранский</span></span>
             <button id="leaderLinkBtn" style="background:#3a5a2a; padding: 4px 12px; font-size:0.8rem;">🔗 Ссылка</button>
         </div>
         <div class="date-badge">📅 <span id="globalDateDisplay">1 неделя мая, 1598 год</span></div>
@@ -108,10 +121,10 @@
         </div>
     </div>
 
-    <!-- Вкладки -->
+    <!-- Двухколоночный макет -->
     <div class="faction-layout">
 
-        <!-- ЛЕВАЯ КОЛОНКА -->
+        <!-- ЛЕВАЯ КОЛОНКА: игровое меню -->
         <aside class="faction-sidebar">
             <div class="tabs-container">
                 <button class="tab-button" data-tab="council">
@@ -145,320 +158,310 @@
             </div>
         </aside>
 
-        <!-- ПРАВАЯ КОЛОНКА (main открывается здесь) -->
+        <!-- ПРАВАЯ КОЛОНКА: контент -->
         <main class="faction-content-area">
 
-    <!-- СОВЕТ -->
-    <div id="tab-council" class="tab-content">
-        <div id="housesContainer"></div>
-        <div style="margin-top: 20px;">
-            <button id="resetCouncilBtn" class="danger-btn">🔄 Сбросить Совет</button>
-        </div>
-    </div>
-
-    <!-- АРМИЯ -->
-    <div id="tab-army" class="tab-content">
-        <div class="stat-card">
-            <div class="flex-row" style="justify-content:space-between;">
-                <span>💰 Казна: <strong id="armyTreasury">0</strong> эрсов</span>
-                <span>⚔️ Содержание: <strong id="globalUpkeep">0</strong> эрсов/ход</span>
-            </div>
-        </div>
-		<div id="currentRhetoricInfo" style="margin-bottom:10px; text-align:center;"></div>
-		<div id="armySummaryPanel"></div>
-        <div class="flex-row" style="justify-content:space-between; margin-bottom:20px;">
-            <div class="flex-row">
-                <button id="newArmyBtn">➕ Новая армия</button>
-                <button id="clearAllArmiesBtn" class="danger-btn">🔥 Расформировать всё</button>
-            </div>
-        </div>
-        <div id="armiesContainer"></div>
-        <div class="log-panel" id="armyLogPanel"></div>
-        <div class="flex-row" style="justify-content:center; margin-top:20px; gap:15px;">
-            <button id="exportArmiesBtn">💾 Экспорт армий</button>
-            <button id="importArmiesBtn">📂 Импорт армий</button>
-            <input type="file" id="armyImportFile" accept=".json" style="display:none">
-            <button id="resetArmyBtn" class="danger-btn">🔄 Сбросить армию</button>
-            <button id="loadExampleBtn">📖 Пример армии</button>
-        </div>
-    </div>
-
-    <!-- ПРОВИНЦИИ -->
-    <div id="tab-province" class="tab-content active">
-        <div id="provinceDashboard" style="margin-bottom:20px;">Загрузка...</div>
-        <div id="provinceCellsContainer"></div>
-
-        <div class="stat-card">
-            <div class="flex-row" style="justify-content:space-between;">
-                <h2>👥 НАСЕЛЕНИЕ И РЕСУРСЫ</h2>
-                <select id="currentProvinceSelect" style="max-width:250px;"></select>
-                <button id="exportProvinceBtn" style="background:#3a5a2a;">📤 Экспорт</button>
-                <button id="importProvinceBtn" style="background:#3a5a2a;">📥 Импорт</button>
-                <input type="file" id="importProvinceFile" accept=".json" style="display:none;">
-            </div>
-            <div class="flex-row" style="justify-content:space-around; margin-top:15px;">
-                <div>👥 <span id="totalPopulation">0</span></div>
-                <div>⚔️ Призыв: <span id="totalConscript">0</span></div>
-                <div>💰 Налоги: <span id="weeklyIncome">0</span> эрсов/ход</div>
-                <div>🏦 Казна: <span id="totalTreasury">0</span> эрсов</div>
-            </div>
-        </div>
-
-		<div class="stat-card race-section">
-			<!-- Шапка -->
-			<div class="race-section-header">
-				<h3>🧬 Расы и население</h3>
-				<div class="race-section-stats" id="raceQuickStats"></div>
-			</div>
-
-			<!-- Постоянные настройки -->
-			<div class="race-settings-row">
-				<label class="race-setting">
-					💰 Налог:
-					<input type="number" id="taxRate" value="1" step="0.1" min="0">
-					<span class="setting-suffix">эрс/чел</span>
-				</label>
-				<label class="race-setting">
-					⚔️ Призыв:
-					<input type="number" id="conscriptPercent" value="25" step="1" min="0" max="100">
-					<span class="setting-suffix">%</span>
-				</label>
-				<label class="race-setting race-setting-toggle">
-					<input type="checkbox" id="womenInArmyCheckbox">
-					<span>♀ Женщины в армии</span>
-				</label>
-			</div>
-
-			<!-- Табы -->
-			<div class="race-tabs">
-				<button class="race-tab active" data-race-tab="overview">
-					<span class="rt-icon">📊</span><span class="rt-label">Обзор</span>
-				</button>
-				<button class="race-tab" data-race-tab="races">
-					<span class="rt-icon">🧬</span><span class="rt-label">Расы</span>
-				</button>
-				<button class="race-tab" data-race-tab="reserve">
-					<span class="rt-icon">⚔️</span><span class="rt-label">Резерв</span>
-				</button>
-			</div>
-
-			<!-- Контент табов -->
-			<div class="race-tab-content">
-
-				<div class="race-view active" data-race-view="overview">
-					<div id="raceOverviewContent"></div>
-				</div>
-
-				<div class="race-view" data-race-view="races">
-					<div class="race-view-header">
-						<span style="color:#8a7a5a;font-size:0.82rem;">Управление составом населения провинции</span>
-						<button id="addRaceBtn">➕ Добавить расу</button>
-					</div>
-					<table class="race-table">
-						<thead>
-							<tr>
-								<th>Название</th>
-								<th>👥 Всего</th>
-								<th>Призыв</th>
-								<th>Действия</th>
-							</tr>
-						</thead>
-						<tbody id="raceTableBody"></tbody>
-					</table>
-					<div id="raceWarning" style="color:#ff6b6b; margin-top:8px; font-size:0.8rem;"></div>
-				</div>
-
-				<div class="race-view" data-race-view="reserve">
-					<div id="raceLimitsDisplay"></div>
-				</div>
-
-			</div>
-		</div>
-
-        <div class="stat-card">
-            <h3>🏘️ Поселения</h3>
-            <div id="settlementsList"></div>
-            <div class="flex-row" style="margin-top:10px;">
-                <button id="addSettlementBtn">➕ Добавить деревню</button>
-                <button id="removeSettlementBtn">🗑️ Удалить последнюю</button>
-                <button id="resetProvinceBtn">🔄 Сбросить ресурсы</button>
-            </div>
-        </div>
-
-        <div id="buildingsCatalogSection" class="stat-card" style="cursor:pointer;">
-            <div class="flex-row" style="justify-content:space-between;" onclick="toggleCatalog()">
-                <h3>📚 Каталог построек</h3>
-                <span id="catalogToggleIcon">▶</span>
-            </div>
-            <div id="buildingsCatalogContent" style="display:none;">
-                <div id="buildingsCatalog"></div>
-            </div>
-        </div>
-
-        <div class="log-panel" id="buildingsLogPanel"></div>
-    </div>
-
-    <!-- КОРРУПЦИЯ -->
-    <div id="tab-corruption" class="tab-content">
-        <div id="corruptionContainer"></div>
-    </div>
-
-	<!-- Торговля -->
-	<div id="tab-trade" class="tab-content">
-		<!-- ПАНЕЛЬ РЕСУРСОВ -->
-		<div class="stat-card">
-			<h3>📦 Доступные ресурсы</h3>
-			<div id="tradeableResources" style="display:flex; flex-wrap:wrap; gap:10px; margin:10px 0;"></div>
-			<div id="selectedResourceDisplay" style="margin:8px 0; font-size:0.85rem; color:#ffd966;"></div>
-			
-			<!-- ===== НОВЫЙ БЛОК: ПОШЛИНА ===== -->
-			<div style="margin-top:10px; padding:10px; background:rgba(0,0,0,0.3); border-radius:6px; border:1px solid rgba(160,120,80,0.3);">
-				<label style="color:#d4c9b8; font-size:0.85rem;" data-tip="Пошлина — это процент, который взимается с каждой сделки. Экспорт получает меньше, импорт — платит больше.">
-					🏛️ Пошлина на торговлю:
-					<input type="number" id="tariffPercentInput" value="5" min="0" max="50" step="0.5" style="width:70px; margin-left:8px;">
-					%
-				</label>
-				<span style="color:#8a7a5a; font-size:0.75rem; margin-left:10px;">(по умолчанию 5%)</span>
-			</div>
-			<!-- ===== КОНЕЦ НОВОГО БЛОКА ===== -->
-			
-			<button id="smeltSwordIronBtn" style="background:#b8860b; padding:6px 14px;">🔥 Переплавить Железо меча</button>
-			<button id="exchangeGoldBtn" style="background:#b8860b; padding:6px 14px;">🪙 Обменять золото на эрсы</button>
-		</div>
-
-        <div class="stat-card" style="margin-top:20px;">
-            <h3>📜 Новый торговый договор</h3>
-            <div style="display:flex; flex-wrap:wrap; gap:15px; align-items:flex-end;">
-                <div>
-                    <label>🤝 Партнёр:
-                        <select id="newAgreementPartner" style="width:180px;"></select>
-                    </label>
-                </div>
-                <div>
-                    <label>📦 Ресурс:
-                        <input type="hidden" id="newAgreementResource">
-                        <span id="selectedResourceName" style="font-weight:bold;">не выбран</span>
-                    </label>
-                </div>
-                <div>
-                    <label>🔽 Направление:
-                        <label style="margin-left:10px;"><input type="radio" name="tradeDirection" value="export" checked> 📤 Экспорт</label>
-                        <label style="margin-left:10px;"><input type="radio" name="tradeDirection" value="import"> 📥 Импорт</label>
-                    </label>
-                </div>
-                <div>
-                    <label>💲 Цена за ед.:
-                        <input type="number" id="newAgreementPrice" value="10" min="1" style="width:80px;">
-                    </label>
-                </div>
-                <div>
-                    <label>📊 Кол-во в ход:
-                        <input type="number" id="newAgreementAmount" value="10" min="1" style="width:80px;">
-                    </label>
-                </div>
-                <div>
-                    <label>⏳ Длит. (ходов):
-                        <input type="number" id="newAgreementDuration" value="0" min="0" style="width:80px;" title="0 = бессрочно">
-                    </label>
-                </div>
-                <button id="addAgreementBtn" style="background:#3a6b3a; padding:8px 18px;">✅ Заключить</button>
-            </div>
-        </div>
-
-        <div class="stat-card" style="margin-top:20px;">
-            <h3>📋 Активные договоры</h3>
-            <div id="agreementsList"></div>
-        </div>
-        <div id="tradeSummary"></div>
-    </div>
-
-    <!-- ОККУПИРОВАННЫЕ ЗЕМЛИ -->
-	<div id="tab-captured" class="tab-content">
-		<div class="war-controls">
-			<button id="declareWarBtn">⚔️ Объявить войну</button>
-			<button id="closeAllWarsBtn" class="danger-btn">🕊️ Заключить мир со всеми</button>
-		</div>
-		<div id="warSummary"></div>
-		<div id="warFactionsList"></div>
-		<div id="lostSettlementsList"></div>
-		<div id="warsAgainstBlock" style="margin-top:20px;"></div>
-	</div>
-
-    <!-- ТЕХНОЛОГИИ -->
-    <div id="tab-tech" class="tab-content">
-        <div class="stat-card">
-            <div style="display:flex; gap:10px; justify-content:flex-end; margin-bottom:10px;">
-                <button id="importTechBtn" style="background:#b8860b; padding:4px 12px; font-size:0.7rem;">📥 Импорт технологии</button>
-                <input type="file" id="importTechFile" accept=".json" style="display:none">
-            </div>
-            <h3>🔬 Исследователи</h3>
-            <div style="display:flex; gap:15px; flex-wrap:wrap;">
-                <div style="flex:1; min-width:200px; background:#2a2418; border-radius:16px; padding:12px;" id="militarySlot">
-                    <h4 style="color:#ff6b6b;">⚔️ Военный</h4>
-                    <div id="militaryResearcher"></div>
-                </div>
-                <div style="flex:1; min-width:200px; background:#2a2418; border-radius:16px; padding:12px;" id="civilSlot">
-                    <h4 style="color:#8bc34a;">🏘️ Гражданский</h4>
-                    <div id="civilResearcher"></div>
-                </div>
-                <div style="flex:1; min-width:200px; background:#2a2418; border-radius:16px; padding:12px;" id="uniqueSlot">
-                    <h4 style="color:#ffd966;">✨ Уникальный</h4>
-                    <div id="uniqueResearcher"></div>
+            <!-- Совет -->
+            <div id="tab-council" class="tab-content">
+                <div id="housesContainer"></div>
+                <div style="margin-top: 20px;">
+                    <button id="resetCouncilBtn" class="danger-btn">🔄 Сбросить Совет</button>
                 </div>
             </div>
-        </div>
-        <div class="stat-card" style="margin-top:20px;">
-            <div class="flex-row" style="justify-content:space-between; cursor:pointer;" onclick="toggleAvailableTechs()">
-                <h3>📚 Доступные технологии</h3>
-                <span id="availableTechsToggleIcon">▶</span>
-            </div>
-            <div id="availableTechsContent" style="display:none;">
-                <div style="display:flex; gap:15px; flex-wrap:wrap;">
-                    <div style="flex:1; min-width:200px;" id="militaryTechsColumn">
-                        <h4 style="color:#ff6b6b;">⚔️ Военные</h4>
-                        <div id="militaryTechs"></div>
-                    </div>
-                    <div style="flex:1; min-width:200px;" id="civilTechsColumn">
-                        <h4 style="color:#8bc34a;">🏘️ Гражданские</h4>
-                        <div id="civilTechs"></div>
-                    </div>
-                    <div style="flex:1; min-width:200px;" id="uniqueTechsColumn">
-                        <h4 style="color:#ffd966;">✨ Уникальные</h4>
-                        <div id="uniqueTechs"></div>
+
+            <!-- Армия -->
+            <div id="tab-army" class="tab-content">
+                <div class="stat-card">
+                    <div class="flex-row" style="justify-content:space-between;">
+                        <span>💰 Казна: <strong id="armyTreasury">0</strong> эрсов</span>
+                        <span>⚔️ Содержание: <strong id="globalUpkeep">0</strong> эрсов/ход</span>
                     </div>
                 </div>
+                <div id="armySummaryPanel"></div>
+                <div id="currentRhetoricInfo" style="margin-bottom:10px; text-align:center;"></div>
+                <div id="raceLimitsDisplay" style="background:#1f1c14; border-radius:20px; padding:12px; margin-bottom:20px;"></div>
+                <div class="flex-row" style="justify-content:space-between; margin-bottom:20px;">
+                    <div class="flex-row">
+                        <button id="newArmyBtn">➕ Новая армия</button>
+                        <button id="clearAllArmiesBtn" class="danger-btn">🔥 Расформировать всё</button>
+                    </div>
+                </div>
+                <div id="armiesContainer"></div>
+
+                <div class="log-panel" id="armyLogPanel"></div>
+                <div class="flex-row" style="justify-content:center; margin-top:20px; gap:15px;">
+                    <button id="exportArmiesBtn">💾 Экспорт армий</button>
+                    <button id="importArmiesBtn">📂 Импорт армий</button>
+                    <input type="file" id="armyImportFile" accept=".json" style="display:none">
+                    <button id="importBattleResultBtn" style="background:#b8860b;">⚔️ Импорт итогов битвы</button>
+                    <input type="file" id="battleResultFileInput" accept=".json" style="display:none">
+                    <button id="resetArmyBtn" class="danger-btn">🔄 Сбросить армию</button>
+                    <button id="loadExampleBtn">📖 Пример армии</button>
+                </div>
             </div>
-        </div>
-        <div class="stat-card" style="margin-top:20px;">
-            <h3>⏳ Текущие исследования</h3>
-            <div id="activeResearch"></div>
-        </div>
-        <div class="stat-card" style="margin-top:20px;">
-            <h3>✅ Завершённые технологии</h3>
-            <div id="completedTechs"></div>
-            <div id="techBonuses" style="margin-top:10px;"></div>
-        </div>
-        <div class="stat-card" style="margin-top:20px;">
-            <h3>⚙️ Работа эффектов</h3>
-            <div id="techEffectsWork"></div>
-        </div>          <!-- закрывает .stat-card -->
-    </div>              <!-- закрывает #tab-tech     ← ДОБАВЬ ЭТО -->
-</main>                  <!-- закрывает .faction-content-area -->
-</div>                   <!-- закрывает .faction-layout -->
-</div>                   <!-- закрывает .main-container -->
+
+            <!-- Провинции -->
+            <div id="tab-province" class="tab-content active">
+                <div id="provinceDashboard" style="margin-bottom:20px;">Загрузка...</div>
+                <div id="provinceCellsContainer"></div>
+
+                <div class="stat-card">
+                    <div class="flex-row" style="justify-content:space-between;">
+                        <h2>👥 НАСЕЛЕНИЕ И РЕСУРСЫ</h2>
+                        <select id="currentProvinceSelect" style="max-width:250px;"></select>
+                        <button id="exportProvinceBtn" style="background:#3a5a2a;">📤 Экспорт</button>
+                        <button id="importProvinceBtn" style="background:#3a5a2a;">📥 Импорт</button>
+                        <input type="file" id="importProvinceFile" accept=".json" style="display:none;">
+                    </div>
+                    <div class="flex-row" style="justify-content:space-around; margin-top:15px;">
+                        <div>👥 <span id="totalPopulation">0</span></div>
+                        <div>⚔️ Призыв: <span id="totalConscript">0</span></div>
+                        <div>💰 Налоги: <span id="weeklyIncome">0</span> эрсов/ход</div>
+                        <div>🏦 Казна: <span id="totalTreasury">0</span> эрсов</div>
+                    </div>
+                </div>
+
+                <div class="stat-card race-section">
+                    <div class="race-section-header">
+                        <h3>🧬 Расы и население</h3>
+                        <div class="race-section-stats" id="raceQuickStats"></div>
+                    </div>
+
+                    <div class="race-settings-row">
+                        <label class="race-setting">
+                            💰 Налог:
+                            <input type="number" id="taxRate" value="1" step="0.1" min="0">
+                            <span class="setting-suffix">эрс/чел</span>
+                        </label>
+                        <label class="race-setting">
+                            ⚔️ Призыв:
+                            <input type="number" id="conscriptPercent" value="25" step="1" min="0" max="100">
+                            <span class="setting-suffix">%</span>
+                        </label>
+                        <label class="race-setting race-setting-toggle">
+                            <input type="checkbox" id="womenInArmyCheckbox">
+                            <span>♀ Женщины в армии</span>
+                        </label>
+                    </div>
+
+                    <div class="race-tabs">
+                        <button class="race-tab active" data-race-tab="overview">
+                            <span class="rt-icon">📊</span><span class="rt-label">Обзор</span>
+                        </button>
+                        <button class="race-tab" data-race-tab="races">
+                            <span class="rt-icon">🧬</span><span class="rt-label">Расы</span>
+                        </button>
+                        <button class="race-tab" data-race-tab="reserve">
+                            <span class="rt-icon">⚔️</span><span class="rt-label">Резерв</span>
+                        </button>
+                    </div>
+
+                    <div class="race-tab-content">
+                        <div class="race-view active" data-race-view="overview">
+                            <div id="raceOverviewContent"></div>
+                        </div>
+                        <div class="race-view" data-race-view="races">
+                            <div class="race-view-header">
+                                <span style="color:#8a7a5a;font-size:0.82rem;">Управление составом населения провинции</span>
+                                <button id="addRaceBtn">➕ Добавить расу</button>
+                            </div>
+                            <table class="race-table">
+                                <thead>
+                                    <tr>
+                                        <th>Название</th>
+                                        <th>👥 Всего</th>
+                                        <th>Призыв</th>
+                                        <th>Действия</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="raceTableBody"></tbody>
+                            </table>
+                            <div id="raceWarning" style="color:#ff6b6b; margin-top:8px; font-size:0.8rem;"></div>
+                        </div>
+                        <div class="race-view" data-race-view="reserve">
+                            <div id="raceLimitsDisplay"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <h3>🏘️ Поселения</h3>
+                    <div id="settlementsList"></div>
+                    <div class="flex-row" style="margin-top:10px;">
+                        <button id="addSettlementBtn">➕ Добавить деревню</button>
+                        <button id="removeSettlementBtn">🗑️ Удалить последнюю</button>
+                        <button id="resetProvinceBtn">🔄 Сбросить ресурсы</button>
+                    </div>
+                </div>
+
+                <div id="buildingsCatalogSection" class="stat-card" style="cursor:pointer;">
+                    <div class="flex-row" style="justify-content:space-between;" onclick="toggleCatalog()">
+                        <h3>📚 Каталог построек</h3>
+                        <span id="catalogToggleIcon">▶</span>
+                    </div>
+                    <div id="buildingsCatalogContent" style="display:none;">
+                        <div id="buildingsCatalog"></div>
+                    </div>
+                </div>
+
+                <div class="log-panel" id="buildingsLogPanel"></div>
+            </div>
+
+            <!-- Коррупция -->
+            <div id="tab-corruption" class="tab-content">
+                <div id="corruptionContainer"></div>
+            </div>
+
+            <!-- Оккупированные земли -->
+            <div id="tab-captured" class="tab-content">
+                <div class="war-controls">
+                    <button id="declareWarBtn">⚔️ Объявить войну</button>
+                    <button id="closeAllWarsBtn" class="danger-btn">🕊️ Заключить мир со всеми</button>
+                </div>
+                <div id="warSummary"></div>
+                <div id="warFactionsList"></div>
+                <div id="lostSettlementsList"></div>
+                <div id="warsAgainstBlock" style="margin-top:20px;"></div>
+            </div>
+
+            <!-- Торговля -->
+            <div id="tab-trade" class="tab-content">
+                <div class="stat-card">
+                    <h3>📦 Доступные ресурсы</h3>
+                    <div id="tradeableResources" style="display:flex; flex-wrap:wrap; gap:10px; margin:10px 0;"></div>
+                    <div id="selectedResourceDisplay" style="margin:8px 0; font-size:0.85rem; color:#ffd966;"></div>
+
+                    <div style="margin-top:10px; padding:10px; background:rgba(0,0,0,0.3); border-radius:6px; border:1px solid rgba(160,120,80,0.3);">
+                        <label style="color:#d4c9b8; font-size:0.85rem;" data-tip="Пошлина — это процент, который взимается с каждой сделки.">
+                            🏛️ Пошлина на торговлю:
+                            <input type="number" id="tariffPercentInput" value="5" min="0" max="50" step="0.5" style="width:70px; margin-left:8px;">
+                            %
+                        </label>
+                    </div>
+
+                    <button id="smeltSwordIronBtn" style="background:#b8860b; padding:6px 14px;">🔥 Переплавить Железо меча</button>
+                    <button id="exchangeGoldBtn" style="background:#b8860b; padding:6px 14px;">🪙 Обменять золото на эрсы</button>
+                </div>
+
+                <div class="stat-card" style="margin-top:20px;">
+                    <h3>📜 Новый торговый договор</h3>
+                    <div style="display:flex; flex-wrap:wrap; gap:15px; align-items:flex-end;">
+                        <div>
+                            <label>🤝 Партнёр:
+                                <select id="newAgreementPartner" style="width:180px;"></select>
+                            </label>
+                        </div>
+                        <div>
+                            <label>📦 Ресурс:
+                                <input type="hidden" id="newAgreementResource">
+                                <span id="selectedResourceName" style="font-weight:bold;">не выбран</span>
+                            </label>
+                        </div>
+                        <div>
+                            <label>🔽 Направление:
+                                <label style="margin-left:10px;"><input type="radio" name="tradeDirection" value="export" checked> 📤 Экспорт</label>
+                                <label style="margin-left:10px;"><input type="radio" name="tradeDirection" value="import"> 📥 Импорт</label>
+                            </label>
+                        </div>
+                        <div>
+                            <label>💲 Цена за ед.:
+                                <input type="number" id="newAgreementPrice" value="10" min="1" style="width:80px;">
+                            </label>
+                        </div>
+                        <div>
+                            <label>📊 Кол-во в ход:
+                                <input type="number" id="newAgreementAmount" value="10" min="1" style="width:80px;">
+                            </label>
+                        </div>
+                        <div>
+                            <label>⏳ Длит. (ходов):
+                                <input type="number" id="newAgreementDuration" value="0" min="0" style="width:80px;" title="0 = бессрочно">
+                            </label>
+                        </div>
+                        <button id="addAgreementBtn" style="background:#3a6b3a; padding:8px 18px;">✅ Заключить</button>
+                    </div>
+                </div>
+
+                <div class="stat-card" style="margin-top:20px;">
+                    <h3>📋 Активные договоры</h3>
+                    <div id="agreementsList"></div>
+                </div>
+
+                <div id="tradeSummary"></div>
+            </div>
+
+            <!-- Технологии -->
+            <div id="tab-tech" class="tab-content">
+                <div class="stat-card">
+                    <div style="display:flex; gap:10px; justify-content:flex-end; margin-bottom:10px;">
+                        <button id="importTechBtn" style="background:#b8860b; padding:4px 12px; font-size:0.7rem;">📥 Импорт технологии</button>
+                        <input type="file" id="importTechFile" accept=".json" style="display:none">
+                    </div>
+                    <h3>🔬 Исследователи</h3>
+                    <div style="display:flex; gap:15px; flex-wrap:wrap;">
+                        <div style="flex:1; min-width:200px; background:#2a2418; border-radius:16px; padding:12px;" id="militarySlot">
+                            <h4 style="color:#ff6b6b;">⚔️ Военный</h4>
+                            <div id="militaryResearcher"></div>
+                        </div>
+                        <div style="flex:1; min-width:200px; background:#2a2418; border-radius:16px; padding:12px;" id="civilSlot">
+                            <h4 style="color:#8bc34a;">🏘️ Гражданский</h4>
+                            <div id="civilResearcher"></div>
+                        </div>
+                        <div style="flex:1; min-width:200px; background:#2a2418; border-radius:16px; padding:12px;" id="uniqueSlot">
+                            <h4 style="color:#ffd966;">✨ Уникальный</h4>
+                            <div id="uniqueResearcher"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="stat-card" style="margin-top:20px;">
+                    <div class="flex-row" style="justify-content:space-between; cursor:pointer;" onclick="toggleAvailableTechs()">
+                        <h3>📚 Доступные технологии</h3>
+                        <span id="availableTechsToggleIcon">▶</span>
+                    </div>
+                    <div id="availableTechsContent" style="display:none;">
+                        <div style="display:flex; gap:15px; flex-wrap:wrap;">
+                            <div style="flex:1; min-width:200px;" id="militaryTechsColumn">
+                                <h4 style="color:#ff6b6b;">⚔️ Военные</h4>
+                                <div id="militaryTechs"></div>
+                            </div>
+                            <div style="flex:1; min-width:200px;" id="civilTechsColumn">
+                                <h4 style="color:#8bc34a;">🏘️ Гражданские</h4>
+                                <div id="civilTechs"></div>
+                            </div>
+                            <div style="flex:1; min-width:200px;" id="uniqueTechsColumn">
+                                <h4 style="color:#ffd966;">✨ Уникальные</h4>
+                                <div id="uniqueTechs"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="stat-card" style="margin-top:20px;">
+                    <h3>⏳ Текущие исследования</h3>
+                    <div id="activeResearch"></div>
+                </div>
+                <div class="stat-card" style="margin-top:20px;">
+                    <h3>✅ Завершённые технологии</h3>
+                    <div id="completedTechs"></div>
+                    <div id="techBonuses" style="margin-top:10px;"></div>
+                </div>
+                <div class="stat-card" style="margin-top:20px;">
+                    <h3>⚙️ Работа эффектов</h3>
+                    <div id="techEffectsWork"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
 
 <!-- ==================== ПАНЕЛЬ НАЙМА ВОЙСК ==================== -->
 <div id="recruitPanelModal" class="recruit-panel-modal" style="display:none;">
     <div class="recruit-panel-container">
-
-        <!-- Шапка -->
         <header class="recruit-panel-header">
             <div class="recruit-panel-title">🛒 Найм войск</div>
             <div class="recruit-panel-army-info" id="recruitPanelArmyInfo"></div>
             <button class="recruit-panel-close" id="recruitPanelCloseBtn" title="Закрыть (Esc)">✖</button>
         </header>
 
-        <!-- Фильтры -->
         <div class="recruit-panel-filters">
             <select id="filterType">
                 <option value="all">Все типы</option>
@@ -493,14 +496,12 @@
             <button id="resetFiltersBtn" style="background:#5e3a22;">Сбросить</button>
         </div>
 
-        <!-- Тело: сетка юнитов + колонка армии -->
         <div class="recruit-panel-body">
             <div class="recruit-panel-units">
                 <div id="recruitUnitsGrid" class="units-shop-grid"></div>
             </div>
             <aside class="recruit-panel-army" id="recruitPanelArmyContent"></aside>
         </div>
-
     </div>
 </div>
 
@@ -526,7 +527,7 @@
 <script src="js/dlc_content.js"></script>
 <script src="js/secretary.js"></script>
 
-<!-- ===== ИНИЦИАЛИЗАЦИЯ ===== -->
+<!-- ===== ИНИЦИАЛИЗАЦИЯ И ОБРАБОТЧИКИ ===== -->
 <script>
     function toggleCatalog() {
         const content = document.getElementById('buildingsCatalogContent');
@@ -540,28 +541,16 @@
         }
     }
 
-    function toggleAvailableTechs() {
-        const content = document.getElementById('availableTechsContent');
-        const icon = document.getElementById('availableTechsToggleIcon');
-        if (content.style.display === 'none') {
-            content.style.display = 'block';
-            icon.textContent = '▼';
-        } else {
-            content.style.display = 'none';
-            icon.textContent = '▶';
-        }
-    }
-
     function resetFactionData() {
         if (confirm('Полностью сбросить все данные этой фракции? Будут удалены все постройки, захваченные земли и изменения населения.')) {
-            const key = window.storageKey || 'unified_province_manager_markarn';
-            localStorage.removeItem(key);
-            const defeatKey = 'defeated_' + key;
+            const mainKey = window.storageKey || 'unified_province_manager_batavia';
+            localStorage.removeItem(mainKey);
+            const defeatKey = 'defeated_' + mainKey;
             localStorage.removeItem(defeatKey);
             for (let i = localStorage.length - 1; i >= 0; i--) {
-                const k = localStorage.key(i);
-                if (k && k.startsWith('unified_province_manager')) {
-                    localStorage.removeItem(k);
+                const key = localStorage.key(i);
+                if (key && key.startsWith('unified_province_manager_batavia')) {
+                    localStorage.removeItem(key);
                 }
             }
             location.reload();
@@ -569,14 +558,13 @@
     }
 
     function fullInit() {
-        console.log("🚀 Запуск инициализации провинции Кайя...");
+        console.log("🚀 Запуск инициализации Княжества Батавия...");
 
         if (typeof window.provincesData === 'undefined') {
             window.provincesData = {};
         }
 
-        // Проверка поражения
-        var defeatKey = 'defeated_' + (window.storageKey || 'unified_province_manager_markarn');
+        var defeatKey = 'defeated_' + (window.storageKey || 'unified_province_manager_batavia');
         if (localStorage.getItem(defeatKey) === 'true') {
             document.getElementById('loadingScreen').style.display = 'none';
             document.getElementById('mainContent').style.display = 'block';
@@ -584,19 +572,21 @@
             document.querySelectorAll('.tab-button').forEach(function(btn) { btn.style.display = 'none'; });
             var defeatMsg = document.createElement('div');
             defeatMsg.style.cssText = 'text-align:center; padding:100px 20px; color:#ff4444; font-size:2rem; font-family:Cinzel,serif;';
-            var factionDisplayName = (typeof FACTION_NAMES !== 'undefined' && FACTION_NAMES[window.currentFaction]) 
-                ? FACTION_NAMES[window.currentFaction] 
+            var factionDisplayName = (typeof FACTION_NAMES !== 'undefined' && FACTION_NAMES[window.currentFaction])
+                ? FACTION_NAMES[window.currentFaction]
                 : 'Ваша фракция';
             defeatMsg.innerHTML = '⚔️<br>Фракция "' + factionDisplayName + '" потерпела поражение.<br><span style="font-size:1rem;color:#8a7a5a;">Нажмите «Сбросить данные», чтобы начать заново.</span>';
             document.getElementById('mainContent').appendChild(defeatMsg);
             return;
         }
 
-        const saved = localStorage.getItem(window.storageKey || 'unified_province_manager_markarn');
+        const saved = localStorage.getItem(window.storageKey || 'unified_province_manager_batavia');
+
         if (saved) {
             try {
                 const data = JSON.parse(saved);
                 if (data.provincesData) window.provincesData = data.provincesData;
+
                 if (data.currentProvince) window.currentProvince = data.currentProvince;
                 if (data.peopleState) {
                     window.peopleState = data.peopleState;
@@ -614,11 +604,10 @@
                 }
                 if (data.globalTradeAgreements) window.globalTradeAgreements = data.globalTradeAgreements;
                 if (data.factionTreasury !== undefined) window.factionTreasury = data.factionTreasury;
-				
-				// Загрузка состояния войн и оккупаций
-				window.wars = Array.isArray(data.wars) ? data.wars : [];
-				window.warsAgainst = Array.isArray(data.warsAgainst) ? data.warsAgainst : [];
-				window.occupations = Array.isArray(data.occupations) ? data.occupations : [];
+
+                window.wars = Array.isArray(data.wars) ? data.wars : [];
+                window.warsAgainst = Array.isArray(data.warsAgainst) ? data.warsAgainst : [];
+                window.occupations = Array.isArray(data.occupations) ? data.occupations : [];
 
                 if (data.factionCouncils) {
                     for (let key in data.factionCouncils) {
@@ -654,10 +643,10 @@
                     if (!window.researchData.techQueue) window.researchData.techQueue = [];
                     if (!window.researchData.completedTechs) window.researchData.completedTechs = [];
                 }
+
             } catch(e) { console.error("Ошибка загрузки:", e); }
         }
 
-        // Инициализация времени
         if (typeof peopleState !== 'undefined') {
             if (!peopleState.currentWeek) peopleState.currentWeek = 1;
             if (!peopleState.currentMonth) peopleState.currentMonth = 5;
@@ -670,50 +659,39 @@
             womenCheckbox.checked = peopleState.settings.womenInArmy || false;
         }
 
-        // === ПРОВИНЦИЯ КАЙЯ (УЖЕ ЕСТЬ В INITPROVINCEDATA) ===
-        // Просто убеждаемся, что данные загружены
-        if (!window.provincesData['kaya']) {
-            // Если провинции нет – создаём через initProvinceData (она определена в init.js)
-            if (typeof initProvinceData === 'function') {
-                initProvinceData('kaya');
-            } else {
-                // fallback – создаём вручную минимальные данные
-                window.provincesData['kaya'] = {
-                    settlements: [],
-                    resources: { wood: 500, stone: 300, iron: 200, gold: 10, ers: 20000, sword_iron: 0, bison: 0, elven_tobacco: 0 },
-                    races: [],
-                    army: []
-                };
-            }
+        // === Провинция Батавия ===
+        if (!window.provincesData['batavia']) {
+            window.provincesData['batavia'] = {
+                settlements: [],
+                resources: {
+                    wood: 900, stone: 700, iron: 400, gold: 40, ers: 25000,
+                    sword_iron: 0, bison: 300, elven_tobacco: 0
+                },
+                races: [],
+                army: []
+            };
         }
-        // Если поселения пустые – заполняем из SETTLEMENTS_DB
-        const province = window.provincesData['kaya'];
+        const province = window.provincesData['batavia'];
         if (!province.settlements || province.settlements.length === 0) {
             const settlementsFromDB = (typeof SETTLEMENTS_DB !== 'undefined')
-                ? Object.values(SETTLEMENTS_DB).filter(s => s.province === 'kaya').map(s => ({
-                    id: s.id, name: s.name, type: s.type, buildings: [], captured: false, capturedByFaction: null, capturedData: null,
-                    vassalHouse: s.vassalHouse
+                ? Object.values(SETTLEMENTS_DB).filter(s => s.province === 'batavia').map(s => ({
+                    id: s.id, name: s.name, type: s.type, buildings: [],
+                    captured: false, capturedByFaction: null, capturedData: null
                 })) : [];
             province.settlements = settlementsFromDB;
         }
-        if (!province.resources) {
-            province.resources = {
-                wood: 800, stone: 500, iron: 300, gold: 30, ers: 20000,
-                sword_iron: 0, bison: 0, elven_tobacco: 0
-            };
-        }
+        if (!province.resources) province.resources = {
+            wood: 900, stone: 700, iron: 400, gold: 40, ers: 25000,
+            sword_iron: 0, bison: 300, elven_tobacco: 0
+        };
         if (!province.races || province.races.length === 0) {
-            // Используем данные из initProvinceData для kaya, если они там есть, или задаём свои
-            // В init.js уже есть определение для kaya, но если оно не загрузилось – задаём минимальное
             province.races = [
-				{ name: "Люди", adultMale: 20000, adultFemale: 20000, children: 8000, elders: 2400, birthRate: 2.0, deathRate: 1.0 },
-				{ name: "Дварфы", adultMale: 5000, adultFemale: 5000, children: 2000, elders: 600, birthRate: 1.8, deathRate: 0.8, economyBonus: { stone: 0.1, iron: 0.1, buildSpeed: 0.05 } },
-				{ name: "Гоблины", adultMale: 1500, adultFemale: 1500, children: 700, elders: 200, birthRate: 4.0, deathRate: 2.5 },
-				{ name: "Оку", adultMale: 800, adultFemale: 800, children: 250, elders: 80, birthRate: 3.0, deathRate: 1.2, goblinChance: 0.05 },
-				{ name: "Высшие эльфы", adultMale: 500, adultFemale: 500, children: 100, elders: 150, birthRate: 0.5, deathRate: 0 },
-				{ name: "Вульфины", adultMale: 400, adultFemale: 300, children: 120, elders: 40, birthRate: 1.5, deathRate: 1.5 },
-				{ name: "Лепусиды (высшие)", adultMale: 400, adultFemale: 400, children: 160, elders: 60, birthRate: 3.5, deathRate: 1.5 }
-			];
+                { name: "Люди",    adultMale: 42000, adultFemale: 43000, children: 18000, elders: 5500, birthRate: 2.0, deathRate: 1.0 },
+                { name: "Дварфы",  adultMale: 8500,  adultFemale: 8200,  children: 3200,  elders: 1100, birthRate: 1.8, deathRate: 0.8, economyBonus: { stone: 0.1, iron: 0.1, buildSpeed: 0.05 } },
+                { name: "Высшие эльфы", adultMale: 900, adultFemale: 1100, children: 180, elders: 400, birthRate: 0.5, deathRate: 0 },
+                { name: "Вульфины", adultMale: 700, adultFemale: 600, children: 240, elders: 90, birthRate: 1.5, deathRate: 1.5 },
+                { name: "Гоблины", adultMale: 1200, adultFemale: 1150, children: 600, elders: 130, birthRate: 4.0, deathRate: 2.5 }
+            ];
         }
         if (!province.capturedSettlements) province.capturedSettlements = [];
         province.isCapital = true;
@@ -722,17 +700,14 @@
             for (let pid in window.provincesData) migrateProvinceResources(pid);
         }
 
-		// Синхронизация казны:
-		// Если factionTreasury в сохранении есть и отрицательный — доверяем ему.
-		// Иначе пересчитываем из провинций (для старых сохранений без factionTreasury).
-		if (typeof window.factionTreasury !== 'number' || window.factionTreasury >= 0) {
-			let totalErs = 0;
-			for (let pid in window.provincesData) totalErs += window.provincesData[pid].resources?.ers || 0;
-			// Если сохранённое значение меньше суммы провинций — значит была трата, доверяем ему
-			if (typeof window.factionTreasury !== 'number' || window.factionTreasury < totalErs) {
-				window.factionTreasury = totalErs;
-			}
-		}
+        // Синхронизация казны
+        if (typeof window.factionTreasury !== 'number' || window.factionTreasury >= 0) {
+            let totalErs = 0;
+            for (let pid in window.provincesData) totalErs += window.provincesData[pid].resources?.ers || 0;
+            if (typeof window.factionTreasury !== 'number' || window.factionTreasury < totalErs) {
+                window.factionTreasury = totalErs;
+            }
+        }
 
         if (typeof recalcMaxConstructionSlots === 'function') recalcMaxConstructionSlots();
 
@@ -749,7 +724,7 @@
         if (typeof renderAvailableUnits === 'function') renderAvailableUnits();
 
         if (typeof initFactionCouncil === 'function') {
-            initFactionCouncil(window.currentFaction, 'Эльза Маркарн');
+            initFactionCouncil(window.currentFaction, 'Пьер-Франсуа Люксембург-Оранский');
         }
 
         const leaderSpan = document.getElementById('leaderName');
@@ -757,22 +732,9 @@
             leaderSpan.textContent = window.FACTION_RULERS[window.currentFaction] || 'Неизвестный';
         }
 
-        // Обработка действий с карты (если пришли из диалога оккупации)
-        const urlParams = new URLSearchParams(window.location.search);
-        const settlementId = urlParams.get('settlement');
-        const action = urlParams.get('action');
-        if (settlementId && action === 'occupy') {
-            setTimeout(() => {
-                if (typeof captureSettlement === 'function') {
-                    captureSettlement(settlementId);
-                    localStorage.setItem('mapUpdateNeeded', Date.now().toString());
-                }
-            }, 500);
-        }
-
         document.getElementById('loadingScreen').style.display = 'none';
         document.getElementById('mainContent').style.display = 'block';
-        console.log("✅ Инициализация Графства Маркарн завершена");
+        console.log("✅ Инициализация Княжества Батавия завершена");
     }
 
     function bindBasicEvents() {
@@ -792,6 +754,7 @@
                 }
                 if (tabId === 'captured') {
                     if (typeof renderCapturedSettlements === 'function') renderCapturedSettlements();
+                    if (typeof renderWarPanel === 'function') renderWarPanel();
                 }
                 if (tabId === 'council') {
                     if (typeof renderCouncil === 'function') renderCouncil();
@@ -800,10 +763,10 @@
                     if (typeof renderArmy === 'function') renderArmy();
                     if (typeof renderAvailableUnits === 'function') renderAvailableUnits();
                 }
-				if (tabId === 'trade') {
-					if (typeof initTradeData === 'function') initTradeData();
-					if (typeof refreshTradeUI === 'function') refreshTradeUI();
-				}
+                if (tabId === 'trade') {
+                    if (typeof initTradeData === 'function') initTradeData();
+                    if (typeof refreshTradeUI === 'function') refreshTradeUI();
+                }
                 if (tabId === 'tech') {
                     if (typeof initTechData === 'function') initTechData();
                 }
@@ -825,40 +788,28 @@
         });
 
         document.getElementById('addRaceBtn')?.addEventListener('click', () => { if (typeof addRace === 'function') addRace(); });
-		document.getElementById('taxRate')?.addEventListener('input', function() {
-			const val = parseFloat(this.value);
-			if (!isNaN(val) && val >= 0) {
-				window.peopleState.settings.taxRate = val;
-				if (typeof saveAllData === 'function') saveAllData();
-				if (typeof refreshPeopleUI === 'function') refreshPeopleUI();
-				if (typeof renderProvinceDashboard === 'function') renderProvinceDashboard();
-			}
-		});
-		document.getElementById('conscriptPercent')?.addEventListener('input', function() {
-			const val = parseFloat(this.value);
-			if (!isNaN(val) && val >= 0 && val <= 100) {
-				window.peopleState.settings.conscriptPercent = val;
-				if (typeof saveAllData === 'function') saveAllData();
-				if (typeof refreshPeopleUI === 'function') refreshPeopleUI();
-				if (typeof refreshRecruitmentLimits === 'function') refreshRecruitmentLimits();
-			}
-		});
+        document.getElementById('taxRate')?.addEventListener('input', function() {
+            const val = parseFloat(this.value);
+            if (!isNaN(val) && val >= 0) {
+                window.peopleState.settings.taxRate = val;
+                if (typeof saveAllData === 'function') saveAllData();
+                if (typeof refreshPeopleUI === 'function') refreshPeopleUI();
+                if (typeof renderProvinceDashboard === 'function') renderProvinceDashboard();
+            }
+        });
+        document.getElementById('conscriptPercent')?.addEventListener('input', function() {
+            const val = parseFloat(this.value);
+            if (!isNaN(val) && val >= 0 && val <= 100) {
+                window.peopleState.settings.conscriptPercent = val;
+                if (typeof saveAllData === 'function') saveAllData();
+                if (typeof refreshPeopleUI === 'function') refreshPeopleUI();
+                if (typeof refreshRecruitmentLimits === 'function') refreshRecruitmentLimits();
+            }
+        });
 
         document.getElementById('globalSaveBtn')?.addEventListener('click', () => {
             if (typeof exportAllData === 'function') {
                 exportAllData();
-            } else {
-                const allData = {};
-                for (let i = 0; i < localStorage.length; i++) {
-                    const key = localStorage.key(i);
-                    allData[key] = JSON.parse(localStorage.getItem(key));
-                }
-                const blob = new Blob([JSON.stringify(allData, null, 2)], { type: 'application/json' });
-                const a = document.createElement('a');
-                a.href = URL.createObjectURL(blob);
-                a.download = `full_save_${new Date().toISOString().slice(0,19)}.json`;
-                a.click();
-                URL.revokeObjectURL(a.href);
             }
         });
 
@@ -907,13 +858,6 @@
         document.getElementById('addSettlementBtn')?.addEventListener('click', () => { if (typeof addSettlement === 'function') addSettlement(); });
         document.getElementById('removeSettlementBtn')?.addEventListener('click', () => { if (typeof removeLastSettlement === 'function') removeLastSettlement(); });
         document.getElementById('resetProvinceBtn')?.addEventListener('click', () => { if (typeof resetProvinceResources === 'function') resetProvinceResources(); });
-        document.getElementById('importCapturedFileBtn')?.addEventListener('click', () => { document.getElementById('capturedFileInput').click(); });
-        document.getElementById('capturedFileInput')?.addEventListener('change', function(e) {
-            if (e.target.files.length && typeof importCapturedSettlementFromFile === 'function') {
-                importCapturedSettlementFromFile(e.target.files[0]);
-            }
-            e.target.value = '';
-        });
         document.getElementById('exportProvinceBtn')?.addEventListener('click', () => { if (typeof exportProvince === 'function') exportProvince(); });
         document.getElementById('importProvinceBtn')?.addEventListener('click', () => { document.getElementById('importProvinceFile').click(); });
         document.getElementById('importProvinceFile')?.addEventListener('change', function(e) {
@@ -964,6 +908,15 @@
             }
             e.target.value = '';
         });
+        document.getElementById('importBattleResultBtn')?.addEventListener('click', () => {
+            document.getElementById('battleResultFileInput').click();
+        });
+        document.getElementById('battleResultFileInput')?.addEventListener('change', function(e) {
+            if (e.target.files.length && typeof importBattleResult === 'function') {
+                importBattleResult(e.target.files[0]);
+            }
+            e.target.value = '';
+        });
         document.getElementById('resetArmyBtn')?.addEventListener('click', () => {
             if (confirm('Сбросить все армии? Данные будут удалены.')) {
                 window.armies = window.armies.filter(a => a.factionId !== window.currentFaction);
@@ -982,6 +935,5 @@
         if (typeof bindBasicEvents === 'function') bindBasicEvents();
     });
 </script>
-
 </body>
 </html>
