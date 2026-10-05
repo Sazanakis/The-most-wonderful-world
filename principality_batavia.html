@@ -541,21 +541,35 @@
         }
     }
 
-    function resetFactionData() {
-        if (confirm('Полностью сбросить все данные этой фракции? Будут удалены все постройки, захваченные земли и изменения населения.')) {
-            const mainKey = window.storageKey || 'unified_province_manager_batavia';
-            localStorage.removeItem(mainKey);
-            const defeatKey = 'defeated_' + mainKey;
-            localStorage.removeItem(defeatKey);
-            for (let i = localStorage.length - 1; i >= 0; i--) {
-                const key = localStorage.key(i);
-                if (key && key.startsWith('unified_province_manager_batavia')) {
-                    localStorage.removeItem(key);
-                }
-            }
-            location.reload();
-        }
-    }
+	function resetFactionData() {
+		if (!confirm('Полностью сбросить ВСЕ данные фракции?\n\n⚠️ Это также очистит:\n• Журнал владений поселений\n• Активные оккупации\n• Журнал войн\n• Синхронизацию с картой\n\nДействие необратимо.')) {
+			return;
+		}
+
+		// 1. Удаляем все ключи фракций
+		for (let i = localStorage.length - 1; i >= 0; i--) {
+			const key = localStorage.key(i);
+			if (!key) continue;
+			if (key.startsWith('unified_province_manager')) {
+				localStorage.removeItem(key);
+			}
+			if (key.startsWith('defeated_unified_province_manager')) {
+				localStorage.removeItem(key);
+			}
+		}
+
+		// 2. Удаляем центральные реестры
+		localStorage.removeItem('world_ownership_log');
+		localStorage.removeItem('world_occupations');
+		localStorage.removeItem('world_wars_log');
+		localStorage.removeItem('world_registry_schema_version');
+
+		// 3. Удаляем служебный флаг синхронизации карты
+		localStorage.removeItem('mapUpdateNeeded');
+
+		// 4. Перезагружаем
+		location.reload();
+	}
 
     function fullInit() {
         console.log("🚀 Запуск инициализации Княжества Батавия...");
