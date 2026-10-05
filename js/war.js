@@ -910,18 +910,20 @@ function finalizeAnnexation(occ, settlementData) {
     const fromFid = (typeof getSettlementOwnerLatest === 'function')
         ? getSettlementOwnerLatest(sid) : null;
 
-    // Целевая провинция у нас
     const targetProvinceId = findOrCreateAnnexedProvince(sourceProvinceId)
         || window.currentProvince;
 
-    // ЕДИНАЯ ТОЧКА: журнал + мгновенное применение к нашей фракции
+    // ЕДИНАЯ ТОЧКА: передаём populationToAdd прямо в трансфер.
+    // addSettlementToFaction (в war_registry.js) сам добавит население в провинцию
+    // и привяжет его к поселению через поле annexedPopulation.
     if (_hasRegistry()) {
         window.transferOwnership(sid, fromFid, myFid, d, 'annexation', {
             targetProvinceId,
-            buildings: settlementData.buildings || []
+            buildings: settlementData.buildings || [],
+            populationToAdd: occ.populationToAdd || []   // ← НОВОЕ
         });
     } else {
-        console.warn('⚠️ transferOwnership не найден, используется fallback');
+        // Старый fallback без реестра — оставляем как было
         if (!isSettlementAlreadyExists(sid)) {
             if (!provincesData[targetProvinceId]) {
                 provincesData[targetProvinceId] = {
@@ -938,11 +940,8 @@ function finalizeAnnexation(occ, settlementData) {
                 vassalHouse: null
             });
         }
-    }
-
-    // Добавляем население
-    if (occ.populationToAdd && occ.populationToAdd.length > 0) {
-        if (provincesData[targetProvinceId]) {
+        // население добавляем вручную — старый путь
+        if (occ.populationToAdd && occ.populationToAdd.length > 0 && provincesData[targetProvinceId]) {
             for (let pop of occ.populationToAdd) {
                 const ex = provincesData[targetProvinceId].races.find(r => r.name === pop.name);
                 if (ex) {

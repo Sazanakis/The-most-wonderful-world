@@ -271,11 +271,6 @@ window.upsertWorldOccupation = upsertWorldOccupation;
 window.removeWorldOccupation = removeWorldOccupation;
 
 // ---------- 6. ГЛАВНАЯ ФУНКЦИЯ ПЕРЕДАЧИ ВЛАДЕНИЯ ----------
-/**
- * Единая точка передачи владения. Пишет в журнал, обновляет данные
- * фракций только если они СЕЙЧАС играют (currentFaction). Всё остальное
- * подхватится при следующем ходе через syncFactionOwnership().
- */
 function transferOwnership(sid, fromFid, toFid, date, reason = 'manual', opts = {}) {
     console.log(`🔄 [registry] "${sid}": ${fromFid||'—'} → ${toFid||'—'} (${formatDateStr(date)}) — причина: ${reason}`);
     
@@ -285,16 +280,19 @@ function transferOwnership(sid, fromFid, toFid, date, reason = 'manual', opts = 
         sourceFaction: opts.sourceFaction || window.currentFaction
     });
     
-    // 2. Мгновенно обновляем данные, если передача затрагивает ТЕКУЩУЮ фракцию
-    if (fromFid === window.currentFaction) {
-        applyLossToCurrentFaction(sid, toFid, date);
-    }
-    if (toFid === window.currentFaction) {
-        applyGainToCurrentFaction(sid, fromFid, date, opts);
+    // 2. Обновляем данные фракции-ОТПРАВИТЕЛЯ (в её localStorage)
+    if (fromFid && factionHasStorage(fromFid)) {
+        removeSettlementFromFaction(fromFid, sid, toFid, date);
     }
     
-    // 3. Чистим оккупацию при завершении
-    if (reason === 'annexation' || reason === 'occupation_complete' || reason === 'manual') {
+    // 3. Обновляем данные фракции-ПОЛУЧАТЕЛЯ (в её localStorage)
+    if (toFid && factionHasStorage(toFid)) {
+        addSettlementToFaction(toFid, sid, fromFid, date, opts);
+    }
+    
+    // 4. Чистим оккупацию при завершении
+    if (reason === 'annexation' || reason === 'occupation_complete' ||
+        reason === 'manual' || reason === 'peace_return' || reason === 'self_annexation') {
         removeWorldOccupation(sid);
     }
     
@@ -302,15 +300,30 @@ function transferOwnership(sid, fromFid, toFid, date, reason = 'manual', opts = 
     return true;
 }
 
-function applyLossToCurrentFaction(sid, newOwner, date) {
-    if (typeof provincesData === 'undefined') return;
-    for (let pid in provincesData) {
-        const prov = provincesData[pid];
+/**
+ * Удаляет поселение у фракции fid и помещает его в её lostSettlements.
+ * Работает через localStorage — применимо к ЛЮБОЙ фракции, не только текущей.
+ */
+function removeSettlementFromFaction(fid, sid, newOwner, date) {
+    const data = loadFactionStorage(fid);
+    if (!data || !data.provincesData) return;
+
+    let found = false;
+    for (let pid in data.provincesData) {
+        const prov = data.provincesData[pid];
         if (!prov.settlements) continue;
         const idx = prov.settlements.findIndex(s => s.id === sid);
         if (idx === -1) continue;
+
         const s = prov.settlements[idx];
+
+        // === НОВОЕ: если у поселения есть annexedPopulation — вычитаем его из рас ===
+        if (s.annexedPopulation && Array.isArray(s.annexedPopulation) && s.annexedPopulation.length > 0) {
+            subtractPopulationFromProvince(prov, s.annexedPopulation);
+        }
+
         prov.settlements.splice(idx, 1);
+
         if (!prov.lostSettlements) prov.lostSettlements = [];
         prov.lostSettlements.push({
             settlementId: sid,
@@ -319,25 +332,61 @@ function applyLossToCurrentFaction(sid, newOwner, date) {
             lostTo: newOwner,
             provinceId: pid
         });
-        if (typeof saveAllData === 'function') saveAllData();
+        found = true;
+        break;
+    }
+
+    if (!found) return;
+    saveFactionStorage(fid, data);
+
+    // Если это ТЕКУЩАЯ фракция — обновляем глобал и UI
+    if (fid === window.currentFaction) {
+        if (typeof provincesData !== 'undefined') {
+            window.provincesData = data.provincesData;
+        }
         setTimeout(() => {
             if (typeof renderWarPanel === 'function') renderWarPanel();
             if (typeof refreshBuildingsUI === 'function') refreshBuildingsUI();
+            if (typeof renderProvinceDashboard === 'function') renderProvinceDashboard();
+            if (typeof refreshPeopleUI === 'function') refreshPeopleUI();
         }, 30);
         if (typeof addGlobalLog === 'function') {
-            const nn = (typeof FACTION_NAMES !== 'undefined' && FACTION_NAMES[newOwner]) || newOwner || 'нейтрал';
-            addGlobalLog(`💀 Потеряно поселение «${s.name}» → ${nn}.`, 'general');
+            addGlobalLog(`💀 Потеряно поселение «${s.name}» → ${newOwner || 'нейтрал'}.`, 'general');
         }
-        return;
     }
 }
 
-function applyGainToCurrentFaction(sid, fromFid, date, opts = {}) {
-    if (typeof provincesData === 'undefined') return;
-    // Уже есть?
-    for (let pid in provincesData) {
-        if (provincesData[pid].settlements?.some(s => s.id === sid)) return;
+/**
+ * Вычитает население из провинции по списку рас.
+ * Защита от отрицательных значений.
+ */
+function subtractPopulationFromProvince(prov, populationList) {
+    if (!prov || !prov.races) return;
+    for (let pop of populationList) {
+        const race = prov.races.find(r => r.name === pop.name);
+        if (!race) continue;
+        race.adultMale = Math.max(0, (race.adultMale || 0) - (pop.adultMale || 0));
+        race.adultFemale = Math.max(0, (race.adultFemale || 0) - (pop.adultFemale || 0));
+        race.children = Math.max(0, (race.children || 0) - (pop.children || 0));
+        race.elders = Math.max(0, (race.elders || 0) - (pop.elders || 0));
     }
+}
+
+/**
+ * Добавляет поселение фракции fid в её провинцию.
+ * Работает через localStorage — применимо к ЛЮБОЙ фракции.
+ */
+function addSettlementToFaction(fid, sid, fromFid, date, opts = {}) {
+    let data = loadFactionStorage(fid);
+    if (!data) data = createEmptyFactionStorage(fid);
+    if (!data.provincesData) data.provincesData = {};
+
+    // Уже есть?
+    for (let pid in data.provincesData) {
+        if (data.provincesData[pid].settlements?.some(s => s.id === sid)) return;
+    }
+
+    // Достаём объект поселения
     let settlementObj = null, srcProvId = null;
     if (typeof SETTLEMENTS_DB !== 'undefined' && SETTLEMENTS_DB[sid]) {
         const db = SETTLEMENTS_DB[sid];
@@ -345,30 +394,105 @@ function applyGainToCurrentFaction(sid, fromFid, date, opts = {}) {
         srcProvId = db.province;
     }
     if (!settlementObj) return;
-    
-    const targetProv = opts.targetProvinceId
-        || (typeof currentProvince !== 'undefined' ? currentProvince : srcProvId);
-    if (!provincesData[targetProv]) {
-        provincesData[targetProv] = {
-            settlements: [], resources: {}, races: [], army: [],
-            capturedSettlements: [], lostSettlements: [],
-            isCapital: Object.keys(provincesData).length === 0,
-            isAnnexed: targetProv !== srcProvId
-        };
+
+    // Целевая провинция
+    const requestedPid = opts.targetProvinceId || srcProvId || 'annexed_territory';
+    const targetName = (typeof PROVINCE_NAMES !== 'undefined' && PROVINCE_NAMES[requestedPid]) || requestedPid;
+
+    // Ищем провинцию с таким же ИМЕНЕМ (дедупликация)
+    let finalPid = requestedPid;
+    for (let pid in data.provincesData) {
+        const pn = (typeof PROVINCE_NAMES !== 'undefined' && PROVINCE_NAMES[pid]) || pid;
+        if (pn === targetName) { finalPid = pid; break; }
     }
-    provincesData[targetProv].settlements.push({
-        ...settlementObj,
-        captured: false, capturedByFaction: null, capturedData: null,
-        vassalHouse: null, annexedAt: formatDateStr(date)
-    });
-    if (typeof saveAllData === 'function') saveAllData();
-    setTimeout(() => {
-        if (typeof renderWarPanel === 'function') renderWarPanel();
-        if (typeof refreshBuildingsUI === 'function') refreshBuildingsUI();
-        if (typeof renderProvinceDashboard === 'function') renderProvinceDashboard();
-    }, 30);
-    if (typeof addGlobalLog === 'function') {
-        addGlobalLog(`🏛️ Получено поселение «${settlementObj.name}».`, 'general');
+
+    // Создаём провинцию, если нет
+    if (!data.provincesData[finalPid]) {
+        data.provincesData[finalPid] = {
+            settlements: [],
+            resources: { wood: 0, stone: 0, iron: 0, gold: 0, ers: 0,
+                         sword_iron: 0, bison: 0, elven_tobacco: 0, elixir: 0 },
+            races: [],
+            army: [],
+            capturedSettlements: [],
+            lostSettlements: [],
+            isCapital: Object.keys(data.provincesData).length === 0,
+            isAnnexed: finalPid !== srcProvId,
+            originalProvinceId: srcProvId,
+            customName: targetName
+        };
+        if (typeof PROVINCE_NAMES !== 'undefined') {
+            PROVINCE_NAMES[finalPid] = targetName;
+        }
+    }
+
+    const prov = data.provincesData[finalPid];
+    if (!prov.settlements) prov.settlements = [];
+    if (!prov.races) prov.races = [];
+
+    // Защита от дубликата в этой же провинции
+    if (!prov.settlements.some(s => s.id === sid)) {
+        // === НОВОЕ: добавляем население в провинцию и запоминаем его на поселении ===
+        const populationToAdd = (opts.populationToAdd && Array.isArray(opts.populationToAdd))
+            ? opts.populationToAdd : [];
+
+        for (let pop of populationToAdd) {
+            const ex = prov.races.find(r => r.name === pop.name);
+            if (ex) {
+                ex.adultMale = (ex.adultMale || 0) + (pop.adultMale || 0);
+                ex.adultFemale = (ex.adultFemale || 0) + (pop.adultFemale || 0);
+                ex.children = (ex.children || 0) + (pop.children || 0);
+                ex.elders = (ex.elders || 0) + (pop.elders || 0);
+            } else {
+                prov.races.push({
+                    name: pop.name,
+                    adultMale: pop.adultMale || 0,
+                    adultFemale: pop.adultFemale || 0,
+                    children: pop.children || 0,
+                    elders: pop.elders || 0,
+                    birthRate: pop.birthRate || 2.0,
+                    deathRate: pop.deathRate || 1.0
+                });
+            }
+        }
+
+        prov.settlements.push({
+            ...settlementObj,
+            captured: false,
+            capturedByFaction: null,
+            capturedData: null,
+            vassalHouse: opts.vassalHouse !== undefined ? opts.vassalHouse : null,
+            annexedAt: formatDateStr(date),
+            // ← ГЛАВНОЕ: привязываем население к поселению,
+            // чтобы при потере можно было вычесть его обратно.
+            annexedPopulation: populationToAdd.length > 0 ? JSON.parse(JSON.stringify(populationToAdd)) : null
+        });
+    }
+
+    // Если поселение было в lostSettlements — убираем оттуда
+    for (let pid in data.provincesData) {
+        const p = data.provincesData[pid];
+        if (p.lostSettlements) {
+            p.lostSettlements = p.lostSettlements.filter(l => l.settlementId !== sid);
+        }
+    }
+
+    saveFactionStorage(fid, data);
+
+    // Если это ТЕКУЩАЯ фракция — подтягиваем глобал и обновляем UI
+    if (fid === window.currentFaction) {
+        if (typeof provincesData !== 'undefined') {
+            window.provincesData = data.provincesData;
+        }
+        setTimeout(() => {
+            if (typeof renderWarPanel === 'function') renderWarPanel();
+            if (typeof refreshBuildingsUI === 'function') refreshBuildingsUI();
+            if (typeof renderProvinceDashboard === 'function') renderProvinceDashboard();
+            if (typeof refreshPeopleUI === 'function') refreshPeopleUI();
+        }, 30);
+        if (typeof addGlobalLog === 'function') {
+            addGlobalLog(`🏛️ Получено поселение «${settlementObj.name}» (провинция «${targetName}»).`, 'general');
+        }
     }
 }
 
