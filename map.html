@@ -498,6 +498,7 @@
 								<option value="order_varsiltaers">Орден Варсильтаеров</option>
 								<option value="principality_gorski">Горское княжество</option>
 								<option value="elfheim">Княжество Эльфхейм</option>
+								<option value="order_ellada">Орден Эллады</option>
 								<option value="principality_lorein">Княжество Лорейн</option>
 								<option value="county_ottergrund">Графство Оттергрунд</option>
 								<option value="regency_council">Совет регентов</option>
@@ -555,7 +556,30 @@
                     <div id="routeInfo" class="route-info" style="display:none; text-align:center; margin-top:3px; font-size:0.8rem;"></div>
                 </div>
             </div>
-
+			<!-- Панель торговых путей -->
+			<div class="map-panel" style="position: static; width: 100%; margin-top: 0; border-top: none; border-radius: 0;">
+				<div class="map-panel-header" id="tradePanelHeader">
+					<span>🚚 Торговые пути</span><span>▼</span>
+				</div>
+				<div class="map-panel-content" id="tradePanelContent" style="padding: 6px 10px; gap: 6px;">
+					<div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px;">
+						<button id="tradeDrawBtn" style="padding:4px 10px;font-size:0.75rem;">✏️ Рисовать путь</button>
+						<button id="tradeSaveBtn" style="padding:4px 10px;font-size:0.75rem;background:#3a6b3a;" disabled>💾 Сохранить</button>
+						<button id="tradeCancelBtn" style="padding:4px 10px;font-size:0.75rem;background:#7a2a2a;display:none;">✖ Отмена</button>
+					</div>
+					<div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px;">
+						<button id="tradeAnimBtn" style="padding:4px 10px;font-size:0.75rem;">🚚 Запустить караваны</button>
+						<button id="tradeExportBtn" style="padding:4px 10px;font-size:0.75rem;">📤 Экспорт</button>
+						<button id="tradeImportBtn" style="padding:4px 10px;font-size:0.75rem;">📥 Импорт</button>
+						<button id="tradeClearAllBtn" style="padding:4px 10px;font-size:0.75rem;background:#7a2a2a;">🗑️ Все</button>
+						<input type="file" id="tradeImportFile" accept=".json" style="display:none">
+					</div>
+					<div id="tradeRoutesList" style="max-height:150px;overflow-y:auto;"></div>
+					<div id="tradeHint" style="display:none;font-size:0.7rem;color:#8bc34a;margin-top:4px;text-align:center;">
+						Кликайте по карте, чтобы добавить точки. Двойной клик — завершить.
+					</div>
+				</div>
+			</div>
             <!-- Панель слоёв карты (приклеена снизу) -->
             <div class="map-panel" style="position: static; width: 100%; margin-top: 0; border-top: none; border-top-left-radius: 0; border-top-right-radius: 0;">
                 <div class="map-panel-header" id="mapLayersHeader">
@@ -587,6 +611,7 @@
                     <option value="principality_gorski">Горское княжество</option>
 					<option value="county_ottergrund">Графство Оттергрунд</option>
 					<option value="elfheim">Княжество Эльфхейм</option>
+					<option value="order_ellada">Орден Эллады</option>
 					<option value="county_skollfang">Графство Сколльфанг</option>
 					<option value="principality_lorein">Княжество Лорейн</option>
                     <option value="regency_council">Совет регентов</option>
@@ -655,6 +680,7 @@
 	<script src="js/factions_constants.js"></script>
     <script src="js/helpers.js"></script>
     <script src="js/map_routes.js?v=5.2"></script>
+	<script src="js/map_trade_routes.js"></script>
 	<script src="js/buildings.js"></script>
     <script src="js/masks_config.js"></script>
     <script src="js/war_registry.js"></script>
