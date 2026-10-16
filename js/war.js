@@ -1038,7 +1038,11 @@ const STARTING_RACES_BY_PROVINCE = {
     lorein: [{ name: "Люди", weight: 60 }, { name: "Дварфы", weight: 20 }, { name: "Высшие эльфы", weight: 15 }, { name: "Оку", weight: 5 }],
     luun: [{ name: "Вульфины", weight: 45 }, { name: "Люди", weight: 30 }, { name: "Лепусиды (высшие)", weight: 15 }, { name: "Дварфы", weight: 10 }],
     corvail: [{ name: "Люди", weight: 65 }, { name: "Дварфы", weight: 15 }, { name: "Оку", weight: 12 }, { name: "Вульфины", weight: 8 }],
-    mensen: [{ name: "Люди", weight: 70 }, { name: "Дварфы", weight: 20 }, { name: "Высшие эльфы", weight: 10 }]
+    mensen: [{ name: "Люди", weight: 70 }, { name: "Дварфы", weight: 20 }, { name: "Высшие эльфы", weight: 10 }],
+    ellada: [
+        { name: "Люди", weight: 48 }, { name: "Вульфины", weight: 16 }, { name: "Гоблины", weight: 10 }, { name: "Дварфы", weight: 7 },
+        { name: "Оку", weight: 6 }, { name: "Высшие эльфы", weight: 5 }, { name: "Полукровка (Люди+Высшие эльфы)", weight: 5 }, { name: "Тайро", weight: 2 }
+    ],
 };
 const DEFAULT_RACES = [{ name: "Люди", weight: 100 }];
 

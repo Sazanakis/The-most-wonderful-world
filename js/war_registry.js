@@ -38,7 +38,7 @@ const FACTION_STORAGE_SUFFIX = {
     'order_varsiltaers': 'varsiltaers', 'principality_lorein': 'lorein',
     'county_mensen': 'mensen', 'regency_council': 'regency',
     'lepus_union': 'lepus', 'county_luun': 'luun', 'county_corvail': 'corvail',
-	'principality_batavia': 'batavia',
+	'principality_batavia': 'batavia', 'order_ellada': 'ellada',
 };
 
 function factionHasStorage(fid) { return fid in FACTION_STORAGE_SUFFIX; }

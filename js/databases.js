@@ -476,7 +476,19 @@ const buildingsCatalog = {
 		special: "alchemy_district",
 		faction: "principality_lorein",
 		limit: { scope: "province", max: 1 }
-	}
+	},
+	"Храм Веры Элиара": {
+		name: "Храм Веры Элиара",
+		category: "religious",
+		allowedSettlementTypes: ["city"],
+		description: "Храм молодого бога Веры, Сомнений и Надежды. Сердце Ордена Эллады. +7% к призывному резерву, +5% к рождаемости, −5% к коррупции. Только для Ордена Эллады.",
+		cost: { wood: 500, stone: 400, iron: 60, gold: 20, ers: 8000 },
+		buildTime: 4,
+		income: {},
+		special: "temple_Eliar",
+		faction: "order_ellada",
+		limit: { scope: "faction", max: 1 }
+	},	
 };
 
 // ========== ПУСТЫШКИ ДЛЯ ЛИМИТИРОВАННЫХ ПОСТРОЕК ==========

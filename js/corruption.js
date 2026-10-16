@@ -128,6 +128,7 @@ function calculateCorruption() {
     // Снижение от построек: Суд (-2% за каждую) и Храм Варситэи (-5% если есть активный)
     let courtCount = 0;
     let hasTemple = false;
+    let hasTempleEliar = false;
     for (let pid of provinces) {
         const prov = provincesData[pid];
         if (!prov || !prov.settlements) continue;
@@ -137,11 +138,13 @@ function calculateCorruption() {
                 if (!b.completed) continue;
                 if (b.special === "court") courtCount++;
                 if (b.special === "templeVarsiteya") hasTemple = true;
+                if (b.special === "temple_Eliar") hasTempleEliar = true;
             }
         }
     }
     corr.currentPercent -= courtCount * 2;
     if (hasTemple) corr.currentPercent -= 5;
+    if (hasTempleEliar) corr.currentPercent -= 5;
 	// === ВЛИЯНИЕ ВАССАЛОВ ===
 	const vassalImpact = (typeof getTotalVassalsCorruptionImpact === 'function')
 		? getTotalVassalsCorruptionImpact().total
@@ -362,7 +365,7 @@ function renderCorruptionUI() {
     const buildingPenalty = Math.floor(totalBuildings / 3) * 0.5;
 
     // === ИСТОЧНИКИ СНИЖЕНИЯ ===
-    let courtCount = 0, hasTemple = false;
+    let courtCount = 0, hasTemple = false, hasTempleEliar = false;
     for (let pid of provinces) {
         const prov = provincesData[pid];
         if (prov && prov.settlements) {
@@ -372,17 +375,19 @@ function renderCorruptionUI() {
                         if (b.completed) {
                             if (b.special === "court") courtCount++;
                             if (b.special === "templeVarsiteya") hasTemple = true;
+                            if (b.special === "temple_Eliar") hasTempleEliar = true;
                         }
                     }
                 }
             }
         }
     }
-    
+
     const courtReduction = courtCount * 2;
     const templeReduction = hasTemple ? 5 : 0;
-    const agentReduction = agent ? agent.skill : 0;
-    const totalReduction = courtReduction + templeReduction + agentReduction;
+    const templeEliarReduction = hasTempleEliar ? 5 : 0;
+    const agentReduction = agent ? agent.skill : 0;      // ← ВОТ ЭТА СТРОКА ПОТЕРЯЛАСЬ
+    const totalReduction = courtReduction + templeReduction + templeEliarReduction + agentReduction;
 
     // === ПРОГНОЗ ===
     const turnsLeft = 4 - (corr.turnsSinceLastGrowth || 0);
@@ -640,8 +645,11 @@ function renderCorruptionUI() {
                     
                     <span style="color:#d4c9b8;">⛪ Храм Варситэи</span>
                     <span style="color:#8bc34a; text-align:right;">−${templeReduction}% ${hasTemple ? '✅' : '<span style="color:#ff6b6b;">❌</span>'}</span>
+					
+                    <span style="color:#d4c9b8;">⛪ Храм Веры Элиара</span>
+					<span style="color:#8bc34a; text-align:right;">−${templeEliarReduction}% ${hasTempleEliar ? '✅' : '<span style="color:#ff6b6b;">❌</span>'}</span>
                     
-                    <span style="color:#d4c9b8;">🕵️ Агент</span>
+					<span style="color:#d4c9b8;">🕵️ Агент</span>
                     <span style="color:#8bc34a; text-align:right;">−${agentReduction.toFixed(1)}% ${agent ? '✅' : '<span style="color:#ff6b6b;">❌</span>'}</span>
                 </div>
                 ${vassalRow}

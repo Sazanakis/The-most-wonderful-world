@@ -147,6 +147,7 @@ function getBaseConscriptionLimit() {
     let bonusPercent = 0;
     let hasPantheon = false;
     let hasTempleVarsiteya = false;
+    let hasTempleEliar = false;
     let hasAltar = false;
     let hasSanctuary = false;
 
@@ -159,6 +160,7 @@ function getBaseConscriptionLimit() {
                 if (!b.completed) continue;
                 if (b.special === "pantheon") hasPantheon = true;
                 if (b.special === "templeVarsiteya") hasTempleVarsiteya = true;
+                if (b.special === "temple_Eliar") hasTempleEliar = true;
                 if (b.special === "altarVarsis") hasAltar = true;
                 if (b.special === "sanctuaryTeama") hasSanctuary = true;
             }
@@ -169,6 +171,8 @@ function getBaseConscriptionLimit() {
         bonusPercent = 15;
     } else if (hasTempleVarsiteya) {
         bonusPercent = 10;
+    } else if (hasTempleEliar) {
+        bonusPercent = 7;
     } else {
         if (hasAltar) bonusPercent += 7;
         if (hasSanctuary) bonusPercent += 7;
@@ -971,15 +975,17 @@ function applyDemography() {
 
         // Модификатор рождаемости от построек
         let buildingBirthModifier = 1.0;
-        let hasPantheon = false, hasSanctuary = false;
+        let hasPantheon = false, hasSanctuary = false, hasTempleEliar = false;
         for (let s of prov.settlements) {
             for (let b of s.buildings) {
                 if (!b.completed) continue;
                 if (b.special === "pantheon") hasPantheon = true;
                 if (b.special === "sanctuaryTeama") hasSanctuary = true;
+                if (b.special === "temple_Eliar") hasTempleEliar = true;
             }
         }
         if (hasPantheon) buildingBirthModifier = 1.15;
+        else if (hasTempleEliar) buildingBirthModifier = 1.05;
         else if (hasSanctuary) buildingBirthModifier = 1.05;
 
         let races = prov.races;

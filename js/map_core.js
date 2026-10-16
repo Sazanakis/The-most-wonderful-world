@@ -205,6 +205,7 @@ function getFactionData(factionId) {
         'principality_lorein': 'lorein',
 		'county_mensen': 'mensen',
 		'principality_batavia': 'batavia',
+		'order_ellada': 'ellada',
     };
     const suffix = suffixMap[factionId];
     if (suffix === undefined) return null;
@@ -236,6 +237,7 @@ function saveFactionData(factionId, data) {
         'principality_lorein': 'lorein',
 		'county_mensen': 'mensen',
 		'principality_batavia': 'batavia',
+		'order_ellada': 'ellada',
     };
     const suffix = suffixMap[factionId];
     if (suffix === undefined) return false;
@@ -409,6 +411,7 @@ function updateSettlementInStorage(settlementId, newData) {
             'county_takania': 'takania', 'county_skollfang': 'moonmane',
             'order_varsiltaers': 'varsiltaers', 'principality_lorein': 'lorein',
 			'county_mensen': 'mensen', 'principality_batavia': 'batavia',
+			'order_ellada': 'ellada',
         };
         const suffix = suffixMap[currentData.ownerFaction];
         if (suffix !== undefined) {
@@ -1039,7 +1042,8 @@ function loadAllFactionsProvinceData() {
         'meyan': 'county_meyan', 'dionia': 'county_dionia',
         'takania': 'county_takania', 'skollfang': 'county_skollfang',
         'varsiltaers': 'order_varsiltaers', 'lorein': 'principality_lorein',
-        'mensen': 'county_mensen', 'principality_batavia': 'batavia', 
+        'mensen': 'county_mensen', 'principality_batavia': 'batavia',
+		'order_ellada': 'ellada',
     };
 
     // 2. Проходим по всем ключам и собираем данные — КАК В ОРИГИНАЛЕ

@@ -305,6 +305,78 @@ function setupMapUI() {
         }
     }
 	
+	// ===== ТОРГОВЫЕ ПУТИ =====
+
+	// Сворачивание панели
+	const tradeHeader = document.getElementById('tradePanelHeader');
+	const tradeContent = document.getElementById('tradePanelContent');
+	if (tradeHeader && tradeContent) {
+		let tradeCollapsed = false;
+		tradeHeader.addEventListener('click', () => {
+			tradeCollapsed = !tradeCollapsed;
+			tradeContent.style.display = tradeCollapsed ? 'none' : 'flex';
+			const arrow = tradeHeader.querySelector('span:last-child');
+			if (arrow) arrow.innerHTML = tradeCollapsed ? '▶' : '▼';
+		});
+	}
+
+	// Кнопки
+	const tradeDrawBtn = document.getElementById('tradeDrawBtn');
+	const tradeSaveBtn = document.getElementById('tradeSaveBtn');
+	const tradeCancelBtn = document.getElementById('tradeCancelBtn');
+	const tradeAnimBtn = document.getElementById('tradeAnimBtn');
+	const tradeExportBtn = document.getElementById('tradeExportBtn');
+	const tradeImportBtn = document.getElementById('tradeImportBtn');
+	const tradeClearAllBtn = document.getElementById('tradeClearAllBtn');
+	const tradeImportFile = document.getElementById('tradeImportFile');
+
+	if (tradeDrawBtn) {
+		tradeDrawBtn.addEventListener('click', () => {
+			if (typeof startTradeDraw === 'function') startTradeDraw();
+		});
+	}
+	if (tradeSaveBtn) {
+		tradeSaveBtn.addEventListener('click', () => {
+			if (typeof finishTradeDraw === 'function') finishTradeDraw();
+		});
+	}
+	if (tradeCancelBtn) {
+		tradeCancelBtn.addEventListener('click', () => {
+			if (typeof cancelTradeDraw === 'function') cancelTradeDraw();
+		});
+	}
+	if (tradeAnimBtn) {
+		tradeAnimBtn.addEventListener('click', () => {
+			if (typeof tradeAnimationActive !== 'undefined' && tradeAnimationActive) {
+				if (typeof stopTradeAnimation === 'function') stopTradeAnimation();
+			} else {
+				if (typeof startTradeAnimation === 'function') startTradeAnimation();
+			}
+		});
+	}
+	if (tradeExportBtn) {
+		tradeExportBtn.addEventListener('click', () => {
+			if (typeof exportTradeRoutes === 'function') exportTradeRoutes();
+		});
+	}
+	if (tradeImportBtn && tradeImportFile) {
+		tradeImportBtn.addEventListener('click', () => tradeImportFile.click());
+		tradeImportFile.addEventListener('change', (e) => {
+			if (e.target.files.length) {
+				const replace = confirm('OK — заменить все текущие пути.\nОтмена — добавить к существующим.');
+				if (typeof importTradeRoutes === 'function') {
+					importTradeRoutes(e.target.files[0], replace);
+				}
+			}
+			e.target.value = '';
+		});
+	}
+	if (tradeClearAllBtn) {
+		tradeClearAllBtn.addEventListener('click', () => {
+			if (typeof clearAllTradeRoutes === 'function') clearAllTradeRoutes();
+		});
+	}
+	
     console.log("✅ UI карты настроен");
 }
 function buildMapLayersChecklist() {

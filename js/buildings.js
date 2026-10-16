@@ -68,6 +68,9 @@ const VASSAL_NAMES = {
     "house_malatecta": "Род Малатеста",
     "house_brabant": "Дом Брабант",
     "house_flandre": "Дом Арденн",
+	// ===== Эллада =====
+    "house_sperado": "Дом Сперадо",
+    "house_castello": "Дом Кастелло",
 };
 
 function getVassalForSettlement(settlementId) {
@@ -1084,7 +1087,8 @@ function showBuildingDetailModal(buildingKey, settlementId) {
             "altarVarsis": "⛪ +7% призывного резерва людей/дварфов, доступ к «Мясникам Варсиса»",
             "sanctuaryTeama": "⛩️ +7% призывного резерва оку/гоблинов, +5% к рождаемости",
             "templeVarsiteya": "🛕 +10% призывного резерва (заменяет Алтарь и Святилище)",
-            "pantheon": "🏛️ +15% призывного резерва, +15% рождаемости (заменяет все религ. бонусы)"
+            "pantheon": "🏛️ +15% призывного резерва, +15% рождаемости (заменяет все религ. бонусы)",
+			"temple_Eliar": "⛪ +7% к призывному резерву, +5% к рождаемости, −5% к коррупции", //(Храм молодого бога Элиара)
         };
         const effectText = specialMap[buildingDef.special] || `✨ Особая механика: ${buildingDef.special}`;
         effectsHtml += `<div><strong>🔮 Эффект:</strong> ${effectText}</div>`;
@@ -1173,7 +1177,8 @@ function showBuildingDetailForSettlement(building, settlementName) {
                 "altarVarsis": "⛪ +7% призывного резерва людей/дварфов, доступ к «Мясникам Варсиса»",
                 "sanctuaryTeama": "⛩️ +7% призывного резерва оку/гоблинов, +5% к рождаемости",
                 "templeVarsiteya": "🛕 +10% призывного резерва (заменяет Алтарь и Святилище)",
-                "pantheon": "🏛️ +15% призывного резерва, +15% рождаемости (заменяет все религ. бонусы)"
+                "pantheon": "🏛️ +15% призывного резерва, +15% рождаемости (заменяет все религ. бонусы)",
+				"temple_Eliar": "⛪ +7% к призывному резерву, +5% к рождаемости, −5% к коррупции", //(Храм молодого бога Элиара)
             };
             effectText = specialMap[catalogEntry.special] || `✨ ${catalogEntry.special}`;
         } else if (building.special) {
@@ -1242,10 +1247,33 @@ function showBuildingSelector(settlementId) {
         const atLimit = constructionCount >= maxSlotsConstr;
 
         for (let [key, b] of Object.entries(buildingsCatalog)) {
-			if (b.isDummy) continue;   // ← вот эту строку добавить
-			if (b.faction && b.faction !== window.currentFaction) continue;
-			if (filterCategory !== 'all' && b.category !== filterCategory) continue;
+            if (b.isDummy) continue;
+            if (b.faction && b.faction !== window.currentFaction) continue;
+            if (filterCategory !== 'all' && b.category !== filterCategory) continue;
             if (b.allowedSettlementTypes && !b.allowedSettlementTypes.includes(settlement.type)) continue;
+
+            // НОВОЕ: скрываем постройки, чей лимит уже достигнут (напр. Храм Веры Элиара)
+            if (b.limit) {
+                let count = 0;
+                if (b.limit.scope === 'faction') {
+                    const factionProvinces = (typeof getCurrentFactionProvinces === 'function') ? getCurrentFactionProvinces() : [currentProvince];
+                    for (let pid of factionProvinces) {
+                        const prov = provincesData[pid];
+                        if (!prov || !prov.settlements) continue;
+                        for (let s of prov.settlements) {
+                            if (s.captured) continue;
+                            for (let building of s.buildings) {
+                                if ((building.baseName || building.name) === key) count++;
+                            }
+                        }
+                    }
+                } else if (b.limit.scope === 'province') {
+                    for (let s of (settlement.buildings || [])) {
+                        if ((s.baseName || s.name) === key) count++;
+                    }
+                }
+                if (count >= b.limit.max) continue;
+            }
 
             const disabled = atLimit ? 'disabled' : '';
             const btn = document.createElement('button');

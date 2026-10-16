@@ -24,6 +24,7 @@ const FACTION_RULERS = {
 	county_corvail: "Альбрехт Корвайл",
 	county_luun: "Люциан Мунвар",
 	principality_batavia: "Пьер-Франсуа Люксембург-Оранский",
+	order_ellada: "Элисса",
 };
 
 // ---------- НАЗВАНИЯ РИТОРИК (ИДЕОЛОГИЙ) ----------
@@ -56,7 +57,8 @@ const FACTION_LEADER_LINKS = {
 	county_mensen: "https://vk.ru/page-228463474_55105853",
 	county_corvail: "https://vk.ru/page-228463474_55105970",
 	county_luun: "https://vk.ru/most_wonderful_world",
-	principality_batavia: "https://vk.ru/page-228463474_55106854"
+	principality_batavia: "https://vk.ru/page-228463474_55106854",
+	order_ellada: "https://vk.ru/page-228463474_55107237",
 };
 const FACTION_MAIN_COATS = {
     clan_daketa: "icons/emblem/armoria.png",
@@ -78,6 +80,7 @@ const FACTION_MAIN_COATS = {
 	county_corvail: "icons/emblem/corvail.png",
 	county_luun: "icons/emblem/luun.png",
 	principality_batavia: "icons/emblem/batavia.png",
+	order_ellada: "icons/emblem/order_ellada.png",
 };
 window.FACTION_MAIN_COATS = FACTION_MAIN_COATS;
 // ---------- РЕСУРСЫ (для торговли и построек) ----------
@@ -192,6 +195,8 @@ const VASSAL_ICONS = {
 	"house_malatecta": { coat: "icons/emblem/house_malatecta.png", portrait: "icons/default_portrait.png" },
 	"house_brabant": { coat: "icons/emblem/house_brabant.png", portrait: "icons/default_portrait.png" },
 	"house_flandre": { coat: "icons/emblem/house_flandre.png", portrait: "icons/default_portrait.png" },
+	"house_sperado": { coat: "icons/emblem/house_sperado.png", portrait: "icons/default_portrait.png" },
+	"house_castello": { coat: "icons/emblem/house_castello.png", portrait: "icons/default_portrait.png" },
 };
 
 // ---------- МАППИНГ ПОВЫШЕНИЯ РАНГА ----------
@@ -298,8 +303,12 @@ const INITIAL_VASSALS = {
 	principality_batavia: [
 		{ id: "house_malatecta", name: "Род Малатеста", type: "MINOR_CLAN", politicalFaction: "LOYALISTS", leader: "Граф Малатест", baseLoyalty: 70 },
 		{ id: "house_brabant", name: "Дом Брабант", type: "NOBLE_HOUSE", politicalFaction: "NOBILITY", leader: "Граф Брабантский", baseLoyalty: 55 },
-		{ id: "house_flandre", name: "Дом Арденн", type: "NOBLE_HOUSE", politicalFaction: "NOBILITY", leader: "Граф Арденнский", baseLoyalty: 30 }
+		{ id: "house_flandre", name: "Дом Арденн", type: "NOBLE_HOUSE", politicalFaction: "NOBILITY", leader: "Граф Арденнский", baseLoyalty: 30 },
 	],
+    order_ellada: [
+        { id: "house_sperado", name: "Род Сперадо", type: "MINOR_CLAN", politicalFaction: "NOBILITY", leader: "Лорд Сперадо", baseLoyalty: 50 },
+		{ id: "house_castello", name: "Род Кастелло", type: "MINOR_CLAN", politicalFaction: "LOYALISTS", leader: "Лорд Кастелло", baseLoyalty: 70 }
+    ],
 };
 
 const POLITICAL_PARTIES = {
