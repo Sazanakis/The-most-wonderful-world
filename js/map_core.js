@@ -7,7 +7,7 @@
 // ими через карту. Оккупация на карте теперь добавляет поселение в список
 // оккупированных земель фракции-оккупанта и снимает пометку у владельца.
 // ============================================================================
-// Дата загрузки на гитхаб 05.10.26
+// Дата загрузки на гитхаб 16.10.2026
 // ============================================================================
 // РАЗДЕЛ 1: ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ
 // ============================================================================
@@ -206,6 +206,8 @@ function getFactionData(factionId) {
 		'county_mensen': 'mensen',
 		'principality_batavia': 'batavia',
 		'order_ellada': 'ellada',
+		'udel_gvidon': 'gvidon',
+		'udel_holmgard': 'holmgard',
     };
     const suffix = suffixMap[factionId];
     if (suffix === undefined) return null;
@@ -238,6 +240,8 @@ function saveFactionData(factionId, data) {
 		'county_mensen': 'mensen',
 		'principality_batavia': 'batavia',
 		'order_ellada': 'ellada',
+		'udel_gvidon': 'gvidon',
+		'udel_holmgard': 'holmgard',
     };
     const suffix = suffixMap[factionId];
     if (suffix === undefined) return false;
@@ -411,7 +415,7 @@ function updateSettlementInStorage(settlementId, newData) {
             'county_takania': 'takania', 'county_skollfang': 'moonmane',
             'order_varsiltaers': 'varsiltaers', 'principality_lorein': 'lorein',
 			'county_mensen': 'mensen', 'principality_batavia': 'batavia',
-			'order_ellada': 'ellada',
+			'order_ellada': 'ellada', 'udel_gvidon': 'gvidon', 'udel_holmgard': 'holmgard',
         };
         const suffix = suffixMap[currentData.ownerFaction];
         if (suffix !== undefined) {
@@ -1043,7 +1047,7 @@ function loadAllFactionsProvinceData() {
         'takania': 'county_takania', 'skollfang': 'county_skollfang',
         'varsiltaers': 'order_varsiltaers', 'lorein': 'principality_lorein',
         'mensen': 'county_mensen', 'principality_batavia': 'batavia',
-		'order_ellada': 'ellada',
+		'order_ellada': 'ellada', 'udel_gvidon': 'gvidon', 'udel_holmgard': 'holmgard',
     };
 
     // 2. Проходим по всем ключам и собираем данные — КАК В ОРИГИНАЛЕ

@@ -6,7 +6,7 @@
 // Карта читает состояние на САМУЮ СВЕЖУЮ дату в журналах.
 // ============================================================================
 // ============================================================================
-// war_registry.js v2.0 — мод выложен на гитхаб 05.10.26
+// war_registry.js v2.0 — мод выложен на гитхаб 16.10.2026
 // ============================================================================
 
 // ---------- АВТО-МИГРАЦИЯ ----------
@@ -38,7 +38,8 @@ const FACTION_STORAGE_SUFFIX = {
     'order_varsiltaers': 'varsiltaers', 'principality_lorein': 'lorein',
     'county_mensen': 'mensen', 'regency_council': 'regency',
     'lepus_union': 'lepus', 'county_luun': 'luun', 'county_corvail': 'corvail',
-	'principality_batavia': 'batavia', 'order_ellada': 'ellada',
+	'principality_batavia': 'batavia', 'order_ellada': 'ellada', 'udel_gvidon': 'gvidon',
+	'udel_holmgard': 'holmgard',
 };
 
 function factionHasStorage(fid) { return fid in FACTION_STORAGE_SUFFIX; }

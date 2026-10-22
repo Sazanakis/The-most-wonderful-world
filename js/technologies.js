@@ -82,7 +82,16 @@ if (typeof window.TECH_DB === 'undefined' || Object.keys(window.TECH_DB).length 
             effects: { garrisonDefenseBonus: 2 },
             exportable: false,
             _startCost: { stone: 100, iron: 20, ers: 25000 }
-        }
+        },
+        "united_gvinodon": {
+            id: "united_gvinodon",
+            name: "Единый Гвинодон",
+            category: "unique",
+            faction: ["udel_gvidon", "udel_holmgard", "faction_gvidon_3"],
+            description: "Общие узы объединяют земли Гвинодона, позволяя эффективнее собирать налоги со всех трёх уделов.",
+            points: 150,
+            effects: { taxBonus: 5 }
+        },
     };
     console.log('🛠️ TECH_DB инициализирован');
 }
@@ -464,7 +473,13 @@ function renderAvailableTechs() {
         if (!tech) continue; // защита от undefined
         if (researchData.completedTechs.includes(techId)) continue;
         if (researchData.techQueue.some(q => q.techId === techId)) continue;
-        if (tech.faction && tech.faction !== 'all' && tech.faction !== window.currentFaction) continue;
+        if (tech.faction) {
+			if (Array.isArray(tech.faction)) {
+				if (!tech.faction.includes(window.currentFaction)) continue;
+			} else if (tech.faction !== 'all' && tech.faction !== window.currentFaction) {
+				continue;
+			}
+		}
 
         if (techId === 'meyan_fortification' && window.currentFaction === 'county_meyan') {
             continue;
@@ -863,7 +878,13 @@ function openAssignTechModal(slot) {
         if (tech.category !== slot && slot !== 'unique') continue;
         if (researchData.completedTechs.includes(techId)) continue;
         if (researchData.techQueue.some(q => q.techId === techId)) continue;
-        if (tech.faction && tech.faction !== window.currentFaction) continue;
+        if (tech.faction) {
+			if (Array.isArray(tech.faction)) {
+				if (!tech.faction.includes(window.currentFaction)) continue;
+			} else if (tech.faction !== window.currentFaction) {
+				continue;
+			}
+		}
         if (techId === 'meyan_fortification' && !researchData.completedTechs.includes('meyan_fortification')) continue;
 
         let points = tech.points;

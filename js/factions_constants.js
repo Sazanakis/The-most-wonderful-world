@@ -2,7 +2,7 @@
 // МОДУЛЬ: factions_constants.js
 // Константы для фракций, отсутствующие в карточном constants.js
 // ============================================================================
-// загружено на гитхаб 05.10.26
+// загружено на гитхаб 16.10.2026
 // ---------- ПРАВИТЕЛИ ФРАКЦИЙ ----------
 const FACTION_RULERS = {
     clan_daketa: "Кай Дакэта",
@@ -25,6 +25,8 @@ const FACTION_RULERS = {
 	county_luun: "Люциан Мунвар",
 	principality_batavia: "Пьер-Франсуа Люксембург-Оранский",
 	order_ellada: "Элисса",
+	udel_gvidon: "Кловис Корвур",
+	udel_holmgard: "Кассий Корвур",
 };
 
 // ---------- НАЗВАНИЯ РИТОРИК (ИДЕОЛОГИЙ) ----------
@@ -59,6 +61,8 @@ const FACTION_LEADER_LINKS = {
 	county_luun: "https://vk.ru/most_wonderful_world",
 	principality_batavia: "https://vk.ru/page-228463474_55106854",
 	order_ellada: "https://vk.ru/page-228463474_55107237",
+    udel_gvidon: "https://vk.ru/page-228463474_55107380",
+	udel_holmgard: "https://vk.ru/page-228463474_55107383",
 };
 const FACTION_MAIN_COATS = {
     clan_daketa: "icons/emblem/armoria.png",
@@ -81,6 +85,8 @@ const FACTION_MAIN_COATS = {
 	county_luun: "icons/emblem/luun.png",
 	principality_batavia: "icons/emblem/batavia.png",
 	order_ellada: "icons/emblem/order_ellada.png",
+    udel_gvidon: "icons/emblem/gvidon.png",
+	udel_holmgard: "icons/emblem/holmgard.png",
 };
 window.FACTION_MAIN_COATS = FACTION_MAIN_COATS;
 // ---------- РЕСУРСЫ (для торговли и построек) ----------
@@ -197,6 +203,11 @@ const VASSAL_ICONS = {
 	"house_flandre": { coat: "icons/emblem/house_flandre.png", portrait: "icons/default_portrait.png" },
 	"house_sperado": { coat: "icons/emblem/house_sperado.png", portrait: "icons/default_portrait.png" },
 	"house_castello": { coat: "icons/emblem/house_castello.png", portrait: "icons/default_portrait.png" },
+    "house_drevogon": { coat: "icons/emblem/house_drevogon.png", portrait: "icons/default_portrait.png" },
+    "house_vetariom": { coat: "icons/emblem/house_vetariom.png", portrait: "icons/default_portrait.png" },
+	"house_zheval": { coat: "icons/emblem/house_zheval.png", portrait: "icons/default_portrait.png" },
+	"house_denin":  { coat: "icons/emblem/house_denin.png",  portrait: "icons/default_portrait.png" },
+	"house_velt":   { coat: "icons/emblem/house_velt.png",   portrait: "icons/default_portrait.png" },
 };
 
 // ---------- МАППИНГ ПОВЫШЕНИЯ РАНГА ----------
@@ -309,6 +320,15 @@ const INITIAL_VASSALS = {
         { id: "house_sperado", name: "Род Сперадо", type: "MINOR_CLAN", politicalFaction: "NOBILITY", leader: "Лорд Сперадо", baseLoyalty: 50 },
 		{ id: "house_castello", name: "Род Кастелло", type: "MINOR_CLAN", politicalFaction: "LOYALISTS", leader: "Лорд Кастелло", baseLoyalty: 70 }
     ],
+    udel_gvidon: [
+        { id: "house_drevogon", name: "Баронство Древогон", type: "NOBLE_HOUSE", politicalFaction: "LOYALISTS", leader: "Барон Древогон", baseLoyalty: 70 },
+        { id: "house_vetariom", name: "Баронство Ветариом", type: "NOBLE_HOUSE", politicalFaction: "LOYALISTS", leader: "Барон Ветариом", baseLoyalty: 60 }
+    ],
+	udel_holmgard: [
+		{ id: "house_zheval", name: "Баронство Жевале", type: "NOBLE_HOUSE", politicalFaction: "NOBILITY", leader: "Барон Жевале", baseLoyalty: 60 },
+		{ id: "house_denin",  name: "Баронство Дэнин",  type: "NOBLE_HOUSE", politicalFaction: "NOBILITY", leader: "Барон Дэнин",  baseLoyalty: 60 },
+		{ id: "house_velt",   name: "Народ Вельдов",    type: "MINOR_CLAN", politicalFaction: "LOYALISTS", leader: "Старейшина Вельдов", baseLoyalty: 70 }
+	],
 };
 
 const POLITICAL_PARTIES = {

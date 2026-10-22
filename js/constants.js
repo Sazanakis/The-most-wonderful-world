@@ -4,7 +4,7 @@
 // Данные о фракциях вынесены в 17_constants_factions.js
 // ВЕРСИЯ 2.0 – ПОЛНЫЙ SETTLEMENTS_DB
 // ============================================================================
-// загружено на гитхаб 05.10.26
+// загружено на гитхаб 16.10.2026
 // ========== 1. ВРЕМЯ И ДАТЫ ==========
 const MONTH_NAMES = ["января", "февраля", "марта", "апреля", "мая", "июня", "июля", "августа", "сентября", "октября", "ноября", "декабря"];
 
@@ -14,7 +14,7 @@ const PROVINCE_IDS = [
     "county_ottergrund", "elfheim", "county_meyan", "county_dionia",
     "county_skollfang", "county_takania", "order_varsiltaers",
     "principality_lorein", "county_mensen", "county_corvail", "county_luun", "principality_batavia",
-	"order_ellada",
+	"order_ellada", "udel_gvidon", "udel_holmgard"
 ];
 
 // ========== 3. СОВЕТ: ТИПЫ ВАССАЛОВ ==========
@@ -234,7 +234,9 @@ const PROVINCE_NAMES = {
     ellada: "Эллада",
     corvail: "Корвайл",
     neutral_province_6: "Нейтральная провинция 6",
+    gvidon: "Гвидон",
     batavia: "Батавия",
+	holmgard: "Хольмогоры"
 };
 const FACTION_NAMES = {
     clan_daketa: "Клан Дакэта",
@@ -259,6 +261,8 @@ const FACTION_NAMES = {
     order_ellada: "Орден Эллады",
     principality_batavia: "Княжество Батавия",
     county_corvail: "Графство Корвайл",
+    udel_gvidon: "Удел Гвидон",
+	udel_holmgard: "Удел Хольмгард",
     unknown_feudal_12: "Неизвестный феодал (12)",
 	yurgan_empire: "Империя Юрган",
 	elven_kingdoms: "Эльфийские Царства",
@@ -329,7 +333,14 @@ const VASSAL_HOUSE_NAMES = {
     "house_flandre": "Дом Арденн",
 	// ===== Эллада =====
     "house_sperado": "Дом Сперадо",
-    "house_castello": "Дом Кастелло",	
+    "house_castello": "Дом Кастелло",
+	// ===== Удел Гвидон =====
+    "house_drevogon": "Род Древогон",
+    "house_vetariom": "Род Ветариом",
+	// ===== Удел Хольмгард =====
+	"house_zheval": "Баронство Жевале",
+	"house_denin":  "Баронство Дэнин",
+	"house_velt":   "Народ Вельдов",
 };
 
 // Гербы главных родов фракций (для карты)
@@ -706,28 +717,32 @@ const SETTLEMENTS_DB = {
     "Rudorf": { id: "Rudorf", name: "Рудорф", type: "village", province: "luun", faction: "county_luun", rhetoric: "neutral", px: 2839, py: 1497, icon: "emblem/cergard.png", isVassal: true, vassalHouse: "house_cergard" },
 
     // Провинция №14 (Neutral Province No. 6) - Neutral
+	// Удел Гвидон
+	"Weldheim": { id: "Weldheim", name: "Вельдхейм", type: "castle", province: "gvidon", faction: "udel_gvidon", rhetoric: "neutral", px: 3248, py: 1513, icon: "emblem/gvidon.png", isVassal: false, vassalHouse: null },
+    "Mournfrost": { id: "Mournfrost", name: "Морнфрост", type: "castle", province: "gvidon", faction: "udel_gvidon", rhetoric: "neutral", px: 3058, py: 1510, icon: "emblem/house_vetariom.png", isVassal: true, vassalHouse: "house_vetariom" },
+    "Honam": { id: "Honam", name: "Хонахам", type: "village", province: "gvidon", faction: "udel_gvidon", rhetoric: "neutral", px: 3043, py: 1458, icon: "emblem/gvidon.png", isVassal: false, vassalHouse: null },
+    "Dornfelt": { id: "Dornfelt", name: "Дорнфельт", type: "village", province: "gvidon", faction: "udel_gvidon", rhetoric: "neutral", px: 3174, py: 1457, icon: "emblem/gvidon.png", isVassal: false, vassalHouse: null },
+    "Trouser": { id: "Trouser", name: "Брюк", type: "village", province: "gvidon", faction: "udel_gvidon", rhetoric: "neutral", px: 3307, py: 1480, icon: "emblem/gvidon.png", isVassal: false, vassalHouse: null },
+    "Feld": { id: "Feld", name: "Фельд", type: "village", province: "gvidon", faction: "udel_gvidon", rhetoric: "neutral", px: 3120, py: 1362, icon: "emblem/gvidon.png", isVassal: false, vassalHouse: null },
+    "Derem": { id: "Derem", name: "Дерем", type: "village", province: "gvidon", faction: "udel_gvidon", rhetoric: "neutral", px: 3184, py: 1405, icon: "emblem/house_drevogon.png", isVassal: true, vassalHouse: "house_drevogon" },
+	// Удел Хольмгард
+    "Tmine": { id: "Tmine", name: "Тмине", type: "village", province: "holmgard", faction: "udel_holmgard", rhetoric: "neutral", px: 2958, py: 1430, icon: "emblem/holmgard.png", isVassal: false, vassalHouse: null },
+    "Traktberg": { id: "Traktberg", name: "Трактберг", type: "village", province: "holmgard", faction: "udel_holmgard", rhetoric: "neutral", px: 2922, py: 1362, icon: "emblem/house_denin.png", isVassal: true, vassalHouse: "house_denin" },
+    "Holmgard": { id: "Holmgard", name: "Хольмгард", type: "village", province: "holmgard", faction: "udel_holmgard", rhetoric: "neutral", px: 2957, py: 1327, icon: "emblem/holmgard.png", isVassal: false, vassalHouse: null },
+    "Chernaya_Polesice": { id: "Chernaya_Polesice", name: "Черная Полесице", type: "village", province: "holmgard", faction: "udel_holmgard", rhetoric: "neutral", px: 3027, py: 1251, icon: "emblem/holmgard.png", isVassal: false, vassalHouse: null },
+    "Ulovice": { id: "Ulovice", name: "Уловице", type: "village", province: "holmgard", faction: "udel_holmgard", rhetoric: "neutral", px: 3106, py: 1250, icon: "emblem/house_zheval.png", isVassal: true, vassalHouse: "house_zheval" },
+	
+	
     "neutral_city19": { id: "neutral_city19", name: "Город19", type: "city", province: "neutral_province_6", faction: "unknown_feudal_12", rhetoric: "neutral", px: 3157, py: 1221, icon: "draw.png", isVassal: false, vassalHouse: null },
-    "neutral_castle38": { id: "neutral_castle38", name: "Замок38", type: "castle", province: "neutral_province_6", faction: "unknown_feudal_12", rhetoric: "neutral", px: 3058, py: 1510, icon: "draw.png", isVassal: false, vassalHouse: null },
-    "neutral_castle39": { id: "neutral_castle39", name: "Замок39", type: "castle", province: "neutral_province_6", faction: "unknown_feudal_12", rhetoric: "neutral", px: 3248, py: 1513, icon: "draw.png", isVassal: false, vassalHouse: null },
     "neutral_castle40": { id: "neutral_castle40", name: "Замок40", type: "castle", province: "neutral_province_6", faction: "unknown_feudal_12", rhetoric: "neutral", px: 3418, py: 1550, icon: "draw.png", isVassal: false, vassalHouse: null },
-    "neutral_village175": { id: "neutral_village175", name: "Деревня175", type: "village", province: "neutral_province_6", faction: "unknown_feudal_12", rhetoric: "neutral", px: 2958, py: 1430, icon: "draw.png", isVassal: false, vassalHouse: null },
-    "neutral_village176": { id: "neutral_village176", name: "Деревня176", type: "village", province: "neutral_province_6", faction: "unknown_feudal_12", rhetoric: "neutral", px: 2922, py: 1362, icon: "draw.png", isVassal: false, vassalHouse: null },
-    "neutral_village177": { id: "neutral_village177", name: "Деревня177", type: "village", province: "neutral_province_6", faction: "unknown_feudal_12", rhetoric: "neutral", px: 2957, py: 1327, icon: "draw.png", isVassal: false, vassalHouse: null },
-    "neutral_village178": { id: "neutral_village178", name: "Деревня178", type: "village", province: "neutral_province_6", faction: "unknown_feudal_12", rhetoric: "neutral", px: 3027, py: 1251, icon: "draw.png", isVassal: false, vassalHouse: null },
-    "neutral_village179": { id: "neutral_village179", name: "Деревня179", type: "village", province: "neutral_province_6", faction: "unknown_feudal_12", rhetoric: "neutral", px: 3106, py: 1250, icon: "draw.png", isVassal: false, vassalHouse: null },
     "neutral_village180": { id: "neutral_village180", name: "Деревня180", type: "village", province: "neutral_province_6", faction: "unknown_feudal_12", rhetoric: "neutral", px: 3147, py: 1283, icon: "draw.png", isVassal: false, vassalHouse: null },
     "neutral_village181": { id: "neutral_village181", name: "Деревня181", type: "village", province: "neutral_province_6", faction: "unknown_feudal_12", rhetoric: "neutral", px: 3234, py: 1290, icon: "draw.png", isVassal: false, vassalHouse: null },
     "neutral_village182": { id: "neutral_village182", name: "Деревня182", type: "village", province: "neutral_province_6", faction: "unknown_feudal_12", rhetoric: "neutral", px: 3366, py: 1232, icon: "draw.png", isVassal: false, vassalHouse: null },
     "neutral_village183": { id: "neutral_village183", name: "Деревня183", type: "village", province: "neutral_province_6", faction: "unknown_feudal_12", rhetoric: "neutral", px: 3416, py: 1392, icon: "draw.png", isVassal: false, vassalHouse: null },
     "neutral_village184": { id: "neutral_village184", name: "Деревня184", type: "village", province: "neutral_province_6", faction: "unknown_feudal_12", rhetoric: "neutral", px: 3231, py: 1358, icon: "draw.png", isVassal: false, vassalHouse: null },
-    "neutral_village185": { id: "neutral_village185", name: "Деревня185", type: "village", province: "neutral_province_6", faction: "unknown_feudal_12", rhetoric: "neutral", px: 3184, py: 1405, icon: "draw.png", isVassal: false, vassalHouse: null },
-    "neutral_village186": { id: "neutral_village186", name: "Деревня186", type: "village", province: "neutral_province_6", faction: "unknown_feudal_12", rhetoric: "neutral", px: 3043, py: 1458, icon: "draw.png", isVassal: false, vassalHouse: null },
-    "neutral_village187": { id: "neutral_village187", name: "Деревня187", type: "village", province: "neutral_province_6", faction: "unknown_feudal_12", rhetoric: "neutral", px: 3307, py: 1480, icon: "draw.png", isVassal: false, vassalHouse: null },
     "neutral_village188": { id: "neutral_village188", name: "Деревня188", type: "village", province: "neutral_province_6", faction: "unknown_feudal_12", rhetoric: "neutral", px: 3391, py: 1476, icon: "draw.png", isVassal: false, vassalHouse: null },
     "neutral_village189": { id: "neutral_village189", name: "Деревня189", type: "village", province: "neutral_province_6", faction: "unknown_feudal_12", rhetoric: "neutral", px: 3185, py: 1272, icon: "draw.png", isVassal: false, vassalHouse: null },
     "neutral_village190": { id: "neutral_village190", name: "Деревня190", type: "village", province: "neutral_province_6", faction: "unknown_feudal_12", rhetoric: "neutral", px: 3305, py: 1249, icon: "draw.png", isVassal: false, vassalHouse: null },
-    "neutral_village191": { id: "neutral_village191", name: "Деревня191", type: "village", province: "neutral_province_6", faction: "unknown_feudal_12", rhetoric: "neutral", px: 3120, py: 1362, icon: "draw.png", isVassal: false, vassalHouse: null },
-    "neutral_village192": { id: "neutral_village192", name: "Деревня192", type: "village", province: "neutral_province_6", faction: "unknown_feudal_12", rhetoric: "neutral", px: 3174, py: 1457, icon: "draw.png", isVassal: false, vassalHouse: null },
 
     // Провинция Лорейн
     "Lormarkt": { id: "Lormarkt", name: "Лормаркт", type: "city", province: "lorein", faction: "principality_lorein", rhetoric: "neutral", px: 3205, py: 1858, icon: "emblem/house_De_Rosa.png", isVassal: true, vassalHouse: "house_De_Rosa" },
@@ -764,7 +779,7 @@ const SETTLEMENTS_DB = {
     "Mulengrund": { id: "Mulengrund", name: "Розенхайм", type: "village", province: "ottergrund", faction: "county_ottergrund", rhetoric: "proyurgan", px: 3565, py: 1270, icon: "emblem/house_drachenfels.png", isVassal: true, vassalHouse: "house_drachenfels" },
     "Hinterbach": { id: "Hinterbach", name: "Вайсенбах", type: "village", province: "ottergrund", faction: "county_ottergrund", rhetoric: "proyurgan", px: 3636, py: 1245, icon: "emblem/house_levenwolf.png", isVassal: true, vassalHouse: "house_levenwolf" },
 
-    // ========== ПРОВИНЦИЯ Ьатавия ==========
+    // ========== ПРОВИНЦИЯ Батавия ==========
     "Nue_Hafe": { id: "Nue_Hafe", name: "Нюэ-Хафэ", type: "city", province: "batavia", faction: "principality_batavia", rhetoric: "proyurgan", px: 2871, py: 1055, icon: "emblem/batavia.png", isVassal: false, vassalHouse: null },
     "Antwerp": { id: "Antwerp", name: "Антверпен", type: "castle", province: "batavia", faction: "principality_batavia", rhetoric: "proyurgan", px: 2880, py: 1174, icon: "emblem/house_malatecta.png", isVassal: true, vassalHouse: "house_malatecta" },
     "Luxembourg": { id: "Luxembourg", name: "Люксембург", type: "village", province: "batavia", faction: "principality_batavia", rhetoric: "proyurgan", px: 2762, py: 1214, icon: "emblem/batavia.png", isVassal: false, vassalHouse: null },
