@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Каэль — Досье</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Nunito:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/character-card.css">
+</head>
+
+<body data-hero-id="kael">
+
+<div class="dossier-sheet">
+
+  <div class="save-indicator" id="saveIndicator">Сохранено</div>
+
+  <!-- ===== ЛЕВАЯ ПАНЕЛЬ: ПОРТРЕТ ===== -->
+  <div class="portrait-side">
+    <img src="../images/heroes/kael/main.png" alt="Каэль" onerror="this.style.opacity='0.15'">
+    <div class="side-star">✦</div>
+    <div class="side-quote" contenteditable="true" data-field="sideQuote">Огонь не прощает того, кто его зажёг.</div>
+    <div class="side-caption">
+      <b contenteditable="true" data-field="charName">Каэль</b>
+      <span contenteditable="true" data-field="charSubtitle">Многоликий · изгнанник</span>
+      <i contenteditable="true" data-field="charMotto">«Пепел и пламя. Ничего лишнего.»</i>
+    </div>
+  </div>
+
+  <div class="gold-bar"></div>
+
+  <!-- ===== ОСНОВНАЯ ОБЛАСТЬ ===== -->
+  <div class="main-content">
+
+    <!-- ВЕРХНЯЯ СТРОКА -->
+    <div class="top-bar">
+      <div class="top-bar-left">
+        <div class="top-emblem">⚔</div>
+        <div class="top-title-block">
+          <b>Досье · Орден Странника</b>
+          <span contenteditable="true" data-field="topQuote">«Он говорил мало — и каждое слово стоило дороже золота.»</span>
+        </div>
+      </div>
+
+      <!-- МУЗЫКАЛЬНЫЙ ПЛЕЕР -->
+      <div class="music-widget" id="musicWidget">
+        <button class="music-btn" id="musicPrevBtn" title="Предыдущий трек">⏮</button>
+        <button class="music-btn" id="musicPlayBtn" title="Играть / Пауза">▶</button>
+        <button class="music-btn" id="musicNextBtn" title="Следующий трек">⏭</button>
+        <div class="music-track-info">
+          <b>Плейлист</b>
+          <span id="musicTrackName">—</span>
+        </div>
+        <button class="music-btn" id="musicListBtn" title="Список треков">☰</button>
+        <div class="music-track-list" id="musicTrackList"></div>
+      </div>
+
+      <!-- ДЕЙСТВИЯ -->
+      <!-- ДЕЙСТВИЯ -->
+      <div class="top-actions">
+        <!-- Новая кнопка возврата -->
+        <a href="../heroes.html" class="top-action-btn" title="К списку героев" style="text-decoration: none; font-size: 18px;">🔙</a>
+        
+        <button class="top-action-btn" id="saveBtn" title="Сохранить">💾</button>
+        <button class="top-action-btn" id="exportBtn" title="Экспорт JSON">📤</button>
+        <button class="top-action-btn" id="importBtn" title="Импорт JSON">📥</button>
+        <input type="file" id="importFile" accept=".json" style="display:none">
+        <button class="top-action-btn danger" id="resetBtn" title="Сбросить всё">🔄</button>
+      </div>
+    </div>
+
+    <!-- СТРАНИЦЫ -->
+    <div class="pages-area">
+
+      <!-- 01 ОСНОВНОЕ -->
+      <div class="page active" id="page-main">
+        <h1 class="page-title">Основное</h1>
+        <h2 class="page-subtitle">личность · происхождение · первое впечатление</h2>
+
+        <div class="section-hint">Базовые сведения о персонаже. Все поля редактируются кликом. Статусы выбираются из выпадающих списков.</div>
+
+        <div class="dossier-grid">
+          <div class="dossier-signature">
+            <b>Имя</b>
+            <span contenteditable="true" data-field="signName">Каэль</span>
+          </div>
+          <div class="dossier-meta">
+            <div class="dossier-row"><b>Возраст</b><span contenteditable="true" data-field="age">32 года</span></div>
+            <div class="dossier-row"><b>Пол</b><span contenteditable="true" data-field="gender">Мужской</span></div>
+            <div class="dossier-row"><b>Раса</b><span contenteditable="true" data-field="race">Полукровка суари / ифрит</span></div>
+            <div class="dossier-row"><b>Происхождение</b><span contenteditable="true" data-field="origin">Приграничное герцогство</span></div>
+            <div class="dossier-row"><b>Род занятий</b><span contenteditable="true" data-field="occupation">Странник</span></div>
+            <div class="dossier-row"><b>Роль</b><span contenteditable="true" data-field="role">Многоликий (бывш.)</span></div>
+          </div>
+        </div>
+
+        <!-- ===== СОЦИАЛЬНЫЙ СТАТУС (сворачиваемый) ===== -->
+        <div class="collapsible-block" data-block-id="socialStatus">
+          <div class="collapsible-header">
+            <div class="collapsible-header-left">
+              <span class="collapsible-header-icon">👑</span>
+              <span class="collapsible-header-title">Социальный статус</span>
+              <span class="collapsible-header-hint">нажми, чтобы раскрыть</span>
+            </div>
+            <span class="collapsible-toggle">▶</span>
+          </div>
+          <div class="collapsible-body">
+            <div style="display:grid; grid-template-columns:1fr; gap:14px;">
+              <div>
+                <div class="select-row"><label>Происхождение</label><select class="status-select" id="socialOriginSelect"></select></div>
+                <div class="select-row"><label>Действующий статус</label><select class="status-select" id="socialCurrentSelect"></select></div>
+                <div class="select-row"><label>Право наследования</label><select class="status-select" id="socialInheritSelect"></select></div>
+              </div>
+              <div class="bright-text" contenteditable="true" data-field="socialNote">
+                Рождён в знатном роду, но отречён публично. Формально — простолюдин по бумагам, фактически — дворянин по крови и манере держаться. В гильдейских записях проходит как «странник без рода».
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== СТАТУС В ГИЛЬДИИ (сворачиваемый) ===== -->
+        <div class="collapsible-block" data-block-id="guildStatus">
+          <div class="collapsible-header">
+            <div class="collapsible-header-left">
+              <span class="collapsible-header-icon">🛡</span>
+              <span class="collapsible-header-title">Статус в гильдии</span>
+              <span class="collapsible-header-hint">нажми, чтобы раскрыть</span>
+            </div>
+            <span class="collapsible-toggle">▶</span>
+          </div>
+          <div class="collapsible-body">
+            <div class="guild-block" style="margin-bottom:0;">
+              <div class="guild-header">
+                <div>
+                  <b>Гильдия авантюристов</b>
+                  <h4 id="guildRankTitle">—</h4>
+                </div>
+                <select class="status-select" id="guildRankSelect">
+                  <option value="none">— Не состоит —</option>
+                  <option value="copper">🟤 Медный</option>
+                  <option value="iron">⚙ Железный</option>
+                  <option value="steel">⚔ Стальной</option>
+                  <option value="silver">◈ Серебряный</option>
+                  <option value="gold">👑 Золотой</option>
+                </select>
+              </div>
+              <div class="guild-progress" id="guildProgressBlock">
+                <div class="guild-progress-label">
+                  <span>Прогресс до повышения</span>
+                  <span>
+                    <input type="number" id="guildProgressInput" value="2" min="0"> /
+                    <input type="number" id="guildTotalInput" value="5" min="1"> заданий
+                  </span>
+                </div>
+                <div class="guild-progress-bar">
+                  <div class="guild-progress-fill" id="guildProgressFill" style="width:40%;"></div>
+                </div>
+              </div>
+              <b style="display:block;font:700 12px var(--sans);letter-spacing:2.5px;text-transform:uppercase;color:var(--gold-dark);margin-bottom:8px;">Привилегии</b>
+              <ul class="guild-privileges" id="guildPrivileges"></ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="impression-block">
+          <b>Первое впечатление</b>
+          <p contenteditable="true" data-field="impression">Сухая фигура в тёмном плаще. Он не производит впечатления — он его выключает.</p>
+        </div>
+
+        <div class="lore-text">
+          <p contenteditable="true" data-field="lore1"><b>Младший сын небогатого дворянского рода</b>, он с юности тянулся к алхимии — не из тщеславия, а из упрямой веры, что знание поднимает выше крови.</p>
+          <p contenteditable="true" data-field="lore2">После рокового ритуала семья отреклась от него, а герцог изгнал с земель. <i>Фамилия осталась там же, где и всё остальное.</i></p>
+        </div>
+      </div>
+
+      <!-- 02 ХАРАКТЕР -->
+      <div class="page" id="page-persona">
+        <h1 class="page-title">Характер</h1>
+        <h2 class="page-subtitle">Темперамент · воля · привычки</h2>
+
+        <div class="section-hint">Личность: ядро, поведение, внутренние конфликты. Всё редактируется.</div>
+
+        <div class="persona-hero">
+          <video class="hero-video" autoplay muted loop playsinline
+			     poster="../images/heroes/kael/character_poster.jpg">
+		  <source src="../videos/heroes/kael/character.webm" type="video/webm">
+		  </video>
+          <div>
+            <b>Ядро личности</b>
+            <h3 contenteditable="true" data-field="personaCoreTitle">Холодный, собранный, предельно прагматичный</h3>
+            <p contenteditable="true" data-field="personaCoreText">Надменность Каэля — не высокомерие ради высокомерия, а защитная броня. Он экономит слова и не терпит пустой болтовни.</p>
+          </div>
+        </div>
+
+        <div class="persona-row">
+          <div class="persona-text">
+            <b contenteditable="true" data-field="personaOuterLabel">Внешнее поведение</b>
+            <h3 contenteditable="true" data-field="personaOuterTitle">Дистанция как вежливость</h3>
+            <p contenteditable="true" data-field="personaOuterText">Держится ровно, не повышает голоса, не отвечает на провокации. Предпочитает наблюдать со стороны и вмешиваться в последний момент.</p>
+          </div>
+		  <video class="hero-video" autoplay muted loop playsinline
+				 poster="../images/heroes/kael/half_poster.jpg">
+			<source src="../videos/heroes/kael/half.webm" type="video/webm">
+		  </video>
+        </div>
+
+        <div class="persona-row reverse">
+		  <video class="hero-video" autoplay muted loop playsinline
+				 poster="../images/heroes/kael/gaze_poster.jpg">
+			<source src="../videos/heroes/kael/gaze.webm" type="video/webm">
+		  </video>
+          <div class="persona-text">
+            <b contenteditable="true" data-field="personaConflictLabel">Внутренний конфликт</b>
+            <h3 contenteditable="true" data-field="personaConflictTitle">вина, которую он не отдаёт никому</h3>
+            <p contenteditable="true" data-field="personaConflictText">Ритуал забрал у него имя, семью и человеческую природу — и он до сих пор не решил, был ли это провал или единственный честный поступок в жизни.</p>
+          </div>
+        </div>
+
+        <div class="notes-stack">
+          <div class="note-card">
+            <b contenteditable="true" data-field="habitsLabel">Привычки</b>
+            <p contenteditable="true" data-field="habitsText">Каждое утро проверяет и точит меч. Перед важным решением крутит в пальцах медальон. Избегает называть своё настоящее имя.</p>
+          </div>
+          <div class="note-card">
+            <b contenteditable="true" data-field="allowedLabel">Допустимо</b>
+            <p contenteditable="true" data-field="allowedText">Держать дистанцию. Говорить по делу. Платить вперёд. Молчать рядом. Смотреть в глаза — он это ценит.</p>
+          </div>
+          <div class="note-card">
+            <b contenteditable="true" data-field="forbiddenLabel">Недопустимо</b>
+            <p contenteditable="true" data-field="forbiddenText">Трогать медальон без спроса. Называть его полным именем. Обещать что-либо за него. Благодарить слишком долго.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 03 ХАРАКТЕРИСТИКИ -->
+      <div class="page" id="page-stats">
+        <h1 class="page-title">Характеристики</h1>
+        <h2 class="page-subtitle">боевые параметры · мана · удача</h2>
+
+		<div class="section-hint">
+		  Каждая характеристика складывается из снаряжения, навыков, расы и событий.
+		  Значения редактируются — полоски обновляются автоматически. Источник и описание — тоже правятся кликом.
+		</div>
+
+        <div class="stats-grid" id="statsGrid"></div>
+
+        <div class="section-title">Сводка боевого профиля</div>
+        <div class="impression-block" style="border-left-color:var(--gold);">
+          <b>итог</b>
+          <p contenteditable="true" data-field="statsSummary">Ловкий и точный боец с малым запасом маны. Клинок — основное оружие, магия ифритской крови используется редко.</p>
+        </div>
+      </div>
+
+      <!-- 04 ЗАКЛИНАНИЯ -->
+      <div class="page" id="page-spells">
+        <h1 class="page-title">Заклинания</h1>
+        <h2 class="page-subtitle">магия · школы · стоимость</h2>
+
+        <div class="section-hint">Список заклинаний. Клик по иконке — сменить эмодзи. Всё остальное редактируется. Крестик — удалить, внизу — добавить новое из библиотеки или создать своё.</div>
+
+        <div class="spells-list" id="spellsList"></div>
+        <button class="add-spell-btn" id="addSpellBtn">+ Добавить заклинание</button>
+      </div>
+
+      <!-- 05 ИНВЕНТАРЬ -->
+      <div class="page" id="page-inventory">
+        <h1 class="page-title">Инвентарь</h1>
+        <h2 class="page-subtitle">снаряжение · кошелёк · припасы</h2>
+
+        <div class="section-hint">Кошелёк хранит эрсы. 20 слотов инвентаря: клик по пустому — создать предмет (из библиотеки или вручную), по занятому — редактировать.</div>
+
+        <div class="wallet">
+          <div class="wallet-icon">💰</div>
+          <div style="flex:1;">
+            <span class="wallet-label">Эрсы</span>
+            <input type="number" class="wallet-input" id="walletInput" value="45000" min="0">
+          </div>
+        </div>
+
+        <div class="section-title">Снаряжение</div>
+
+        <!-- Фильтры -->
+        <div class="inventory-filters" id="inventoryFilters">
+          <button class="inv-filter-btn active" data-filter="all">📦 Все <span class="count">0</span></button>
+          <button class="inv-filter-btn" data-filter="weapon">⚔ Оружие <span class="count">0</span></button>
+          <button class="inv-filter-btn" data-filter="armor">🛡 Одежда <span class="count">0</span></button>
+          <button class="inv-filter-btn" data-filter="item">🎒 Предметы <span class="count">0</span></button>
+        </div>
+
+        <div class="inventory-grid" id="inventoryGrid"></div>
+
+        <div class="section-title">Описания</div>
+        <div class="notes-stack" id="inventoryNotes"></div>
+      </div>
+
+      <!-- 06 ВНЕШНОСТЬ (ЗАГЛУШКА) -->
+      <div class="page" id="page-appearance" data-stub="true">
+        <div class="stub-page-content">
+          <div class="stub-page-icon">🔧</div>
+          <h2>Раздел в разработке</h2>
+          <p>Мы уже работаем над этим разделом. Скоро здесь появится описание внешности, палитра и moodboard.</p>
+        </div>
+      </div>
+
+      <!-- 07 СВЯЗИ (ЗАГЛУШКА) -->
+      <div class="page" id="page-relations" data-stub="true">
+        <div class="stub-page-content">
+          <div class="stub-page-icon">🔧</div>
+          <h2>Раздел в разработке</h2>
+          <p>Мы уже работаем над этим разделом. Скоро здесь появится связная карта персонажа: род, спутники, враги.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ===== ПРАВАЯ НАВИГАЦИЯ ===== -->
+  <nav class="side-nav">
+    <button class="side-nav-btn active" data-page="main">
+      <span class="snb-num">01</span><span class="snb-icon">📜</span><span class="snb-label">Основное</span>
+    </button>
+    <button class="side-nav-btn" data-page="persona">
+      <span class="snb-num">02</span><span class="snb-icon">🎭</span><span class="snb-label">Характер</span>
+    </button>
+    <button class="side-nav-btn" data-page="stats">
+      <span class="snb-num">03</span><span class="snb-icon">⚔</span><span class="snb-label">Характеристики</span>
+    </button>
+    <button class="side-nav-btn" data-page="spells">
+      <span class="snb-num">04</span><span class="snb-icon">✨</span><span class="snb-label">Заклинания</span>
+    </button>
+    <button class="side-nav-btn" data-page="inventory">
+      <span class="snb-num">05</span><span class="snb-icon">🎒</span><span class="snb-label">Инвентарь</span>
+    </button>
+    <button class="side-nav-btn" data-page="appearance" data-stub-page="Внешность">
+      <span class="snb-num">06</span><span class="snb-icon">👁</span><span class="snb-label">Внешность</span>
+    </button>
+    <button class="side-nav-btn" data-page="relations" data-stub-page="Связи">
+      <span class="snb-num">07</span><span class="snb-icon">⚜</span><span class="snb-label">Связи</span>
+    </button>
+  </nav>
+</div>
+
+<!-- ===== МОДАЛКА РЕДАКТИРОВАНИЯ ===== -->
+<div class="edit-modal" id="editModal">
+  <div class="edit-modal-box">
+    <h3 id="editModalTitle">Редактирование</h3>
+    <div id="editModalFields"></div>
+    <div class="edit-actions">
+      <button class="edit-btn cancel" id="editCancelBtn">Отмена</button>
+      <button class="edit-btn danger" id="editDeleteBtn" style="display:none;">Удалить</button>
+      <button class="edit-btn primary" id="editSaveBtn">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== МОДАЛКА ЗАГЛУШКИ ===== -->
+<div class="stub-modal" id="stubModal">
+  <div class="stub-modal-box">
+    <button class="stub-modal-close" id="stubCloseBtn">✖</button>
+    <div class="stub-modal-icon">🔧</div>
+    <h3>Раздел в разработке</h3>
+    <p>Раздел <strong id="stubSectionName">—</strong> появится в ближайших обновлениях. Мы уже работаем над ним.</p>
+    <button class="edit-btn primary" id="stubOkBtn">Понятно</button>
+  </div>
+</div>
+
+<audio id="musicAudio" crossorigin="anonymous"></audio>
+
+<!-- ===== СКРИПТЫ ===== -->
+<script src="../js/heroes/items.js"></script>
+<script src="../js/heroes/spells.js"></script>
+<script src="../js/heroes/storage.js"></script>
+<script src="../js/heroes/render.js"></script>
+<script src="../js/heroes/core.js"></script>
+</body>
+</html>
