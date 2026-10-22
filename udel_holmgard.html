@@ -687,7 +687,7 @@
                 // Создаём вручную из SETTLEMENTS_DB
                 let settlements = [];
                 if (typeof SETTLEMENTS_DB !== 'undefined') {
-                    const holmgardIds = ["Holmgard", "Zeval", "Denin", "Veltgard", "Malograd"];
+                    const holmgardIds = ["Holmgard", "Tmine", "Traktberg", "Chernaya_Polesice", "Ulovice"];
                     for (let id of holmgardIds) {
                         const s = SETTLEMENTS_DB[id];
                         if (s) {
@@ -743,7 +743,7 @@
         const province = window.provincesData['holmgard'];
         if (province && (!province.races || province.races.length === 0)) {
             province.races = [
-                { name: "Вульфины", adultMale: 3050, adultFemale: 3650, children: 1250, elders: 400, birthRate: 1.5, deathRate: 1.5 },
+                { name: "Вульфины", adultMale: 3950, adultFemale: 3650, children: 1250, elders: 400, birthRate: 1.5, deathRate: 1.5 },
 				{ name: "Люди", adultMale: 4550, adultFemale: 4550, children: 1350, elders: 500, birthRate: 2.0, deathRate: 1.0 },
                 { name: "Тайро", adultMale: 1680, adultFemale: 1680, children: 500, elders: 100, birthRate: 2.0, deathRate: 1.0 },
                 { name: "Гоблины", adultMale: 1120, adultFemale: 1120, children: 400, elders: 100, birthRate: 4.0, deathRate: 2.5 },
