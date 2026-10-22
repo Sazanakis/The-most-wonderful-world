@@ -1,0 +1,190 @@
+/* ============================================================
+   СТРАНИЦА СПИСКА ГЕРОЕВ
+   ============================================================ */
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    background: #1a1410;
+    background-image:
+        radial-gradient(ellipse at 30% 40%, #2a1e18 0%, #0f0b08 90%),
+        repeating-linear-gradient(45deg, rgba(60, 40, 30, 0.1) 0px, rgba(60, 40, 30, 0.1) 2px, transparent 2px, transparent 6px);
+    min-height: 100vh;
+    font-family: 'Noto Serif JP', 'Cinzel', serif;
+    color: #d4c9b8;
+    position: relative;
+    padding-bottom: 50px;
+}
+
+/* Шумовая текстура */
+body::after {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    pointer-events: none;
+    background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><filter id="noise"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="4" stitchTiles="stitch"/><feColorMatrix type="matrix" values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 0.08 0"/></filter><rect width="200" height="200" filter="url(%23noise)" opacity="0.5"/></svg>');
+    opacity: 0.3;
+    mix-blend-mode: multiply;
+    z-index: 0;
+}
+
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 40px 20px;
+    position: relative;
+    z-index: 1;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 40px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid rgba(160, 120, 80, 0.3);
+}
+
+.header h1 {
+    font-family: 'Cinzel', serif;
+    font-size: 2.5rem;
+    color: #f0e3c8;
+    text-shadow: 0 0 20px rgba(180, 140, 80, 0.2), 0 2px 4px rgba(0,0,0,0.8);
+    letter-spacing: 0.1em;
+}
+
+.back-btn {
+    background: rgba(18, 14, 12, 0.8);
+    border: 2px solid rgba(160, 120, 80, 0.4);
+    color: #d4c9b8;
+    padding: 10px 24px;
+    font-family: 'Cinzel', serif;
+    font-weight: 700;
+    text-decoration: none;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    transition: all 0.25s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+}
+.back-btn:hover {
+    background: rgba(160, 120, 80, 0.15);
+    border-color: #d4af37;
+    color: #f0e3c8;
+    box-shadow: 0 0 25px rgba(180, 140, 80, 0.2);
+}
+
+/* Сетка карточек */
+.heroes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 30px;
+}
+
+/* Карточка персонажа */
+.hero-card {
+    background: rgba(18, 14, 12, 0.85);
+    border: 2px solid rgba(160, 120, 80, 0.3);
+    border-radius: 8px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+.hero-card:hover {
+    transform: translateY(-8px);
+    border-color: #d4af37;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.8), 0 0 30px rgba(180, 140, 80, 0.15);
+}
+
+.hero-image-wrapper {
+    width: 100%;
+    height: 350px;
+    overflow: hidden;
+    position: relative;
+    background: #0d0a08;
+}
+
+.hero-image-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: top;
+    transition: transform 0.6s ease;
+    filter: brightness(0.85) contrast(1.1);
+}
+
+.hero-card:hover .hero-image-wrapper img {
+    transform: scale(1.05);
+    filter: brightness(1) contrast(1.1);
+}
+
+/* Градиент снизу картинки */
+.hero-image-wrapper::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 50%;
+    background: linear-gradient(to top, rgba(18, 14, 12, 1), transparent);
+    pointer-events: none;
+}
+
+.hero-info {
+    padding: 20px;
+    background: rgba(18, 14, 12, 0.95);
+    border-top: 1px solid rgba(160, 120, 80, 0.2);
+    z-index: 2;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+}
+
+.hero-name {
+    font-family: 'Cinzel', serif;
+    font-size: 1.5rem;
+    color: #ffd966;
+    margin-bottom: 12px;
+    text-shadow: 0 0 10px rgba(255, 217, 102, 0.3);
+    letter-spacing: 0.05em;
+}
+
+.hero-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 0.9rem;
+    color: #b8a88a;
+}
+
+.hero-meta span {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.hero-meta strong {
+    color: #d4c9b8;
+    font-weight: normal;
+}
+
+.hero-status-loc {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px dashed rgba(160, 120, 80, 0.2);
+    color: #8bc34a;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* Адаптив */
+@media (max-width: 600px) {
+    .header h1 { font-size: 1.8rem; }
+    .heroes-grid { grid-template-columns: 1fr; }
+    .hero-image-wrapper { height: 400px; }
+}
