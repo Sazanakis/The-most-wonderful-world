@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Герои мира – Самый дивный мир</title>
+    <!-- Шрифты -->
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Noto+Serif+JP:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Твой новый CSS -->
+    <link rel="stylesheet" href="css/heroes-list.css">
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>🛡️ Герои мира</h1>
+        <a href="index.html" class="back-btn">🏠 В Меню</a>
+    </div>
+
+    <div class="heroes-grid">
+        
+        <!-- КАРТОЧКА КАЭЛЯ -->
+        <a href="Heroes/kael.html" class="hero-card">
+            <div class="hero-image-wrapper">
+                <img src="images/heroes/kael/main.png" alt="Каэль" onerror="this.src='images/default_portrait.png'; this.style.opacity='0.5'">
+            </div>
+            <div class="hero-info">
+                <div class="hero-name">Каэль</div>
+                <div class="hero-meta">
+                    <span>🧬 <strong>Полукровка суари / ифрит</strong></span>
+                    <span>⏳ <strong>32 года</strong></span>
+                </div>
+                <div class="hero-status-loc">
+                    📍 <span>Мидзугаки</span>
+                </div>
+            </div>
+        </a>
+
+        <!-- Заглушка -->
+        <div class="hero-card" style="opacity: 0.5; cursor: not-allowed; border-style: dashed;">
+            <div class="hero-image-wrapper" style="display:flex; align-items:center; justify-content:center; background:#1a1410;">
+                <span style="font-size: 4rem; color: #3a2a1c;">❓</span>
+            </div>
+            <div class="hero-info">
+                <div class="hero-name" style="color: #8a7a5a;">Скоро...</div>
+                <div class="hero-meta">
+                    <span>Новый герой появится здесь</span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+</body>
+</html>
