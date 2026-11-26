@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Лор | Анакия</title>
+    <!-- Подключаем файл стилей из папки css -->
+    <link rel="stylesheet" href="css/lore.css">
+</head>
+<body class="menu-body">
+    <!-- Боковая выезжающая панель -->
+    <div class="side-toolbar" id="sideToolbar">
+        <!-- Кнопка-язычок для сворачивания/разворачивания -->
+        <div class="toolbar-toggle" id="toolbarToggle">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+        </div>
+
+        <div class="toolbar-content">
+            <!-- Главная кнопка МЕНЮ (возврат в игру) -->
+            <a href="../index.html" class="toolbar-btn-main">
+                <div class="btn-main-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="7" height="7"></rect>
+                        <rect x="14" y="3" width="7" height="7"></rect>
+                        <rect x="14" y="14" width="7" height="7"></rect>
+                        <rect x="3" y="14" width="7" height="7"></rect>
+                    </svg>
+                </div>
+                <span class="btn-main-text">МЕНЮ</span>
+            </a>
+
+            <div class="toolbar-divider"></div>
+
+            <!-- Кнопка Карта -->
+            <a href="../map.html" class="toolbar-icon-btn" title="Карта мира">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"></polygon>
+                    <line x1="9" y1="3" x2="9" y2="18"></line>
+                    <line x1="15" y1="6" x2="15" y2="21"></line>
+                </svg>
+            </a>
+            <!-- Кнопка ВКонтакте -->
+            <a href="https://vk.ru/most_wonderful_world" target="_blank" class="toolbar-icon-btn" title="Группа ВКонтакте">
+                <span class="vk-text">ВК</span>
+            </a>
+        </div>
+    </div>
+    <!-- Анимация дыма на фоне -->
+    <!-- Анимация дыма на фоне -->
+    <div class="ag-smoke-block">
+        <!-- ЛЕВАЯ СТОРОНА -->
+        <div class="ag-smoke ag-smoke-left-1"><img src="https://raw.githubusercontent.com/SochavaAG/example-mycode/master/pens/animation-smoke-img/images/smoke-1.png" alt=""></div>
+        <div class="ag-smoke ag-smoke-left-1 ag-smoke__delay-1"><img src="https://raw.githubusercontent.com/SochavaAG/example-mycode/master/pens/animation-smoke-img/images/smoke-1.png" alt=""></div>
+        <div class="ag-smoke ag-smoke-left-1 ag-smoke__delay-2"><img src="https://raw.githubusercontent.com/SochavaAG/example-mycode/master/pens/animation-smoke-img/images/smoke-1.png" alt=""></div>
+
+        <div class="ag-smoke ag-smoke-left-2"><img src="https://raw.githubusercontent.com/SochavaAG/example-mycode/master/pens/animation-smoke-img/images/smoke-2.png" alt=""></div>
+        <div class="ag-smoke ag-smoke-left-2 ag-smoke__delay-1"><img src="https://raw.githubusercontent.com/SochavaAG/example-mycode/master/pens/animation-smoke-img/images/smoke-2.png" alt=""></div>
+        <div class="ag-smoke ag-smoke-left-2 ag-smoke__delay-2"><img src="https://raw.githubusercontent.com/SochavaAG/example-mycode/master/pens/animation-smoke-img/images/smoke-2.png" alt=""></div>
+
+        <!-- ПРАВАЯ СТОРОНА -->
+        <div class="ag-smoke ag-smoke-right-1"><img src="https://raw.githubusercontent.com/SochavaAG/example-mycode/master/pens/animation-smoke-img/images/smoke-3.png" alt=""></div>
+        <div class="ag-smoke ag-smoke-right-1 ag-smoke__delay-1"><img src="https://raw.githubusercontent.com/SochavaAG/example-mycode/master/pens/animation-smoke-img/images/smoke-3.png" alt=""></div>
+        <div class="ag-smoke ag-smoke-right-1 ag-smoke__delay-2"><img src="https://raw.githubusercontent.com/SochavaAG/example-mycode/master/pens/animation-smoke-img/images/smoke-3.png" alt=""></div>
+
+        <div class="ag-smoke ag-smoke-right-2"><img src="https://raw.githubusercontent.com/SochavaAG/example-mycode/master/pens/animation-smoke-img/images/smoke-4.png" alt=""></div>
+        <div class="ag-smoke ag-smoke-right-2 ag-smoke__delay-1"><img src="https://raw.githubusercontent.com/SochavaAG/example-mycode/master/pens/animation-smoke-img/images/smoke-4.png" alt=""></div>
+        <div class="ag-smoke ag-smoke-right-2 ag-smoke__delay-2"><img src="https://raw.githubusercontent.com/SochavaAG/example-mycode/master/pens/animation-smoke-img/images/smoke-4.png" alt=""></div>
+    </div>
+
+    <!-- Контейнер главного меню -->
+    <div class="main-menu-container">
+        
+        <!-- Название архива (можно изменить по вкусу) -->
+        <div class="menu-header">
+            <h1>Лор</h1>
+            <p>Энциклопедия мира Анакия</p>
+        </div>
+
+        <!-- Список разделов -->
+        <nav class="main-menu-list">
+            
+            <!-- I. Мифология -->
+            <a href="lore/cosmology.html" class="menu-btn">
+                <div class="menu-numeral">I</div>
+                <div class="menu-text">Мифология, вера и магия</div>
+                <div class="menu-arrow">›</div>
+            </a>
+            <a href="lore/timeline.html" class="menu-btn">
+                <div class="menu-numeral">II</div>
+                <div class="menu-text">Летопись Окутана</div>
+                <div class="menu-arrow">›</div>
+            </a>
+            <!-- II. География -->
+            <a href="lore/geography.html" class="menu-btn">
+                <div class="menu-numeral">III</div>
+                <div class="menu-text">География и Государства</div>
+                <div class="menu-arrow">›</div>
+            </a>
+
+            <!-- III. Расы -->
+            <a href="lore/races.html" class="menu-btn">
+                <div class="menu-numeral">IV</div>
+                <div class="menu-text">Расы и Народы</div>
+                <div class="menu-arrow">›</div>
+            </a>
+
+            <!-- IV. Фракции (Сюда пока привязана Смута) -->
+            <a href="lore/smuta-intro.html" class="menu-btn">
+                <div class="menu-numeral">V</div>
+                <div class="menu-text">Фракции и Политика</div>
+                <div class="menu-arrow">›</div>
+            </a>
+
+            <!-- V. Армии -->
+            <a href="#" class="menu-btn dev-link">
+                <div class="menu-numeral">VI</div>
+                <div class="menu-text">Армии и Юниты</div>
+                <div class="menu-arrow">›</div>
+            </a>
+
+            <!-- VI. Организации -->
+            <a href="#" class="menu-btn dev-link">
+                <div class="menu-numeral">VII</div>
+                <div class="menu-text">Организации и Теневой Мир</div>
+                <div class="menu-arrow">›</div>
+            </a>
+
+            <!-- VII. Приложения (Сюда пока привязана Хронология и Крикс) -->
+            <a href="lore/timeline.html" class="menu-btn">
+                <div class="menu-numeral">VIII</div>
+                <div class="menu-text">Приложения</div>
+                <div class="menu-arrow">›</div>
+            </a>
+        </nav>
+        <!-- Подвал меню -->
+        <div class="menu-footer">
+            <!-- Сменили цифру на IX -->
+            <a href="#" class="menu-btn dev-link">
+                <div class="menu-numeral">IX</div>
+                <div class="menu-text">Механики игры</div>
+                <div class="menu-arrow">›</div>
+            </a>
+        </div>
+    </div>
+
+    <!-- Модальное окно-заглушка -->
+    <div class="dev-modal-overlay" id="devModal">
+        <div class="dev-modal-content">
+            <span class="dev-modal-icon">📜</span>
+            <h2>Свиток еще пишется</h2>
+            <p>Этот раздел архива пока находится в разработке. Летописцы усердно трудятся над его содержимым. Загляните сюда позже!</p>
+            <button class="dev-modal-close" onclick="closeModal()">Понятно</button>
+        </div>
+    </div>
+    <!-- Кнопка прокрутки вниз (ДОЛЖНА БЫТЬ ДО СКРИПТА) -->
+    <div class="scroll-down-wrapper" id="scrollDownBtn" title="Листать вниз">
+        <svg class="scroll-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 12 15 18 9"></polyline>
+        </svg>
+    </div>
+
+    <!-- Скрипт для логики -->
+    <script>
+        // 1. Логика модального окна
+        const modal = document.getElementById('devModal');
+        const devLinks = document.querySelectorAll('.dev-link');
+        
+        devLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                modal.classList.add('active');
+            });
+        });
+
+        function closeModal() {
+            modal.classList.remove('active');
+        }
+
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                closeModal();
+            }
+        });
+
+        // 2. Логика боковой панели
+        const sideToolbar = document.getElementById('sideToolbar');
+        const toolbarToggle = document.getElementById('toolbarToggle');
+
+        if (toolbarToggle) {
+            toolbarToggle.addEventListener('click', () => {
+                sideToolbar.classList.toggle('is-open');
+            });
+        }
+
+        // 3. Логика кнопки прокрутки вниз
+        const scrollDownBtn = document.getElementById('scrollDownBtn');
+
+        if (scrollDownBtn) {
+            // Плавная прокрутка при клике
+            scrollDownBtn.addEventListener('click', () => {
+                window.scrollBy({
+                    top: window.innerHeight * 0.7, // Прокручиваем на 70% высоты экрана
+                    behavior: 'smooth'
+                });
+            });
+
+            // Скрываем кнопку, когда доскроллили до конца
+            window.addEventListener('scroll', () => {
+                if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 100) {
+                    scrollDownBtn.classList.add('hidden');
+                } else {
+                    scrollDownBtn.classList.remove('hidden');
+                }
+            });
+        }
+    </script>
+
+</body>
+</html>
