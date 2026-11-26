@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Завязка игры | Энциклопедия Анакии</title>
+    <link rel="stylesheet" href="../css/lore.css">
+</head>
+<body>
+
+    <div class="lore-layout">
+        
+        <!-- Боковое меню -->
+        <aside class="lore-sidebar">
+            <div class="sidebar-title">📖 Анакия</div>
+            <nav class="lore-nav">
+                <a href="../index.html">🏠 Главная</a>
+                <a href="smuta-intro.html" class="active">⚔️ Завязка игры</a>
+                <a href="cosmology.html">🌌 Космогония</a>
+                <a href="timeline.html">⏳ Хронология</a>
+                <a href="kriks.html">👑 Крикс Хелон</a>
+                <a href="#" class="dev-link">👤 Персонажи</a>
+                <a href="#" class="dev-link">🧬 Расы</a>
+                <a href="#" class="dev-link">🔮 Магия</a>
+            </nav>
+        </aside>
+
+        <!-- Основная область -->
+        <main class="lore-main">
+            
+            <article class="lore-article">
+                <h1>Эпоха Смуты</h1>
+                <div class="lore-subtitle">1598 год. Царь мёртв. Трон пуст.</div>
+
+                <div class="lore-quote" style="font-size: 1.2rem; text-align: center;">
+                    «Царь мёртв. Трон пуст. И каждый, у кого есть меч и амбиции, теперь задаётся одним вопросом: кто сделает первый шаг?»
+                </div>
+
+                <div class="lore-infobox">
+                    <h4>Текущая ситуация</h4>
+                    <ul>
+                        <li><strong>Год</strong> 1598 от Э.С.</li>
+                        <li><strong>Место</strong> Полуостров Окутан</li>
+                        <li><strong>Правитель</strong> Отсутствует (Совет Регентов)</li>
+                        <li><strong>Статус</strong> Официальная междоусобная война</li>
+                    </ul>
+                </div>
+
+                <p>Уже год как не стало Крикса Хелона, последнего царя из династии, основанной великим Максимилианом. Он умер, не оставив наследника, и его смерть разорвала страну на части. Власть взял <strong>Совет Регентов</strong> — 28 представителей от разных рас и сословий. Их задача была простой: избрать нового царя или царицу. Но за год они не смогли договориться ни о чём.</p>
+
+                <div class="lore-divider"></div>
+
+                <h2>Три столпа конфликта</h2>
+                
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <div class="timeline-title">Лоялисты</div>
+                        <div class="timeline-desc">Те, кто хочет сохранить Царство и избрать нового монарха. Их негласный лидер — графиня <strong>Эльза Маркарн</strong> («Чёрная Дева»), теряющая своё влияние из-за нежелания Совета видеть женщину на троне.</div>
+                    </div>
+
+                    <div class="timeline-item">
+                        <div class="timeline-title">Кланы Оку</div>
+                        <div class="timeline-desc">Остатки культурной идентичности местного народа. Их яркий представитель — <strong>Дакэта Кай</strong> («Красный демон»), мечтающий возродить Империю Ортус под властью своего народа и изгнать чужаков.</div>
+                    </div>
+
+                    <div class="timeline-item">
+                        <div class="timeline-title">Проюрганцы</div>
+                        <div class="timeline-desc">Тайные союзники Империи Юрган, чьи лидеры, как княгиня <strong>Лисанна Горски</strong>, уже сделали свой выбор в пользу врага, готовя удар в спину.</div>
+                    </div>
+                </div>
+
+                <div class="lore-divider"></div>
+
+                <h2>Воля Богов</h2>
+                <p>В конце апреля 1598 года последняя мирная встреча лордов в Ярамо обернулась фарсом. Совет Регентов снова не смог выбрать правителя. Тогда на заседание явились «Голоса Богов» — настоятельница Варситэи, проповедник Варсиса и жрица Тэямы.</p>
+                
+                <p>Они отказались выбирать за смертных. Вместо этого они объявили: <em>«Измените положение весов в свою сторону, и только тогда истинный правитель этих земель появится перед нами»</em>. Церковь благословила грядущую войну. Совет Регентов объявил о повторном сборе только через полгода.</p>
+
+                <p>Ярамо больше не имеет высокого значения. Выйдя из зала собраний, каждый лорд осознал, что ни регенты, ни церковь более не знают иного выхода, кроме как проредить число кандидатов. Началась официальная, жестокая и кровавая Смута.</p>
+
+            </article>
+
+        </main>
+    </div>
+
+    <!-- Модальное окно-заглушка -->
+    <div class="dev-modal-overlay" id="devModal">
+        <div class="dev-modal-content">
+            <span class="dev-modal-icon">📜</span>
+            <h2>Свиток еще пишется</h2>
+            <p>Этот раздел энциклопедии пока находится в разработке.</p>
+            <button class="dev-modal-close" onclick="closeModal()">Понятно</button>
+        </div>
+    </div>
+
+    <script>
+        const modal = document.getElementById('devModal');
+        document.querySelectorAll('.dev-link').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                modal.classList.add('active');
+            });
+        });
+        function closeModal() { modal.classList.remove('active'); }
+        modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+    </script>
+</body>
+</html>

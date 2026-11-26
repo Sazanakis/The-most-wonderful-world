@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Расы и Народы | Энциклопедия Анакии</title>
+    <link rel="stylesheet" href="../css/lore.css">
+</head>
+<body>
+
+    <div class="lore-layout">
+        
+        <!-- Боковое меню -->
+        <aside class="lore-sidebar">
+            <div class="sidebar-title">📖 Анакия</div>
+            <nav class="lore-nav">
+                <a href="../index.html">Главная</a>
+                <a href="cosmology.html">Мифология, Вера и Магия</a>
+                <a href="timeline.html">Летопись Окутана</a>
+                <a href="geography.html">География и Государства</a>
+                <a href="races.html" class="active">Расы и Народы</a>
+                <a href="smuta-intro.html">Фракции и Политика</a>
+                <a href="#" class="dev-link">Армии и Юниты</a>
+                <a href="#" class="dev-link">Организации</a>
+                <a href="#" class="dev-link">Приложения</a>
+            </nav>
+        </aside>
+
+        <!-- Основная область -->
+        <main class="lore-main">
+            <article class="lore-article">
+                <h1>Расы и Народы</h1>
+                <div class="lore-subtitle">Бестиарий разумных существ</div>
+
+                <!-- Верхние цитаты -->
+                <div class="lore-quote">
+                    «От гордых Оку, чтущих кодекс чести, до презираемых гоблинов, чья магия вызывает дрожь. От бессмертных эльфов, привязанных к своим Древам, до людей, чья зависть породила вампиров. В Анакии каждый народ хранит свою трагедию.»
+                    <cite>— Из предисловия к «Бестиарию народов», архимаг Теодор Блант</cite>
+                </div>
+
+                <div class="lore-quote" style="margin-top: 10px; border-left: none; text-align: center; font-size: 1.1rem; background: transparent; padding: 0;">
+                    «Каждая раса — это чей-то эксперимент. Каждая трагедия — чья-то шутка. И только смертные продолжают верить, что они — венец творения».
+                </div>
+
+                <div class="lore-divider"></div>
+
+                <!-- СЕТКА РАС -->
+                <div class="race-grid">
+                    
+                    <!-- ПЕРВЫЙ РЯД (4 расы) -->
+                    <a href="../races/race_template.html" class="race-card">
+                        <img src="../assets/images/races/oku.png" alt="Оку" class="race-img">
+                    </a>
+
+                    <a href="../races/race_template.html" class="race-card">
+                        <img src="../assets/images/races/goblins.png" alt="Гоблины" class="race-img">
+                    </a>
+
+                    <a href="../races/race_template.html" class="race-card">
+                        <img src="../assets/images/races/high_elves.png" alt="Высшие эльфы" class="race-img">
+                    </a>
+
+                    <a href="../races/race_ice_elves.html" class="race-card">
+                        <img src="../assets/images/races/ice_elves.png" alt="Ледяные эльфы" class="race-img">
+                    </a>
+
+                    <!-- ВТОРОЙ РЯД (4 пустые заглушки для будущих рас) -->
+                    <a href="#" class="race-card dev-link">
+                        <div class="race-placeholder-img">➕<br>Добавить</div>
+                        <div class="race-name-banner">Раса 5</div>
+                    </a>
+                    
+                    <a href="#" class="race-card dev-link">
+                        <div class="race-placeholder-img">➕<br>Добавить</div>
+                        <div class="race-name-banner">Раса 6</div>
+                    </a>
+
+                    <a href="#" class="race-card dev-link">
+                        <div class="race-placeholder-img">➕<br>Добавить</div>
+                        <div class="race-name-banner">Раса 7</div>
+                    </a>
+
+                    <a href="#" class="race-card dev-link">
+                        <div class="race-placeholder-img">➕<br>Добавить</div>
+                        <div class="race-name-banner">Раса 8</div>
+                    </a>
+
+                </div>
+
+                <div class="lore-divider" style="margin-top: 40px;"></div>
+
+            </article>
+        </main>
+    </div>
+
+    <!-- Модалка -->
+    <div class="dev-modal-overlay" id="devModal">
+        <div class="dev-modal-content">
+            <span class="dev-modal-icon">📜</span>
+            <h2>Свиток еще пишется</h2>
+            <p>Этот раздел энциклопедии пока находится в разработке.</p>
+            <button class="dev-modal-close" onclick="closeModal()">Понятно</button>
+        </div>
+    </div>
+
+    <script>
+        const modal = document.getElementById('devModal');
+        document.querySelectorAll('.dev-link').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                modal.classList.add('active');
+            });
+        });
+        function closeModal() { modal.classList.remove('active'); }
+        modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+    </script>
+</body>
+</html>
