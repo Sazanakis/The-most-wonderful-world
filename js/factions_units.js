@@ -3,7 +3,7 @@
 // База данных юнитов для всех фракций (отдельно от карты)
 // Версия 1.0 – полностью копия старого unitDatabase из 04_databases.js
 // ============================================================================
-// ===== загружено на гитхаб 26.09.26
+// ===== загружено на гитхаб 08.10.26
 const unitDatabase = {
     // ========== ФРАКЦИЯ ДАЁ (ОКУ) ==========
     "Селяне-ополченцы оку": {
@@ -654,7 +654,7 @@ const unitDatabase = {
 		faction: "elfheim",
 		special: "«Страж Древа», «Живая катапульта»",
 		icon: "golem.png",
-		maxCount: 1,            // абсолютный лимит
+		maxCount: 2,            // абсолютный лимит
 		hireTime: 0,
 		isUniqueGuardian: true  // специальный флаг, чтобы не показывать в найме
 	},
@@ -882,6 +882,55 @@ const unitDatabase = {
 		icon: "militia_veterans.png",
 		maxCount: 5,
 		hireTime: 1
+	},
+	"Ночные рейдеры": {
+		name: "Ночные рейдеры",
+		race: "Люди",
+		gender: "male",
+		troopType: "Лёгкая пехота",
+		strengthMelee: 7,
+		strengthRanged: 8,
+		defense: 5,
+		morale: 8,
+		upkeep: 4,
+		hireCost: 750,
+		countPerUnit: 100,
+		description: "Если ты не слышишь их шагов за спиной, значит, они уже перерезали тебе горло.",
+		availableFactions: [],   // ← риторический фильтр не используем
+		faction: [               // ← МАССИВ фракций-владельцев
+			"principality_lorein",
+			"clan_daketa",
+			"county_vogelmark",
+			"county_markarn",
+			"clan_date",
+			"order_ellada"
+		],
+		usesConscription: false, // ← НЕ тянет призывной резерв
+		special: "«Ночные кошмары»",
+		icon: "night_raiders.png",
+		maxCount: 1,
+		hireTime: 0
+	},
+	"Ночные эльфийские рейдеры": {
+		name: "Ночные эльфийские рейдеры",
+		race: "Полукровка (Люди+Высшие эльфы)",
+		gender: "male",
+		troopType: "Лёгкая пехота",
+		strengthMelee: 7,
+		strengthRanged: 8,
+		defense: 5,
+		morale: 8,
+		upkeep: 4,
+		hireCost: 750,
+		countPerUnit: 100,
+		description: "Если ты не слышишь их шагов за спиной, значит, они уже перерезали тебе горло.",
+		availableFactions: [],
+		faction: "elfheim",
+        special: "«Ночные кошмары»",
+        icon: "night_raiders_elf.png",
+        maxCount: 1,
+        hireTime: 0,
+		usesConscription: false,
 	}
 };
 
@@ -900,7 +949,9 @@ window.unitDatabase = unitDatabase;
 window.MERCENARY_UNITS = {
     "Дварфийские легионеры": unitDatabase["Дварфийские легионеры"],
     "Вольные мечи": unitDatabase["Вольные мечи"],
-    "Лидонские охотники": unitDatabase["Лидонские охотники"]
+    "Лидонские охотники": unitDatabase["Лидонские охотники"],
+	"Ночные рейдеры": unitDatabase["Ночные рейдеры"],
+	"Ночные эльфийские рейдеры": unitDatabase["Ночные эльфийские рейдеры"],
 };
 
 // ========== RHETORIC_UNIT_POOLS (добавлено) ==========

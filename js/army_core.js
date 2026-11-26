@@ -123,7 +123,13 @@ function getCurrentRhetoricByFaction() {
     }
     return "neutral";
 }
-
+function _isUnitAvailableToFaction(unit, factionId) {
+    if (!unit.faction) return true;                       // нет ограничения
+    if (Array.isArray(unit.faction)) {
+        return unit.faction.includes(factionId);
+    }
+    return unit.faction === factionId;
+}
 function getUnitsForCurrentFaction() {
     const rhetoric = getCurrentRhetoricByFaction();
     // ИСПОЛЬЗУЕМ ГЛОБАЛЬНУЮ таблицу из factions_units.js
@@ -136,49 +142,40 @@ function getUnitsForCurrentFaction() {
     const units = [];
     const db = window.unitDatabase || {};
 
-    // 1. Юниты из риторического пула
-    for (let unitKey of pool.units) {
-        if (db[unitKey]) {
-            const unit = db[unitKey];
-            // Фильтр по фракции (для уникальных юнитов)
-            if (unit.faction && unit.faction !== window.currentFaction) continue;
-            // Фильтр по availableFactions (если указан)
-            if (Array.isArray(unit.availableFactions) && unit.availableFactions.length > 0) {
-                if (!unit.availableFactions.includes(rhetoric)) continue;
-            }
-            units.push({ key: unitKey, ...unit });
-        } else {
-            console.warn(`⚠️ Юнит "${unitKey}" из пула "${rhetoric}" не найден в unitDatabase`);
-        }
-    }
+	// 1. Юниты из риторического пула
+	for (let unitKey of pool.units) {
+		if (db[unitKey]) {
+			const unit = db[unitKey];
+			if (!_isUnitAvailableToFaction(unit, window.currentFaction)) continue;   // ← было: unit.faction !== window.currentFaction
+			if (Array.isArray(unit.availableFactions) && unit.availableFactions.length > 0) {
+				if (!unit.availableFactions.includes(rhetoric)) continue;
+			}
+			units.push({ key: unitKey, ...unit });
+		}
+	}
 
-    // 2. Наёмники — фильтр по риторике через availableFactions
-    const mercs = window.MERCENARY_UNITS || {};
-    for (let [key, unit] of Object.entries(mercs)) {
-        // Уникальные юниты конкретной фракции (например, Боевые горничные)
-        if (unit.faction && unit.faction !== window.currentFaction) continue;
+	// 2. Наёмники
+	const mercs = window.MERCENARY_UNITS || {};
+	for (let [key, unit] of Object.entries(mercs)) {
+		if (!_isUnitAvailableToFaction(unit, window.currentFaction)) continue;      // ← было: unit.faction !== window.currentFaction
+		if (Array.isArray(unit.availableFactions) && unit.availableFactions.length > 0) {
+			if (!unit.availableFactions.includes(rhetoric)) continue;
+		}
+		if (!units.some(u => u.key === key)) {
+			units.push({ key, ...unit });
+		}
+	}
 
-        // Проверка риторики — если availableFactions указан, юнит доступен только этим риторикам
-        if (Array.isArray(unit.availableFactions) && unit.availableFactions.length > 0) {
-            if (!unit.availableFactions.includes(rhetoric)) continue;
-        }
-
-        // Не дублируем, если юнит уже есть в пуле
-        if (!units.some(u => u.key === key)) {
-            units.push({ key, ...unit });
-        }
-    }
-
-    // 3. Фракционные юниты, не входящие в пулы (игнорируем уникальных стражей)
-    for (let unitKey in db) {
-        const unit = db[unitKey];
-        if (unit.faction && unit.faction === window.currentFaction) {
-            if (unit.isUniqueGuardian) continue;   // големов не показываем
-            if (!units.some(u => u.key === unitKey)) {
-                units.push({ key: unitKey, ...unit });
-            }
-        }
-    }
+	// 3. Фракционные юниты вне пулов
+	for (let unitKey in db) {
+		const unit = db[unitKey];
+		if (_isUnitAvailableToFaction(unit, window.currentFaction) && unit.faction) {  // ← было: unit.faction === window.currentFaction
+			if (unit.isUniqueGuardian) continue;
+			if (!units.some(u => u.key === unitKey)) {
+				units.push({ key: unitKey, ...unit });
+			}
+		}
+	}
 
     // Применяем эффекты построек к характеристикам
     for (let unit of units) {
