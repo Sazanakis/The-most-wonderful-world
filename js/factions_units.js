@@ -170,6 +170,26 @@ const unitDatabase = {
         maxCount: 2,
         hireTime: 4
     },
+    "Рыцари инквизиторы": {
+        name: "Рыцари инквизиторы",
+        race: "Люди",
+        gender: "any",
+        troopType: "Воздушная кавалерия",
+        strength: 18,
+        strengthRanged: 5,
+        defense: 12,
+        morale: 15,
+        upkeep: 140,
+        hireCost: 1200,
+        countPerUnit: 5,
+        description: "Они не ведут бой, они вершат суд",
+        availableFactions: [],
+		faction: "order_ellada",
+        special: "«Небесный гнев»",
+        icon: "knights_inquisitors.png",
+        maxCount: 1,
+        hireTime: 4
+    },
     "Онна-бугэйся": {
         name: "Онна-бугэйся",
         race: "Оку",
@@ -555,6 +575,25 @@ const unitDatabase = {
 		maxCount: null,
 		hireTime: 2
 	},
+	"Резня": {
+		name: "Резня",
+		race: "Гоблины",
+		gender: "female",
+		troopType: "Лёгкая пехота",
+		strengthMelee: 8,
+		defense: 4,
+		morale: 8,
+		upkeep: 5,
+		hireCost: 600,
+		countPerUnit: 60,
+		description: "Древнеэльфийское искусство: бей по суставам, пока враг не упадет",
+		availableFactions: [],   // не используем старую систему
+		faction: "county_vogelmark",  // <-- только для этой фракции
+		special: "«Сокрушители колен»",
+		icon: "massacre.png",
+		maxCount: null,
+		hireTime: 1
+	},
 	// ========== Клан Датэ ==========
 	"Воины Бури Датэ": {
 		name: "Воины Бури Датэ (Араси-но-Хэй)",
@@ -565,7 +604,7 @@ const unitDatabase = {
 		strengthRanged: 0,
 		defense: 10,
 		morale: 11,
-		upkeep: 400,                 // содержание всего отряда в ход
+		upkeep: 8,                 // содержание всего отряда в ход
 		hireCost: 850,               // стоимость найма отряда
 		countPerUnit: 50,            // бойцов в одном отряде
 		description: "Элитные гиганты клана Датэ, сокрушающие вражеский строй двуручными топорами и молотами.",
@@ -574,6 +613,26 @@ const unitDatabase = {
 		special: "«Сокрушающий натиск»",
 		icon: "icons/arashi_no_hei.png",  // замени на свою иконку
 		maxCount: 2,                 // лимит отрядов
+		hireTime: 2
+	},
+	"Судзумэ-кихэй": {
+		name: "Судзумэ-кихэй",
+		race: "Оку",
+		gender: "male",
+		troopType: "Лёгкая кавалерия",
+		strengthMelee: 9,
+		strengthRanged: 8,
+		defense: 6,
+		morale: 8,
+		upkeep: 7.5,                 // содержание всего отряда в ход
+		hireCost: 950,               // стоимость найма отряда
+		countPerUnit: 60,            // бойцов в одном отряде
+		description: "Они не сражаются в строю. Они танцуют вокруг, пока ты не истечешь кровью",
+		availableFactions: [],       // не используется, оставлено для совместимости
+		faction: "clan_date",        // только для Клана Датэ
+		special: "«Танец воробья»",
+		icon: "icons/suzume_kihei.png",  // замени на свою иконку
+		maxCount: 3,                 // лимит отрядов
 		hireTime: 2
 	},
 	// ========== Графство Оттергрунд ==========
@@ -657,6 +716,26 @@ const unitDatabase = {
 		maxCount: 2,            // абсолютный лимит
 		hireTime: 0,
 		isUniqueGuardian: true  // специальный флаг, чтобы не показывать в найме
+	},
+	"Личная неутомимая гвардия": {
+		name: "Личная неутомимая гвардия",
+		race: "Люди",
+		gender: "none",
+		troopType: "Элитная тяжелая пехота",
+		strengthMelee: 14,
+		strengthRanged: 5,
+		defense: 16,
+		morale: 20,
+		upkeep: 0,
+		hireCost: 5000,
+		countPerUnit: 10,
+		description: "У них нет сердца, которое можно пронзить. Только сталь и воля той, что их создала",
+		availableFactions: [],
+		faction: "elfheim",
+		special: "«Пустой доспех»",
+		icon: "indefatigable_guard.png",
+		maxCount: 1,
+		hireTime: 1
 	},
 	// ========== Графство Мейан ==========
 	"Железный ордонанс": {
@@ -804,6 +883,83 @@ const unitDatabase = {
 		icon: "alchemists.png",
 		maxCount: 2,
 		hireTime: 2
+	},
+	"Лесные стражи вельдов": {
+		name: "Лесные стражи вельдов",
+		race: "Вульфины",
+		gender: "any",
+		troopType: "Лёгкая пехота",
+		strengthMelee: 9,
+		strengthRanged: 7,
+		defense: 5,
+		morale: 9,
+		upkeep: 4.5,
+		hireCost: 600,
+		countPerUnit: 100,
+		description: "Вы можете построить крепость, но лес всегда будет принадлежать нам.",
+		availableFactions: [],
+		faction: "udel_holmgard",
+		special: "«Хищники западных лесов»",
+		icon: "guards_veldt.png",
+		maxCount: 4,
+		hireTime: 1
+	},
+	"Бугаи Мастерэно": {
+		name: "Бугаи Мастерэно",
+		race: "Люди",
+		gender: "male",
+		troopType: "Элитная лёгкая пехота",
+		strengthMelee: 14,
+		defense: 5,
+		morale: 10,
+		upkeep: 40,
+		hireCost: 1200,
+		countPerUnit: 20,
+		description: "Они не знают слова «отступать», они знают только слово «ломать»",
+		availableFactions: [],
+		faction: "principality_lorein",
+		special: "«Бугай крушить»",
+		icon: "boogies_masterful.png",
+		maxCount: 2,
+		hireTime: 1
+	},
+	"Вассальные Рыцари Долины Роз": {
+		name: "Вассальные Рыцари Долины Роз",
+		race: "Люди",
+		gender: "male",
+		troopType: "Элитная тяжёлая пехота",
+		strengthMelee: 12,
+		defense: 15,
+		morale: 10,
+		upkeep: 40,
+		hireCost: 1500,
+		countPerUnit: 20,
+		description: "Смерть одного лишь делает строй крепче, ибо на его место встает кровь его",
+		availableFactions: [],
+		faction: "principality_lorein",
+		special: "«Кровь и Роза»",
+		icon: "knights_valley_roses.png",
+		maxCount: 1,
+		hireTime: 2
+	},
+	"Быстроногие": {
+		name: "Быстроногие",
+		race: "Лепусиды (карликовые)",
+		gender: "male",
+		troopType: "Легкая пехота",
+		strengthMelee: 6,
+		defense: 4,
+		morale: 6,
+		upkeep: 5,
+		hireCost: 500,
+		countPerUnit: 60,
+		description: "Один заяц — добыча. Пятьдесят зайцев — стихийное бедствие",
+		availableFactions: [],
+		faction: "principality_lorein",
+		special: "«Малая стая»",
+		icon: "fleet_footed.png",
+		maxCount: null,
+		hireTime: 1
 	},
 	// ========== Общий юнит для Даё и Нейтралов ==========
 	"Асигару вульфины-лучники": {
