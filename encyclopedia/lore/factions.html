@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Фракции и Политика | Энциклопедия Анакии</title>
+    <link rel="stylesheet" href="../css/lore.css">
+</head>
+<body>
+
+    <div class="lore-layout">
+        
+        <!-- Боковое меню (без эмодзи) -->
+        <aside class="lore-sidebar">
+            <div class="sidebar-title">Анакия</div>
+            <nav class="lore-nav">
+                <a href="../index.html">Главная</a>
+                <a href="cosmology.html">Мифология, Вера и Магия</a>
+                <a href="timeline.html">Летопись Окутана</a>
+                <a href="geography.html">География и Государства</a>
+                <a href="races.html">Расы и Народы</a>
+                <a href="factions.html" class="active">Фракции и Политика</a>
+                <a href="#" class="dev-link">Армии и Юниты</a>
+                <a href="#" class="dev-link">Организации</a>
+                <a href="#" class="dev-link">Приложения</a>
+            </nav>
+        </aside>
+
+        <!-- Основная область -->
+        <main class="lore-main">
+            <article class="lore-article">
+                
+                <h1>Фракции и Политика</h1>
+                <div class="lore-subtitle">Эпоха Смуты и раскол Царства</div>
+
+                <!-- Верхняя цитата -->
+                <div class="lore-quote">
+                    «Когда умирает царь, а наследников нет — просыпаются амбиции. Каждый верит, что именно он спасёт Хелон. Или похоронит его.»
+                    <cite>— Из «Хроники смуты в Царстве Хелон», летописец Орденуса, 1652 г. Э.С.</cite>
+                </div>
+
+                <!-- СОДЕРЖАНИЕ -->
+                <div class="toc-container">
+                    <div class="toc-title">Содержание</div>
+                    <ul class="toc-list">
+                        <li><a href="#titles">Титулы Царства Хелон</a></li>
+                        <li><a href="#factions">Политические Фракции</a></li>
+                    </ul>
+                </div>
+
+                <div class="lore-divider"></div>
+
+                <!-- РАЗДЕЛ 1: ТИТУЛЫ -->
+                <h2 id="titles">Титулы Царства Хелон</h2>
+                
+                <p style="text-align: left; margin-bottom: 30px;">Иерархия власти определяет не только права, но и степень риска. Нажмите на любой титул, чтобы узнать его значение и роль.</p>
+
+                <!-- ПИРАМИДА ВЛАСТИ -->
+                <div class="title-pyramid">
+                    
+                    <!-- Уровень 1: Царь -->
+                    <div class="pyramid-level level-1">
+                        <div class="title-node special-node" onclick="openTitleModal(this)" 
+                             data-name="Царь / Царица Хелона" 
+                             data-status="Верховный Титул (вакантен)"
+                             data-desc="Единственный верховный правитель всего Царства. Последним из династии был Крикс Хелон (скончался в 1597 г. Э.С., не оставив наследников). В настоящее время трон пустует.">
+                            Царь / Царица
+                        </div>
+                    </div>
+
+                    <div class="pyramid-connector"></div>
+
+                    <!-- Уровень 2: Совет -->
+                    <div class="pyramid-level level-2">
+                        <div class="title-node special-node" onclick="openTitleModal(this)" 
+                             data-name="Совет Регентов" 
+                             data-status="Временная Верховная Власть"
+                             data-desc="28 представителей разных рас и сословий, взявшие власть после смерти царя Крикса. Их реальная власть ограничена Столичной провинцией и областью Великого Вала. Над остальными провинциями контроль номинальный.">
+                            Совет Регентов
+                        </div>
+                    </div>
+
+                    <div class="pyramid-connector"></div>
+
+                    <!-- Уровень 3: Правители фракций -->
+                    <div class="pyramid-level level-3">
+                        <div class="title-node" onclick="openTitleModal(this)" 
+                             data-name="Князь / Княгиня (Даё)" 
+                             data-role="Высший правитель"
+                             data-desc="Полная автономия, право и вершить высший суд. Князем может назначить только Царь. Пример: Лисанна Горски, Дакэта Кай.">
+                            Князь / Княгиня<br><span>Даё</span>
+                        </div>
+                        <div class="title-node" onclick="openTitleModal(this)" 
+                             data-name="Граф / Графиня (Гун-Даё)" 
+                             data-role="Самостоятельный правитель"
+                             data-desc="Основа военного дворянства. Владеет одной провинцией. Уязвимее князей или даё — их всегда могут попытаться заменить. Пример: Эльза Маркарн.">
+                            Граф / Графиня<br><span>Гун-Даё</span>
+                        </div>
+                    </div>
+
+                    <div class="pyramid-connector"></div>
+
+                    <!-- Уровень 4: Средние вассалы -->
+                    <div class="pyramid-level level-4">
+                        <div class="title-node" onclick="openTitleModal(this)" 
+                             data-name="Виконт / Виконтесса (Кугэ)" 
+                             data-role="Средний вассал"
+                             data-desc="Владеет частью провинции или крупным городом. Потенциальный кандидат на место графа или Гун-Даё.">
+                            Виконт / Виконтесса<br><span>Кугэ</span>
+                        </div>
+                    </div>
+
+                    <div class="pyramid-connector"></div>
+
+                    <!-- Уровень 5: Низшие вассалы -->
+                    <div class="pyramid-level level-5">
+                        <div class="title-node" onclick="openTitleModal(this)" 
+                             data-name="Барон / Баронесса (Хатамото)" 
+                             data-role="Низший вассал"
+                             data-desc="Владеет замком с окрестными деревнями. Редко участвует в большой политике напрямую.">
+                            Барон / Баронесса<br><span>Хатамото</span>
+                        </div>
+                    </div>
+
+                    <div class="pyramid-connector"></div>
+
+                    <!-- Уровень 6: Низшее дворянство -->
+                    <div class="pyramid-level level-6">
+                        <div class="title-node" onclick="openTitleModal(this)" 
+                             data-name="Рыцарь-вассал (Мураи-даи)" 
+                             data-role="Низшее дворянство"
+                             data-desc="Благородный воин, получивший землю за службу. Титул может быть наследным или ненаследным.">
+                            Рыцарь-вассал<br><span>Мураи-даи</span>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- ОСОБЫЕ ТИТУЛЫ ОКУ -->
+                <div class="faction-list" style="margin-top: 40px;">
+                    <div class="faction-box">
+                        <div class="faction-title">Особые Титулы Оку</div>
+                        <div class="faction-body">
+                            <p>Титулы, существующие только в окутанской системе и не имеющие прямых человеческих аналогов. Нажмите на титул, чтобы узнать подробности.</p>
+                            <div class="special-titles-grid">
+                                <div class="title-node small-node" onclick="openTitleModal(this)" 
+                                     data-name="Сёгун" 
+                                     data-role="Даё, правящий другими Даё"
+                                     data-desc="Высший военный титул. Появляется, когда один Даё приносит клятву верности другому.">
+                                    Сёгун
+                                </div>
+                                <div class="title-node small-node" onclick="openTitleModal(this)" 
+                                     data-name="Сюго (Наместник)" 
+                                     data-role="Оку-даё, принявший людские традиции"
+                                     data-desc="Лоялист или нейтрал. Для людей — «граф», для консервативных Оку — «предатель».">
+                                    Сюго (Наместник)
+                                </div>
+                                <div class="title-node small-node" onclick="openTitleModal(this)" 
+                                     data-name="Гамурай (Гайдзин-Мурай)" 
+                                     data-role="Вульфин, получивший статус элитного воина"
+                                     data-desc="Единственные не-оку, удостоенные чести стать Мураями. Служат в основном Нейтралам.">
+                                    Гамурай
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="lore-divider"></div>
+
+                <!-- РАЗДЕЛ 2: ФРАКЦИИ -->
+                <h2 id="factions">Политические Фракции</h2>
+
+                <div class="faction-list">
+
+                    <!-- 1. Совет Регентов -->
+                    <div class="faction-box">
+                        <div class="faction-title">Совет Регентов</div>
+                        <div class="faction-body">
+                            <p>Временное правительство, взявшее власть после смерти последнего царя Крикса Хелона. Состоит из 28 представителей разных рас и сословий.</p>
+                            <p>Реальная власть Совета ограничена <strong>Столичной провинцией</strong> (город Ярамо и окрестности) и <strong>Областью Великого Вала</strong>. Над остальными провинциями контроль чисто номинальный.</p>
+                            <p>Именно Совет сократил гарнизон Ярамо, что привело к росту преступности, и упорно отказывается утверждать <strong>Эльзу Маркарн</strong> кандидатом на трон из-за её пола. Пока Совет хранит видимость легитимности — действует <strong>Договор о Флотском Нейтралитете</strong>, сковывающий флот.</p>
+                            <a href="regency.html" class="faction-readmore">Подробнее о Совете Регентов</a>
+                        </div>
+                    </div>
+
+                    <!-- 2. Лоялисты -->
+                    <div class="faction-box">
+                        <div class="faction-title">Лоялисты <span>(7 провинций)</span></div>
+                        <div class="faction-body">
+                            <p>Те, кто хочет сохранить Царство Хелон единым и избрать нового монарха законным путём. Крупнейшая, но самая раздробленная фракция.</p>
+                            <p>У лоялистов нет единого лидера. Главный кандидат на трон — <strong>графиня Эльза Маркарн</strong>, но часть дворянства не готова присягнуть женщине. Внутри фракции зреет раскол, и достаточно одной искры, чтобы лоялисты начали войну друг с другом.</p>
+                            <p>Лоялисты — это не только люди. Среди них есть пара <strong>Даё-оку</strong>, полностью или частично перенявших людские традиции. Они — мост между двумя культурами.</p>
+                            <a href="county_markarn.html" class="faction-readmore">Подробнее об Графстве Маркарн</a>
+                        </div>
+                    </div>
+
+                    <!-- 3. Автономные Кланы Даё -->
+                    <div class="faction-box">
+                        <div class="faction-title">Автономные Кланы Даё <span>(4 провинции)</span></div>
+                        <div class="faction-body">
+                            <p>Оку, которые после смерти царя поставили вопрос ребром: остаться в составе Хелона или начать войну за независимость? Вопреки ожиданиям, кланы не смогли прийти к единому решению.</p>
+                            <p>Лишь <strong>Даё Дакэта Кай</strong> однозначно выступил за независимость. Он мечтает не просто отделиться, а возродить <strong>Империю Ортус</strong> — единое государство Оку, которого не было со времён до прихода Максимилиана. Остальные три клана колеблются, и Кай пытается переманить их на свою сторону.</p>
+                            <p>Армия Даё — самая разнообразная в тактическом плане.</p>
+                            <a href="clan_daketa.html" class="faction-readmore">Подробнее о Клане Дакэта</a>
+                        </div>
+                    </div>
+
+                    <!-- 4. Проюрганцы -->
+                    <div class="faction-box">
+                        <div class="faction-title">Проюрганцы <span>(3 провинции)</span></div>
+                        <div class="faction-body">
+                            <p>Тайные союзники <strong>Империи Юрган</strong>. Самая малочисленная, но самая опасная фракция.</p>
+                            <p>Лидер — <strong>княгиня Лисанна Горски</strong>. Она не видит для Хелона иного будущего, кроме как под властью Юргана, и приняла предложение имперских послов. Её задача — ударить по <strong>Великому Валу</strong> с тыла, когда Юрган начнёт вторжение.</p>
+                            <p>О предательстве проюрганцев никто не знает. Для внешнего мира Лисанна — патриотка, заботящаяся о судьбе Царства. Её «Праздники Отражений» (балы с переодеванием) — легенда, но мало кто знает, что на них она изучает слабости гостей.</p>
+                            <p>Проюрганцы получают тайную поддержку от Юргана и знают дату вторжения. Их армия пополняется дополнительно добровольцами из Империи Юрган.</p>
+                            <a href="principality_gorski.html" class="faction-readmore">Подробнее о Горском Княжестве</a>
+                        </div>
+                    </div>
+
+                    <!-- 5. Нейтралы -->
+                    <div class="faction-box">
+                        <div class="faction-title">Нейтралы <span>(7 провинций)</span></div>
+                        <div class="faction-body">
+                            <p>Провинциальные дворяне, которые не знают, как поступить, и заботятся только о безопасности своих земель. Они наблюдают и ждут.</p>
+                            <p>Нейтралы — самая нестабильная сила. Они могут как поддержать кандидата от лоялистов, так и объявить о собственной независимости или вовсе присоединиться к проюрганцам. Их планы хаотичны и непостоянны.</p>
+                            <p>Армия нейтралов опирается на наёмников и связи с общинами вульфинов.</p>
+                        </div>
+                    </div>
+
+                    <!-- 6. Союз Лепус -->
+                    <div class="faction-box">
+                        <div class="faction-title">Союз Лепус <span>(внешний союзник)</span></div>
+                        <div class="faction-body">
+                            <p>Единственное независимое государство зверолюдей известное на данный момент. Военный союзник Хелона.</p>
+                            <p>Союз скован по рукам и ногам: с севера нападают <strong>ледяные эльфы</strong>, с юга, на горизонте, всё чаще замечают <strong>юрганские корабли и легионы</strong>. Армия лепусидов малоактивна до начала открытого вторжения.</p>
+                            <p>Союз может тайно помогать лоялистам, отправляя наёмников и разведчиков в Хелон. Есть и радикальный вариант — вторгнуться на земли Хелона для создания буферной зоны, но Совет Старейшин Лепуса блокирует это решение.</p>
+                            <a href="lepus_union.html" class="faction-readmore">Подробнее о Союзе Лепус</a>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="lore-divider"></div>
+
+                <!-- Нижняя цитата -->
+                <div class="lore-quote" style="text-align: center; font-size: 1.1rem; background: rgba(30, 24, 18, 0.9); border-left: none; border-top: 1px solid rgba(184, 124, 79, 0.3); border-bottom: 1px solid rgba(184, 124, 79, 0.3);">
+                    «В Смуте нет правых. Есть только те, кто выживет, и те, кого забудут».
+                </div>
+
+            </article>
+        </main>
+    </div>
+
+    <!-- Модальное окно титулов -->
+    <div class="title-modal-overlay" id="titleModal">
+        <div class="title-modal-content">
+            <h2 id="modalTitleName">Название титула</h2>
+            <div class="title-modal-role" id="modalTitleRole">Роль</div>
+            <p id="modalTitleDesc">Описание титула...</p>
+            <button class="title-modal-close" onclick="closeTitleModal()">Закрыть</button>
+        </div>
+    </div>
+
+    <!-- Модалка заглушка -->
+    <div class="dev-modal-overlay" id="devModal">
+        <div class="dev-modal-content">
+            <span class="dev-modal-icon">📜</span>
+            <h2>Свиток еще пишется</h2>
+            <p>Этот раздел энциклопедии пока находится в разработке.</p>
+            <button class="dev-modal-close" onclick="closeModal()">Понятно</button>
+        </div>
+    </div>
+
+    <script>
+        // Логика заглушки
+        const modal = document.getElementById('devModal');
+        document.querySelectorAll('.dev-link').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                modal.classList.add('active');
+            });
+        });
+        function closeModal() { modal.classList.remove('active'); }
+        modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+
+        // Логика модального окна титулов
+        const titleModal = document.getElementById('titleModal');
+        
+        function openTitleModal(element) {
+            const name = element.getAttribute('data-name');
+            const role = element.getAttribute('data-role') || element.getAttribute('data-status') || 'Титул';
+            const desc = element.getAttribute('data-desc');
+
+            document.getElementById('modalTitleName').innerText = name;
+            document.getElementById('modalTitleRole').innerText = role;
+            document.getElementById('modalTitleDesc').innerText = desc;
+
+            titleModal.classList.add('active');
+        }
+
+        function closeTitleModal() {
+            titleModal.classList.remove('active');
+        }
+
+        titleModal.addEventListener('click', (e) => {
+            if (e.target === titleModal) closeTitleModal();
+        });
+    </script>
+</body>
+</html>

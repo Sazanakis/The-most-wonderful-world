@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Клан Дакэта | Энциклопедия Анакии</title>
+    <link rel="stylesheet" href="../css/lore.css">
+</head>
+<body>
+
+    <div class="lore-layout">
+        
+        <!-- Боковое меню -->
+        <aside class="lore-sidebar">
+            <div class="sidebar-title">Анакия</div>
+            <nav class="lore-nav">
+                <a href="../index.html">Главная</a>
+                <a href="cosmology.html">Мифология, Вера и Магия</a>
+                <a href="timeline.html">Летопись Окутана</a>
+                <a href="geography.html">География и Государства</a>
+                <a href="races.html">Расы и Народы</a>
+                <a href="factions.html" class="active">Фракции и Политика</a>
+                <a href="#" class="dev-link">Армии и Юниты</a>
+                <a href="#" class="dev-link">Организации</a>
+                <a href="#" class="dev-link">Приложения</a>
+            </nav>
+        </aside>
+
+        <!-- Основная область -->
+        <main class="lore-main">
+            <article class="lore-article">
+                
+                <h1>Клан Дакэта</h1>
+                <div class="lore-subtitle">Древний род, бросивший вызов судьбе</div>
+
+                <div class="lore-divider"></div>
+
+                <!-- ОБЩИЕ СВЕДЕНИЯ -->
+                <h2>Общие сведения</h2>
+                <ul>
+                    <li><strong>Тип:</strong> Клан оку (даё)</li>
+                    <li><strong>Раса:</strong> Оку (дикие эльфы)</li>
+                    <li><strong>Статус:</strong> Активная фракция в Царстве Хелон</li>
+                    <li><strong>Лидер:</strong> Дакэта Кай (действующий Даё)</li>
+                    <li><strong>Регион:</strong> Полуостров Окутан</li>
+                    <li><strong>Цель:</strong> Независимость Окутана или иной путь</li>
+                    <li><strong>Игрок:</strong> Нет</li>
+                </ul>
+
+                <div class="lore-divider"></div>
+
+                <!-- ИСТОРИЯ -->
+                <h2>История</h2>
+                <p>Дакэта — один из старейших родов на полуострове Окутан. Воины клана сражались почти во всех полях сражения во время войны с Империей Юрган. Даё Дакэты не хотели присягать Максимилиану Хелону и намеревались продолжать сопротивление, даже когда тот предложил автономию оставшимся кланам оку.</p>
+                
+                <p>Однако под давлением других кланов Дакэта согласились на уступку и вошли в состав Царства Хелон. В целом они не пожалели: клан продолжил наращивать силы. На их землях поселились низемцы, но местные оку отнеслись к этому терпимо. Консервативная знать клана была обеспокоена — такое положение могло помешать поднять восстание.</p>
+
+                <div class="lore-divider"></div>
+
+                <!-- ТЕКУЩЕЕ ПОЛОЖЕНИЕ -->
+                <h2>Текущее положение</h2>
+                <p>Сегодня для клана Дакэта настал удачный момент: Хелон погрузился в смуту раздела власти после смерти царя Крикса. Действующий Даё Дакэта Кай должен переманить на свою сторону другие кланы оку. Это непросто, ведь у них свои планы.</p>
+                
+                <p>Будут ли оку воевать за независимость, примкнут к кандидату на трон или изберут иной путь — последнее слово остаётся за Каем.</p>
+
+                <div class="lore-divider"></div>
+
+                <!-- СИЛЬНЫЕ И СЛАБЫЕ СТОРОНЫ -->
+                <h2>Сильные стороны</h2>
+                <ul>
+                    <li>Старейший род, богатый боевой традициями</li>
+                    <li>Воины Дакэта участвовали почти во всех крупных сражениях прошлого</li>
+                    <li>Контроль над значительными территориями</li>
+                    <li>Внедрение в состав армии и гос. аппарат не-оку</li>
+                </ul>
+
+                <h2 style="margin-top: 30px;">Слабые стороны</h2>
+                <ul>
+                    <li>Консервативная знать, недовольная реформами Кая</li>
+                    <li>Давление со стороны других кланов</li>
+                    <li>Необходимость выбора в смуте: независимость, союз с лоялистами или нейтралитет</li>
+                </ul>
+
+                <div class="lore-divider"></div>
+
+                <!-- ГЛОССАРИЙ -->
+                <h2>Глоссарий</h2>
+                <div class="lore-glossary">
+                    <p><strong>Даё</strong> : Изменённое японское «даймё» — феодал, владетель клана.</p>
+                    <p><strong>Оку</strong> : От японского «орк», но в игре это раса «диких эльфов» (зеленокожие, японский феодальный вайб).</p>
+                </div>
+
+                <div class="lore-divider"></div>
+
+                <!-- ГАЛЕРЕЯ -->
+                <h2>Галерея</h2>
+                <figure class="lore-figure">
+                    <img src="../assets/images/factions/daketa_map.jpg" alt="Карта территорий Клана Дакэта">
+                </figure>
+
+            </article>
+        </main>
+    </div>
+
+    <!-- Модалка заглушка -->
+    <div class="dev-modal-overlay" id="devModal">
+        <div class="dev-modal-content">
+            <span class="dev-modal-icon">📜</span>
+            <h2>Свиток еще пишется</h2>
+            <p>Этот раздел энциклопедии пока находится в разработке.</p>
+            <button class="dev-modal-close" onclick="closeModal()">Понятно</button>
+        </div>
+    </div>
+
+    <script>
+        const modal = document.getElementById('devModal');
+        document.querySelectorAll('.dev-link').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                modal.classList.add('active');
+            });
+        });
+        function closeModal() { modal.classList.remove('active'); }
+        modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+    </script>
+</body>
+</html>
