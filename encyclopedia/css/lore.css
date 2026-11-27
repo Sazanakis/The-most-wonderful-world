@@ -1941,3 +1941,338 @@ html {
         max-width: 100%;
     }
 }
+/* =========================================
+   ФРАКЦИИ (СТИЛИ КАРТОЧЕК)
+   ========================================= */
+
+/* Заголовок над списком */
+.faction-main-header {
+    background: #2a2a2a;
+    color: var(--text-main);
+    font-family: 'Cinzel', serif;
+    font-size: 1.1rem;
+    padding: 12px 20px;
+    border-radius: 4px;
+    margin: 30px 0 20px 0;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border: none !important;
+}
+
+.faction-main-header::after {
+    display: none !important; /* Убираем ромбик, если он наследовался */
+}
+
+/* Контейнер для карточек */
+.faction-list {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+    margin-bottom: 30px;
+}
+
+/* Сама карточка */
+.faction-box {
+    background: rgba(30, 24, 18, 0.4);
+    border: 1px solid rgba(184, 124, 79, 0.2);
+    border-radius: 6px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.faction-box:hover {
+    border-color: rgba(184, 124, 79, 0.5);
+    background: rgba(30, 24, 18, 0.6);
+}
+
+/* Шапка карточки (темная полоса) */
+.faction-title {
+    background: rgba(20, 16, 12, 0.9);
+    padding: 15px 20px;
+    font-family: 'Cinzel', serif;
+    font-size: 1.2rem;
+    color: #8bc34a; /* Зеленоватый оттенок, как на скриншоте */
+    border-bottom: 1px solid rgba(184, 124, 79, 0.2);
+    letter-spacing: 0.05em;
+    font-weight: 700;
+}
+
+/* Подзаголовки в скобках (кол-во провинций) */
+.faction-title span {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    font-weight: 400;
+    font-family: 'Merriweather', serif;
+    letter-spacing: normal;
+}
+
+/* Тело карточки */
+.faction-body {
+    padding: 20px;
+    font-size: 0.95rem;
+}
+
+.faction-body p {
+    margin-bottom: 15px;
+    text-indent: 0; /* Убираем красную строку для ровного списка */
+    text-align: justify;
+}
+
+.faction-body p:last-of-type {
+    margin-bottom: 20px;
+}
+
+/* Ссылка "Подробнее" */
+.faction-readmore {
+    display: inline-block;
+    color: #4a90d9; /* Синий цвет ссылки, как на скриншоте */
+    font-family: 'Cinzel', serif;
+    font-size: 0.95rem;
+    text-decoration: none;
+    border-bottom: 1px dotted #4a90d9;
+    transition: all 0.3s ease;
+    padding-bottom: 2px;
+}
+
+.faction-readmore:hover {
+    color: var(--gold-light);
+    border-bottom-color: var(--gold-light);
+    text-shadow: 0 0 8px rgba(255, 217, 102, 0.4);
+}
+
+/* Адаптив */
+@media (max-width: 768px) {
+    .faction-title {
+        font-size: 1.1rem;
+        padding: 12px 15px;
+    }
+    .faction-body {
+        padding: 15px;
+    }
+}
+/* =========================================
+   ПИРАМИДА ТИТУЛОВ И МОДАЛЬНОЕ ОКНО
+   ========================================= */
+
+.title-pyramid {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 30px 0;
+    padding: 20px 0;
+}
+
+.pyramid-level {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    width: 100%;
+}
+
+/* Соединительные линии между уровнями */
+.pyramid-connector {
+    width: 2px;
+    height: 25px;
+    background: rgba(184, 124, 79, 0.4);
+    position: relative;
+}
+
+.pyramid-connector::after {
+    content: '▼';
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: rgba(184, 124, 79, 0.6);
+    font-size: 0.7rem;
+}
+
+/* Узлы (кнопки) */
+.title-node {
+    background: rgba(20, 16, 12, 0.9);
+    border: 1px solid rgba(184, 124, 79, 0.3);
+    color: var(--text-bright);
+    padding: 12px 25px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: 'Cinzel', serif;
+    font-size: 1rem;
+    text-align: center;
+    transition: all 0.3s ease;
+    min-width: 200px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+
+.title-node:hover {
+    border-color: var(--gold-light);
+    background: rgba(40, 30, 20, 0.9);
+    transform: scale(1.05);
+    box-shadow: 0 0 15px rgba(184, 124, 79, 0.2);
+}
+
+/* Стили для текста внутри кнопок */
+.title-node span {
+    display: block;
+    font-family: 'Merriweather', serif;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-top: 4px;
+}
+
+/* Выделенные узлы (Царь, Совет) */
+.special-node {
+    background: rgba(30, 24, 18, 0.95);
+    border-color: rgba(184, 124, 79, 0.6);
+    font-size: 1.1rem;
+    min-width: 280px;
+}
+
+/* Сетка для особых титулов Оку */
+.special-titles-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.small-node {
+    min-width: unset;
+    width: 100%;
+    padding: 10px;
+    font-size: 0.95rem;
+}
+
+/* --- Модальное окно титулов --- */
+.title-modal-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(10, 8, 6, 0.85);
+    backdrop-filter: blur(4px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.title-modal-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.title-modal-content {
+    background: linear-gradient(180deg, #2c281c 0%, #1a1410 100%);
+    border: 2px solid var(--gold-mid);
+    border-radius: 12px;
+    padding: 35px 30px;
+    max-width: 500px;
+    width: 90%;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.9), inset 0 0 50px rgba(60, 40, 30, 0.3);
+    transform: scale(0.9) translateY(20px);
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    text-align: center;
+}
+
+.title-modal-overlay.active .title-modal-content {
+    transform: scale(1) translateY(0);
+}
+
+.title-modal-content h2 {
+    font-family: 'Cinzel', serif;
+    color: var(--gold-light);
+    font-size: 1.6rem;
+    margin: 0 0 10px 0;
+    border: none;
+    padding: 0;
+}
+
+.title-modal-content h2::after {
+    display: none;
+}
+
+.title-modal-role {
+    font-family: 'Merriweather', serif;
+    color: var(--text-muted);
+    font-style: italic;
+    font-size: 1rem;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px dashed rgba(184, 124, 79, 0.3);
+}
+
+.title-modal-content p {
+    color: var(--text-main);
+    font-size: 1rem;
+    line-height: 1.6;
+    margin-bottom: 25px;
+    text-align: justify;
+    text-indent: 0; /* Убираем отступ первой строки в модалке */
+}
+
+.title-modal-close {
+    background: rgba(184, 124, 79, 0.1);
+    border: 1px solid var(--gold-mid);
+    color: var(--gold-light);
+    padding: 10px 30px;
+    font-family: 'Cinzel', serif;
+    font-size: 1rem;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.title-modal-close:hover {
+    background: var(--gold-mid);
+    color: #1a1410;
+    box-shadow: 0 0 15px rgba(184, 124, 79, 0.4);
+}
+
+/* Адаптив для пирамиды */
+@media (max-width: 768px) {
+    .title-node {
+        padding: 10px 15px;
+        font-size: 0.9rem;
+        min-width: 140px;
+    }
+    .special-node {
+        min-width: 200px;
+        font-size: 1rem;
+    }
+    .special-titles-grid {
+        grid-template-columns: 1fr;
+    }
+    .pyramid-connector {
+        height: 15px;
+    }
+}
+/* =========================================
+   ГЛОССАРИЙ
+   ========================================= */
+.lore-glossary {
+    background: rgba(30, 24, 18, 0.5);
+    border-left: 4px solid var(--gold-mid);
+    padding: 15px 20px;
+    border-radius: 0 6px 6px 0;
+    margin: 20px 0;
+}
+
+.lore-glossary p {
+    margin-bottom: 8px;
+    text-indent: 0; /* Убираем красную строку */
+    text-align: left;
+    font-size: 0.95rem;
+}
+
+.lore-glossary p:last-child {
+    margin-bottom: 0;
+}
+
+.lore-glossary strong {
+    color: var(--gold-light);
+    font-family: 'Cinzel', serif;
+    letter-spacing: 0.05em;
+}
